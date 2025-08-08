@@ -3,7 +3,7 @@
 #include <DX3D/Graphics/DeviceContext.h>
 #include <DX3D/Graphics/SwapChain.h>
 #include <DX3D/Graphics/VertexBuffer.h>
-#include <DX3D/Math/Vec3.h>
+#include <DX3D/Math/Geometry.h>
 #include <fstream>
 
 using namespace dx3d;

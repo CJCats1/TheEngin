@@ -25,7 +25,7 @@ SOFTWARE.*/
 #pragma once
 #include <DX3D/Core/Core.h>
 #include <DX3D/Core/Logger.h>
-#include <DX3D/Math/Rect.h>
+#include <DX3D/Math/Geometry.h>
 
 namespace dx3d
 {

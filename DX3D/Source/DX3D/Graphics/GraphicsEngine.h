@@ -1,8 +1,8 @@
 #pragma once
 #include <DX3D/Core/Core.h>
 #include <DX3D/Core/Base.h>
-#include <DX3D/Math/Vec3.h>
-#include <DX3D/Math/Vec4.h>
+#include <DX3D/Math/Geometry.h>
+
 
 namespace dx3d
 {

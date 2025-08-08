@@ -75,3 +75,12 @@ Intermediate/x64/Debug/VertexBuffer.obj
 Intermediate/x64/Debug/VertexShaderSignature.obj
 Intermediate/x64/Debug/Win32Game.obj
 Intermediate/x64/Debug/Win32Window.obj
+*.ipch
+.vs/DirectXGame/v17/Browse.VC.opendb
+.vs/DirectXGame/v17/Browse.VC.db-wal
+.vs/DirectXGame/v17/Browse.VC.db-shm
+.vs/DirectXGame/FileContentIndex/fb3cb2cf-544b-4b59-b802-aa770d08e851.vsidx
+.vs/DirectXGame/FileContentIndex/8f923dfe-0f83-4893-b92d-53318e91b226.vsidx
+.vs/DirectXGame/FileContentIndex/763f2d33-ff18-4b5b-b95d-6c9f14bf64f7.vsidx
+.vs/DirectXGame/FileContentIndex/6ec8263b-97aa-4344-a01b-7f7d381d605f.vsidx
+.vs/DirectXGame/FileContentIndex/2ef4a0d4-8c1c-4a8f-8520-d97c4f0157e5.vsidx
