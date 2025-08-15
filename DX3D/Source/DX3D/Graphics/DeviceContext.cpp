@@ -2,6 +2,9 @@
 #include <DX3D/Graphics/SwapChain.h>
 #include <DX3D/Graphics/GraphicsPipelineState.h>
 #include <DX3D/Graphics/VertexBuffer.h>
+#include <DX3D/Graphics/GraphicsDevice.h>
+#include <DX3D/Graphics/IndexBuffer.h>
+
 
 dx3d::DeviceContext::DeviceContext(const GraphicsResourceDesc& gDesc): GraphicsResource(gDesc)
 {
@@ -46,4 +49,29 @@ void dx3d::DeviceContext::drawTriangleList(ui32 vertexCount, ui32 startVertexLoc
 {
 	m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	m_context->Draw(vertexCount, startVertexLocation);
+}
+
+void dx3d::DeviceContext::setIndexBuffer(IndexBuffer& ib, DXGI_FORMAT fmt, ui32 offset)
+{
+	m_context->IASetIndexBuffer(ib.getNative(), fmt, offset);
+}
+
+void dx3d::DeviceContext::drawIndexedTriangleList(ui32 indexCount, ui32 startIndex)
+{
+	m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	m_context->DrawIndexed(static_cast<UINT>(indexCount),
+		static_cast<UINT>(startIndex),
+		0);
+}
+
+void dx3d::DeviceContext::drawIndexedLineList(ui32 indexCount, ui32 startIndex)
+{
+	m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+	m_context->DrawIndexed(static_cast<UINT>(indexCount),
+		static_cast<UINT>(startIndex),
+		0);
+}
+void dx3d::DeviceContext::setPSShaderResource(ui32 slot, ID3D11ShaderResourceView* srv)
+{
+	m_context->PSSetShaderResources(slot, 1, &srv);
 }

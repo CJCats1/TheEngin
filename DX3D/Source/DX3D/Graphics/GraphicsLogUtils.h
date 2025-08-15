@@ -31,3 +31,4 @@ namespace dx3d
 auto res = (hr);\
 dx3d::GraphicsLogUtils::CheckShaderCompile(getLogger(), res,errorBlob);\
 }
+#define DXCall(x) do { HRESULT _hr = (x); if (FAILED(_hr)) DX3DLogThrowError("DirectX call failed: " #x); } while(0)

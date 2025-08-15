@@ -2,8 +2,8 @@
 #include <DX3D/Core/Core.h>
 #include <DX3D/Core/Base.h>
 #include <DX3D/Math/Geometry.h>
-
-
+#include <DX3D/Graphics/Mesh.h>
+#include <DX3D/Math/Geometry.h>
 namespace dx3d
 {
 	class GraphicsEngine final : public Base
@@ -14,13 +14,12 @@ namespace dx3d
 
 		GraphicsDevice& getGraphicsDevice() noexcept;
 		void render(SwapChain& swapChain);
-	private:
-		struct Vertex
+		void addMesh(const std::shared_ptr<dx3d::Mesh>& mesh)
 		{
-			Vec3 position;
-			Vec4 color;
-		};
+			m_meshes.push_back(mesh);
+		}
 	private:
+		std::vector<std::shared_ptr<dx3d::Mesh>> m_meshes;
 		std::shared_ptr<GraphicsDevice> m_graphicsDevice{};
 		DeviceContextPtr m_deviceContext{};
 		GraphicsPipelineStatePtr m_pipeline{};

@@ -5,7 +5,7 @@
 #include <DX3D/Graphics/VertexBuffer.h>
 #include <DX3D/Math/Geometry.h>
 #include <fstream>
-
+#include <DX3D/Graphics/Texture2D.h>
 using namespace dx3d;
 
 dx3d::GraphicsEngine::GraphicsEngine(const GraphicsEngineDesc& desc) : Base(desc.base)
@@ -33,18 +33,13 @@ dx3d::GraphicsEngine::GraphicsEngine(const GraphicsEngineDesc& desc) : Base(desc
 
 	m_pipeline = device.createGraphicsPipelineState({ *vsSig, *ps });
 
-	const Vertex vertexList[] =
-	{
-		{ {-0.5f,-0.5f,0.0f},{1,0,0,1} },
-		{ {-0.5,0.5f,0.0f}  ,{0,1,0,1} },
-		{ {0.5f,0.5f,0.0f}  ,{0,0,1,1} },
+	//auto myTexture = std::make_shared<dx3d::Texture2D>();
+	//auto quadTex = Mesh::CreateQuadTextured(device, 1.0f, 1.0f);
+	//quadTex->setTexture(myTexture);
 
-		{ {0.5f,0.5f,0.0f}  ,{0,0,1,1} },
-		{ {0.5f,-0.5f,0.0f} ,{1,0,1,1} },
-		{ {-0.5f,-0.5f,0.0f},{1,0,0,1} }
-	};
 
-	m_vb = device.createVertexBuffer({ vertexList, std::size(vertexList),sizeof(Vertex) });
+	auto quadColor = Mesh::CreateQuadSolidColored(device, 1.0f, 1.0f, Color::RED);
+	m_meshes.push_back(quadColor);
 
 }
 
@@ -60,17 +55,16 @@ GraphicsDevice& dx3d::GraphicsEngine::getGraphicsDevice() noexcept
 void dx3d::GraphicsEngine::render(SwapChain& swapChain)
 {
 	auto& context = *m_deviceContext;
-	//what the hell are these magic numbers. a triangle? 
-	context.clearAndSetBackBuffer(swapChain, { 0.27f,0.39f,0.55f,1.0f });
-	context.setGraphicsPipelineState(*m_pipeline);
 
+	context.clearAndSetBackBuffer(swapChain, { 0.27f, 0.39f, 0.55f, 1.0f });
+	context.setGraphicsPipelineState(*m_pipeline);
 	context.setViewportSize(swapChain.getSize());
 
-	auto& vb = *m_vb;
-	context.setVertexBuffer(vb);
-	context.drawTriangleList(vb.getVertexListSize(), 0u);
+	for (auto& mesh : m_meshes)
+	{
+		mesh->draw(context);
+	}
 
-	auto& device = *m_graphicsDevice;
-	device.executeCommandList(context);
+	m_graphicsDevice->executeCommandList(context);
 	swapChain.present();
 }

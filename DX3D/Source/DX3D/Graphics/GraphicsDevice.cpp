@@ -63,7 +63,24 @@ VertexShaderSignaturePtr dx3d::GraphicsDevice::createVertexShaderSignature(const
 {
 	return std::make_shared<VertexShaderSignature>(desc, getGraphicsResourceDesc());
 }
+IndexBufferPtr GraphicsDevice::createIndexBuffer(const IndexBufferDesc& d)
+{
+	D3D11_BUFFER_DESC bd{};
+	bd.Usage = D3D11_USAGE_DEFAULT;
+	bd.ByteWidth = d.count * d.stride;
+	bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
 
+	D3D11_SUBRESOURCE_DATA init{};
+	init.pSysMem = d.data;
+
+	Microsoft::WRL::ComPtr<ID3D11Buffer> buf;
+	const HRESULT hr = m_d3dDevice->CreateBuffer(&bd, &init, &buf);
+	if (FAILED(hr)) {
+		DX3DLogThrowError("CreateBuffer (IndexBuffer) failed.");
+	}
+
+	return std::make_shared<IndexBuffer>(buf.Get(), d.count, d.stride);
+}
 void dx3d::GraphicsDevice::executeCommandList(DeviceContext& context)
 {
 	Microsoft::WRL::ComPtr<ID3D11CommandList> list{};
