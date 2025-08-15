@@ -3,7 +3,6 @@
 #include <DX3D/Graphics/DeviceContext.h>
 #include <DX3D/Graphics/SwapChain.h>
 #include <DX3D/Graphics/VertexBuffer.h>
-#include <DX3D/Math/Geometry.h>
 #include <fstream>
 #include <DX3D/Graphics/Texture2D.h>
 using namespace dx3d;
@@ -33,14 +32,22 @@ dx3d::GraphicsEngine::GraphicsEngine(const GraphicsEngineDesc& desc) : Base(desc
 
 	m_pipeline = device.createGraphicsPipelineState({ *vsSig, *ps });
 
-	//auto myTexture = std::make_shared<dx3d::Texture2D>();
-	//auto quadTex = Mesh::CreateQuadTextured(device, 1.0f, 1.0f);
-	//quadTex->setTexture(myTexture);
+	auto myTexture = dx3d::Texture2D::LoadTexture2D(device.getD3DDevice(), L"DX3D/Assets/Textures/cat.jpg");
+	if (!myTexture) {
+	    // File not found or failed to load - use white texture as fallback
+	    myTexture = dx3d::Texture2D::CreateWhiteTexture(device.getD3DDevice());
+	    printf("Failed to load cat.jpg - using white texture\n");
+	}
+	auto catSprite = std::make_unique<dx3d::SpriteComponent>(
+		device,
+		L"DX3D/Assets/Textures/cat.jpg",  // Fixed path to match your working one
+		1.0f, 1.0f  // width, height
+	);
 
-
-	auto quadColor = Mesh::CreateQuadSolidColored(device, 1.0f, 1.0f, Color::RED);
-	m_meshes.push_back(quadColor);
-
+	// Set positions and transforms but they dont work right now 
+	catSprite->setPosition(5.0f, 0.0f, 0.0f);
+	catSprite->setScale(1.0f);
+	m_sprites.push_back(std::move(catSprite));
 }
 
 dx3d::GraphicsEngine::~GraphicsEngine()
@@ -64,7 +71,15 @@ void dx3d::GraphicsEngine::render(SwapChain& swapChain)
 	{
 		mesh->draw(context);
 	}
+	for (auto& sprite : m_sprites)
+	{
+		if (sprite->isVisible() && sprite->isValid()) {
+			Mat4 worldMatrix = sprite->getWorldMatrix();
+			Vec3 pos = sprite->getPosition();
 
+			sprite->draw(context);
+		}
+	}
 	m_graphicsDevice->executeCommandList(context);
 	swapChain.present();
 }

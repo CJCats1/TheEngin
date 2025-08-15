@@ -9,8 +9,8 @@ std::shared_ptr<Mesh> Mesh::CreateQuadColored(GraphicsDevice& device, float w, f
     const Vertex verts[] = {
         { { -hw, -hh, 0.0f }, { 0, 0, 1 }, { 0, 1 }, Color::RED },
         { { -hw,  hh, 0.0f }, { 0, 0, 1 }, { 0, 0 }, Color::BLUE },
-        { {  hw,  hh, 0.0f }, { 0, 0, 1 }, { 1, 0 }, Color::GREEN },
-        { {  hw, -hh, 0.0f }, { 0, 0, 1 }, { 1, 1 }, Color::RED },
+        { {  hw,  hh, 0.0f }, { 0, 0, 1 }, { 1, 0 }, Color::RED },
+        { {  hw, -hh, 0.0f }, { 0, 0, 1 }, { 1, 1 }, Color::BLUE },
     };
     const ui32 idx[] = { 0,1,2, 0,2,3 };
 
@@ -19,25 +19,32 @@ std::shared_ptr<Mesh> Mesh::CreateQuadColored(GraphicsDevice& device, float w, f
     m->m_indexCount = (ui32)std::size(idx);
     m->m_vb = device.createVertexBuffer({ verts, m->m_vertexCount, sizeof(Vertex) });
     m->m_ib = device.createIndexBuffer({ idx, m->m_indexCount, sizeof(ui32) });
+    auto whiteTexture = dx3d::Texture2D::CreateWhiteTexture(device.getD3DDevice());
+    m->setTexture(whiteTexture);
     return m;
 }
 std::shared_ptr<Mesh> Mesh::CreateQuadSolidColored(GraphicsDevice& device, float w, float h, Vec4 Color)
 {
-    const float hw = w * 0.5f, hh = h * 0.5f;
+    const float hw = w * 0.5f;
+    const float hh = h * 0.5f;
 
     const Vertex verts[] = {
-        { { -hw, -hh, 0.0f }, { 0, 0, 1 }, { 0, 1 }, Color},
-        { { -hw,  hh, 0.0f }, { 0, 0, 1 }, { 0, 0 }, Color},
-        { {  hw,  hh, 0.0f }, { 0, 0, 1 }, { 1, 0 }, Color},
-        { {  hw, -hh, 0.0f }, { 0, 0, 1 }, { 1, 1 }, Color},
+        { { -hw, -hh, 0.0f }, { 0, 0, 1 }, { 0, 1 }, Color },
+        { { -hw,  hh, 0.0f }, { 0, 0, 1 }, { 0, 0 }, Color },
+        { {  hw,  hh, 0.0f }, { 0, 0, 1 }, { 1, 0 }, Color },
+        { {  hw, -hh, 0.0f }, { 0, 0, 1 }, { 1, 1 }, Color },
     };
-    const ui32 idx[] = { 0,1,2, 0,2,3 };
+
+    const ui32 idx[] = { 0, 1, 2, 0, 2, 3 };
 
     auto m = std::make_shared<Mesh>();
     m->m_vertexCount = (ui32)std::size(verts);
     m->m_indexCount = (ui32)std::size(idx);
     m->m_vb = device.createVertexBuffer({ verts, m->m_vertexCount, sizeof(Vertex) });
     m->m_ib = device.createIndexBuffer({ idx, m->m_indexCount, sizeof(ui32) });
+    auto whiteTexture = dx3d::Texture2D::CreateWhiteTexture(device.getD3DDevice());
+    m->setTexture(whiteTexture);
+
     return m;
 }
 std::shared_ptr<Mesh> Mesh::CreateQuadTextured(GraphicsDevice& device, float w, float h)
