@@ -84,3 +84,6 @@ Intermediate/x64/Debug/Win32Window.obj
 .vs/DirectXGame/FileContentIndex/763f2d33-ff18-4b5b-b95d-6c9f14bf64f7.vsidx
 .vs/DirectXGame/FileContentIndex/6ec8263b-97aa-4344-a01b-7f7d381d605f.vsidx
 .vs/DirectXGame/FileContentIndex/2ef4a0d4-8c1c-4a8f-8520-d97c4f0157e5.vsidx
+*.vsidx
+.vs/DirectXGame/FileContentIndex/766d2a0e-4512-4e1c-8c6d-4507550d47e5.vsidx
+*.vsidx
