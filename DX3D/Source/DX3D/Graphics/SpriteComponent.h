@@ -25,7 +25,7 @@ namespace dx3d {
         Vec3 getPosition() const { return m_position; }
         Vec3 getRotation() const { return m_rotation; }
         Vec3 getScale() const { return m_scale; }
-        Mat4 getWorldMatrix() const;  // Uncommented this!
+        Mat4 getWorldMatrix() const;  
 
         // Setters
         void setTexture(std::shared_ptr<Texture2D> texture);
@@ -39,10 +39,10 @@ namespace dx3d {
 
         // Transform operations
         void translate(float x, float y, float z);
-        void translate(const Vec3& delta);  // Uncommented
+        void translate(const Vec3& delta);  
         void rotate(float x, float y, float z);
-        void rotate(const Vec3& delta);     // Uncommented
-        void scaleBy(float factor);         // Uncommented
+        void rotate(const Vec3& delta);    
+        void scaleBy(float factor);        
         void scaleBy(const Vec3& factor);
 
         // Utility

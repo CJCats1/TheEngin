@@ -33,16 +33,14 @@ namespace dx3d {
     }
 
     Mat4 SpriteComponent::getWorldMatrix() const {
-        // Create transformation matrices
         Mat4 scaleMatrix = Mat4::scale(m_scale);
-        Mat4 rotationMatrixX = Mat4::rotationX(m_rotation.x);
-        Mat4 rotationMatrixY = Mat4::rotationY(m_rotation.y);
-        Mat4 rotationMatrixZ = Mat4::rotationZ(m_rotation.z);
+        Mat4 rotationMatrix = Mat4::rotationX(m_rotation.x) *
+            Mat4::rotationY(m_rotation.y) *
+            Mat4::rotationZ(m_rotation.z);
         Mat4 translationMatrix = Mat4::translation(m_position);
 
-        // Combine them: Scale * Rotation * Translation
-        Mat4 rotationMatrix = rotationMatrixX * rotationMatrixY * rotationMatrixZ;
-        return scaleMatrix * rotationMatrix * translationMatrix;
+        // Standard order: Scale -> Rotate -> Translate
+        return translationMatrix * rotationMatrix * scaleMatrix;
     }
 
     void SpriteComponent::setTexture(std::shared_ptr<Texture2D> texture) {
@@ -84,6 +82,8 @@ namespace dx3d {
 
     void SpriteComponent::draw(DeviceContext& ctx) const {
         if (isVisible() && isValid()) {
+            Mat4 worldMatrix = getWorldMatrix();
+            ctx.setWorldMatrix(worldMatrix);
             m_mesh->draw(ctx);
         }
     }

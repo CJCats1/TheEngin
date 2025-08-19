@@ -26,9 +26,9 @@ SOFTWARE.*/
 #include <DX3D/Core/Base.h>
 #include <DX3D/Core/Core.h>
 
-
 namespace dx3d
 {
+	class Scene;
 	class Game: public Base
 	{
 	public:
@@ -36,12 +36,14 @@ namespace dx3d
 		virtual ~Game() override;
 
 		virtual void run() final;
+		void setScene(std::unique_ptr<Scene> scene);
 	private: 
 		void onInternalUpdate();
 	private:
 		std::unique_ptr<Logger> m_loggerPtr{};
 		std::unique_ptr<GraphicsEngine> m_graphicsEngine{};
 		std::unique_ptr<Display> m_display{};
+		std::unique_ptr<Scene> m_activeScene{};
 		bool m_isRunning{ true };
 	};
 }

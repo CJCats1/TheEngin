@@ -7,33 +7,30 @@
 
 namespace dx3d
 {
-	class GraphicsEngine final : public Base
-	{
-	public: 
-		explicit GraphicsEngine(const GraphicsEngineDesc& desc);
-		virtual ~GraphicsEngine() override;
+    class GraphicsEngine : public Base
+    {
+    private:
+        static float m_windowHeight;
+        static float m_windowWidth;
+    public:
+        explicit GraphicsEngine(const GraphicsEngineDesc& desc);
+        ~GraphicsEngine() override;
 
-		GraphicsDevice& getGraphicsDevice() noexcept;
-		void render(SwapChain& swapChain);
-		void addMesh(const std::shared_ptr<dx3d::Mesh>& mesh)
-		{
-			m_meshes.push_back(mesh);
-		}
-		void addSprite(std::unique_ptr<dx3d::SpriteComponent> sprite)
-		{
-			m_sprites.push_back(std::move(sprite));
-		}
+        GraphicsDevice& getGraphicsDevice() noexcept;
+        DeviceContext& getContext();
 
-		void clearSprites()
-		{
-			m_sprites.clear();
-		}
-	private:
-		std::vector<std::unique_ptr<dx3d::SpriteComponent>> m_sprites;
-		std::vector<std::shared_ptr<dx3d::Mesh>> m_meshes;
-		std::shared_ptr<GraphicsDevice> m_graphicsDevice{};
-		DeviceContextPtr m_deviceContext{};
-		GraphicsPipelineStatePtr m_pipeline{};
-		VertexBufferPtr m_vb{};
-	};
+        void beginFrame(SwapChain& swapChain);
+        void endFrame(SwapChain& swapChain);
+        static float getWindowWidth() { return m_windowWidth; }
+        static float getWindowHeight() { return m_windowHeight; }
+        static void setWindowWidth(float newWindowWidth) { m_windowWidth = newWindowWidth; }
+        static void setWindowHeight(float newWindowHeight) { m_windowHeight = newWindowHeight; }
+
+    private:
+
+        std::shared_ptr<GraphicsDevice> m_graphicsDevice;
+        std::shared_ptr<DeviceContext> m_deviceContext;
+        std::shared_ptr<GraphicsPipelineState> m_pipeline;
+    };
+
 }

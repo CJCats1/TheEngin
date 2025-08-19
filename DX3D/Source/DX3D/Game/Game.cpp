@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include <DX3D/Graphics/GraphicsEngine.h>
 #include <DX3D/Core/Logger.h>
 #include <DX3D/Game/Display.h>
+#include <DX3D/Core/Scene.h>
 
 dx3d::Game::Game(const GameDesc& desc) :
 	Base({*std::make_unique<Logger>(desc.logLevel).release()}),
@@ -45,5 +46,24 @@ dx3d::Game::~Game()
 
 void dx3d::Game::onInternalUpdate()
 {
-	m_graphicsEngine->render(m_display->getSwapChain());
+    if (m_activeScene)
+    {
+        // TODO: eventually replace fixed timestep with deltaTime
+        m_activeScene->update(0.016f);
+        m_activeScene->render(*m_graphicsEngine, m_display->getSwapChain());
+    }
+    else
+    {
+        // fallback: just clear & present
+        m_graphicsEngine->beginFrame(m_display->getSwapChain());
+        m_graphicsEngine->endFrame(m_display->getSwapChain());
+    }
+}
+void dx3d::Game::setScene(std::unique_ptr<Scene> scene)
+{
+    m_activeScene = std::move(scene);
+    if (m_activeScene)
+    {
+        m_activeScene->load(*m_graphicsEngine);
+    }
 }

@@ -1,6 +1,14 @@
 Texture2D tex : register(t0);
 SamplerState samp : register(s0);
 
+// Updated constant buffer with proper camera matrices
+cbuffer TransformBuffer : register(b0)
+{
+    matrix worldMatrix;
+    matrix viewMatrix;
+    matrix projectionMatrix;
+};
+
 struct VSInput
 {
     float3 position : POSITION0;
@@ -19,14 +27,20 @@ struct VSOutput
 VSOutput VSMain(VSInput input)
 {
     VSOutput output;
-    output.position = float4(input.position, 1);
+    
+    // Column-major multiplication: mul(matrix, vector)
+    float4 worldPos = mul(worldMatrix, float4(input.position, 1.0f));
+    float4 viewPos = mul(viewMatrix, worldPos);
+    output.position = mul(projectionMatrix, viewPos);
+    
     output.uv = input.uv;
     output.color = input.color;
+    
     return output;
 }
 
 float4 PSMain(VSOutput input) : SV_Target
 {
-    float4 texColor = tex.Sample(samp, input.uv) ;
+    float4 texColor = tex.Sample(samp, input.uv);
     return texColor * input.color;
 }

@@ -5,6 +5,11 @@
 #include <cmath>
 
 namespace dx3d {
+    static float clamp(float value, float min, float max) {
+        if (value < min) return min;
+        if (value > max) return max;
+        return value;
+    }
     struct MeshDimensions {
         f32 width{ 0 }, height{ 0 }, depth{ 0 }; // depth=0 for 2D quads
     };
@@ -65,12 +70,32 @@ namespace dx3d {
         static Mat4 identity() {
             return Mat4();
         }
-
+        static Mat4 orthographic(f32 width, f32 height, f32 nearZ, f32 farZ) {
+            Mat4 result;
+            result.m[0] = 2.0f / width;                    // X scale
+            result.m[5] = 2.0f / height;                   // Y scale  
+            result.m[10] = -2.0f / (farZ - nearZ);         // Z scale (note the negative!)
+            result.m[14] = -(farZ + nearZ) / (farZ - nearZ); // Z offset (different formula)
+            result.m[15] = 1.0f;                           // W component
+            return result;
+        }
         static Mat4 translation(const Vec3& pos) {
             Mat4 result;
             result.m[12] = pos.x;
             result.m[13] = pos.y;
             result.m[14] = pos.z;
+            return result;
+        }
+        static Mat4 transposeMatrix(const Mat4& matrix) {
+            Mat4 result;
+            const float* src = matrix.data();
+            float* dst = result.data();
+
+            for (int row = 0; row < 4; ++row) {
+                for (int col = 0; col < 4; ++col) {
+                    dst[row * 4 + col] = src[col * 4 + row];
+                }
+            }
             return result;
         }
 

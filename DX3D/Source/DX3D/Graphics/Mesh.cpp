@@ -75,8 +75,11 @@ void Mesh::draw(DeviceContext& ctx) const
         ctx.setIndexBuffer(*m_ib);
 
     // Bind the texture if the mesh is textured
-    if (m_texture)
+    if (m_texture) {
         ctx.setPSShaderResource(0, m_texture->getSRV());
+        // ADD THIS LINE to fix the sampler warning:
+        ctx.setPSSampler(0, nullptr); // Uses default sampler
+    }
 
     // Draw
     if (m_ib)

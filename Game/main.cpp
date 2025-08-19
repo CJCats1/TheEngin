@@ -23,14 +23,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include <DX3D/All.h>
-
-
+#include <DX3D/Game/Scenes/TestScene.h>
 int main()
 {
 	try
 	{
 		//need to change this so I can resize the window
 		dx3d::Game game({ {1280,720},dx3d::Logger::LogLevel::Info });
+		game.setScene(std::make_unique<dx3d::TestScene>());
 		game.run();
 	}
 	catch (const std::runtime_error&)
@@ -49,8 +49,5 @@ int main()
 	{
 		return EXIT_FAILURE;
 	}
-
-
-
 	return EXIT_SUCCESS;
 }
