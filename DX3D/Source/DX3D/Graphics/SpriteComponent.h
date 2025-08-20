@@ -52,7 +52,8 @@ namespace dx3d {
 
         // Rendering
         void draw(DeviceContext& ctx) const;
-
+        //void draw(DeviceContext& ctx, const Mat4& viewMatrix, const Mat4& projectionMatrix) const;
+        //void draw(DeviceContext& ctx, const Camera* camera = nullptr) const;
     private:
         std::shared_ptr<Mesh> m_mesh;
         std::shared_ptr<Texture2D> m_texture;

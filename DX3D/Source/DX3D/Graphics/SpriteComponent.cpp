@@ -82,9 +82,53 @@ namespace dx3d {
 
     void SpriteComponent::draw(DeviceContext& ctx) const {
         if (isVisible() && isValid()) {
+            // Set world matrix - view and projection should already be set
             Mat4 worldMatrix = getWorldMatrix();
             ctx.setWorldMatrix(worldMatrix);
+
+            // Draw the mesh (handles texture binding internally)
             m_mesh->draw(ctx);
         }
     }
+
+    //void SpriteComponent::draw(DeviceContext& ctx, const Mat4& viewMatrix, const Mat4& projectionMatrix) const {
+    //    if (!isVisible() || !isValid()) {
+    //        return;
+    //    }
+    //
+    //    // Set all three matrices using your existing DeviceContext methods
+    //    ctx.setWorldMatrix(getWorldMatrix());
+    //    ctx.setViewMatrix(viewMatrix);
+    //    ctx.setProjectionMatrix(projectionMatrix);
+    //
+    //    // Update the transform buffer to send matrices to the GPU
+    //    ctx.updateTransformBuffer();
+    //
+    //    // Draw the mesh (the mesh should handle texture binding)
+    //    m_mesh->draw(ctx);
+    //}
+    //// SpriteComponent.cpp
+    //void SpriteComponent::draw(DeviceContext& ctx, const Camera* camera) const
+    //{
+    //    if (!isVisible() || !isValid()) return;
+    //
+    //    Mat4 world = getWorldMatrix();
+    //    Mat4 view = Mat4::identity();
+    //    Mat4 proj = Mat4::identity();
+    //
+    //    if (camera) {
+    //        view = camera->getViewMatrix();
+    //        proj = camera->getProjectionMatrix();
+    //    }
+    //
+    //    // Set matrices on the GPU
+    //    ctx.setWorldMatrix(world);
+    //    ctx.setViewMatrix(view);
+    //    ctx.setProjectionMatrix(proj);
+    //    ctx.updateTransformBuffer();
+    //
+    //    // Draw mesh (texture binding handled internally)
+    //    m_mesh->draw(ctx);
+    //}
+
 }
