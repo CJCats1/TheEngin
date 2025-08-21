@@ -29,7 +29,8 @@ SOFTWARE.*/
 namespace dx3d
 {
 	class Scene;
-	class Game: public Base
+	class TestScene; // Forward declaration
+	class Game : public Base
 	{
 	public:
 		explicit Game(const GameDesc& desc);
@@ -37,7 +38,9 @@ namespace dx3d
 
 		virtual void run() final;
 		void setScene(std::unique_ptr<Scene> scene);
-	private: 
+		void onKeyDown(int keyCode);
+		void onKeyUp(int keyCode);
+	private:
 		void onInternalUpdate();
 	private:
 		std::unique_ptr<Logger> m_loggerPtr{};

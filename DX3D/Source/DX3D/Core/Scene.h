@@ -1,6 +1,4 @@
-// Scene.h
 #pragma once
-#include <memory>
 
 namespace dx3d {
     class GraphicsEngine;
@@ -9,8 +7,27 @@ namespace dx3d {
     class Scene {
     public:
         virtual ~Scene() = default;
-        virtual void load(GraphicsEngine& engine) = 0;   // load meshes, sprites, etc.
-        virtual void update(float deltaTime) = 0;        // game logic
+
+        // Core scene methods
+        virtual void load(GraphicsEngine& engine) = 0;
+        virtual void update(float dt) = 0;
         virtual void render(GraphicsEngine& engine, SwapChain& swapChain) = 0;
+
+        // Input handling methods - override these in derived classes if needed
+        virtual void onKeyDown(int keyCode) {}
+        virtual void onKeyUp(int keyCode) {}
+        virtual void onMouseMove(int x, int y) {}
+        virtual void onMouseClick(int button, int x, int y) {}
+        virtual void onMouseRelease(int button, int x, int y) {}
+        // Input state tracking
+        struct InputState {
+            bool wPressed = false;  // Move up
+            bool aPressed = false;  // Move left
+            bool sPressed = false;  // Move down
+            bool dPressed = false;  // Move right
+            bool qPressed = false;  // Zoom out
+            bool ePressed = false;  // Zoom in
+            bool leftShift = false; // Speed modifier
+        } m_input;
     };
 }

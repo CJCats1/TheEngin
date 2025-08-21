@@ -12,9 +12,13 @@ namespace dx3d {
         void update(float dt) override;
         void render(GraphicsEngine& engine, SwapChain& swapChain) override;
 
+        void onKeyDown(int keyCode);
+        void onKeyUp(int keyCode);
+
     private:
         std::vector<std::unique_ptr<SpriteComponent>> m_sprites;
-
         std::unique_ptr<Camera> m_camera;
+
+        void updateCameraMovement(float dt);
     };
 }

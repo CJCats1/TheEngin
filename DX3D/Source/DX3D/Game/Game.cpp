@@ -28,20 +28,21 @@ SOFTWARE.*/
 #include <DX3D/Core/Logger.h>
 #include <DX3D/Game/Display.h>
 #include <DX3D/Core/Scene.h>
+#include <DX3D/Game/Scenes/TestScene.h> // Include TestScene header
 
 dx3d::Game::Game(const GameDesc& desc) :
-	Base({*std::make_unique<Logger>(desc.logLevel).release()}),
-	m_loggerPtr(&m_logger)
+    Base({ *std::make_unique<Logger>(desc.logLevel).release() }),
+    m_loggerPtr(&m_logger)
 {
-	m_graphicsEngine = std::make_unique<GraphicsEngine>(GraphicsEngineDesc{m_logger});
-	m_display = std::make_unique<Display>(DisplayDesc{ {m_logger,desc.windowSize},m_graphicsEngine->getGraphicsDevice()});
+    m_graphicsEngine = std::make_unique<GraphicsEngine>(GraphicsEngineDesc{ m_logger });
+    m_display = std::make_unique<Display>(DisplayDesc{ {m_logger,desc.windowSize},m_graphicsEngine->getGraphicsDevice() });
 
-	DX3DLogInfo("Game initialized.");
+    DX3DLogInfo("Game initialized.");
 }
 
 dx3d::Game::~Game()
 {
-	DX3DLogInfo("Game deallocation started.");
+    DX3DLogInfo("Game deallocation started.");
 }
 
 void dx3d::Game::onInternalUpdate()
@@ -59,11 +60,34 @@ void dx3d::Game::onInternalUpdate()
         m_graphicsEngine->endFrame(m_display->getSwapChain());
     }
 }
+
 void dx3d::Game::setScene(std::unique_ptr<Scene> scene)
 {
     m_activeScene = std::move(scene);
     if (m_activeScene)
     {
         m_activeScene->load(*m_graphicsEngine);
+    }
+}
+
+void dx3d::Game::onKeyDown(int keyCode)
+{
+    // Forward input to current scene if it's a TestScene
+    if (m_activeScene) {
+        // Try to cast to TestScene to access input methods
+        if (auto* testScene = dynamic_cast<TestScene*>(m_activeScene.get())) {
+            testScene->onKeyDown(keyCode);
+        }
+    }
+}
+
+void dx3d::Game::onKeyUp(int keyCode)
+{
+    // Forward input to current scene if it's a TestScene
+    if (m_activeScene) {
+        // Try to cast to TestScene to access input methods
+        if (auto* testScene = dynamic_cast<TestScene*>(m_activeScene.get())) {
+            testScene->onKeyUp(keyCode);
+        }
     }
 }

@@ -133,6 +133,18 @@ namespace dx3d {
             result.m[15] = 1.0f;                           // W component
             return result;
         }
+        static Mat4 orthographicPixelSpace(f32 width, f32 height, f32 nearZ = 0.1f, f32 farZ = 100.0f) {
+            Mat4 result;
+            // Map [0, width] to [-1, 1] and [0, height] to [1, -1] (flip Y for top-left origin)
+            result.m[0] = 2.0f / width;                    // X scale
+            result.m[5] = -2.0f / height;                  // Y scale (negative to flip Y-axis)  
+            result.m[10] = -2.0f / (farZ - nearZ);         // Z scale
+            result.m[12] = -1.0f;                          // X offset (shift to start at -1)
+            result.m[13] = 1.0f;                           // Y offset (shift to start at 1)
+            result.m[14] = -(farZ + nearZ) / (farZ - nearZ); // Z offset
+            result.m[15] = 1.0f;                           // W component
+            return result;
+        }
         static Mat4 translation(const Vec3& pos) {
             Mat4 result;
             result.m[12] = pos.x;
