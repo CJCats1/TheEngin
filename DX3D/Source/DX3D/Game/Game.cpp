@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <DX3D/Core/Logger.h>
 #include <DX3D/Game/Display.h>
 #include <DX3D/Core/Scene.h>
-#include <DX3D/Game/Scenes/TestScene.h> // Include TestScene header
+#include <DX3D/Core/Input.h>
 
 dx3d::Game::Game(const GameDesc& desc) :
     Base({ *std::make_unique<Logger>(desc.logLevel).release() }),
@@ -47,6 +47,9 @@ dx3d::Game::~Game()
 
 void dx3d::Game::onInternalUpdate()
 {
+    // Update input system first (clears "just pressed/released" states from previous frame)
+    Input::getInstance().update();
+
     if (m_activeScene)
     {
         // TODO: eventually replace fixed timestep with deltaTime
@@ -72,22 +75,12 @@ void dx3d::Game::setScene(std::unique_ptr<Scene> scene)
 
 void dx3d::Game::onKeyDown(int keyCode)
 {
-    // Forward input to current scene if it's a TestScene
-    if (m_activeScene) {
-        // Try to cast to TestScene to access input methods
-        if (auto* testScene = dynamic_cast<TestScene*>(m_activeScene.get())) {
-            testScene->onKeyDown(keyCode);
-        }
-    }
+    // Simply forward to input system - no scene-specific logic needed here
+    Input::getInstance().setKeyDown(keyCode);
 }
 
 void dx3d::Game::onKeyUp(int keyCode)
 {
-    // Forward input to current scene if it's a TestScene
-    if (m_activeScene) {
-        // Try to cast to TestScene to access input methods
-        if (auto* testScene = dynamic_cast<TestScene*>(m_activeScene.get())) {
-            testScene->onKeyUp(keyCode);
-        }
-    }
+    // Simply forward to input system - no scene-specific logic needed here
+    Input::getInstance().setKeyUp(keyCode);
 }

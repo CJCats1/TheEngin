@@ -19,15 +19,5 @@ namespace dx3d {
         virtual void onMouseMove(int x, int y) {}
         virtual void onMouseClick(int button, int x, int y) {}
         virtual void onMouseRelease(int button, int x, int y) {}
-        // Input state tracking
-        struct InputState {
-            bool wPressed = false;  // Move up
-            bool aPressed = false;  // Move left
-            bool sPressed = false;  // Move down
-            bool dPressed = false;  // Move right
-            bool qPressed = false;  // Zoom out
-            bool ePressed = false;  // Zoom in
-            bool leftShift = false; // Speed modifier
-        } m_input;
     };
 }

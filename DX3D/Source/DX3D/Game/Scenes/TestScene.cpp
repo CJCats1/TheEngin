@@ -2,60 +2,47 @@
 #include <DX3D/Graphics/SpriteComponent.h>
 #include <DX3D/Graphics/GraphicsEngine.h>
 #include <DX3D/Graphics/SwapChain.h>
+#include <DX3D/Core/Input.h>
+#include <cmath>
 
 using namespace dx3d;
 
-// Virtual key codes (Windows)
-#define VK_W 0x57
-#define VK_A 0x41
-#define VK_S 0x53
-#define VK_D 0x44
-#define VK_Q 0x51
-#define VK_E 0x45
-#define VK_SHIFT 0x10
-
 void TestScene::load(GraphicsEngine& engine) {
-    auto& device = engine.getGraphicsDevice();
 
+    auto& device = engine.getGraphicsDevice();
     // Initialize camera with screen dimensions
     float screenWidth = GraphicsEngine::getWindowWidth();
     float screenHeight = GraphicsEngine::getWindowHeight();
     m_camera = std::make_unique<Camera>(screenWidth, screenHeight);
-
     // Position camera at center
     m_camera->setPosition(0.0f, 0.0f);
     m_camera->setZoom(1.0f);
-
     // Create sprites with different positions and sizes
     auto cat1 = std::make_unique<SpriteComponent>(
-        device, L"DX3D/Assets/Textures/cat.jpg", 170.0f, 200.0f
+        device, L"DX3D/Assets/Textures/cat.jpg", 200.0f * 0.85f, 200.0f
     );
     cat1->setPosition(0.0f, 0.0f, 0.0f); // Center
     m_sprites.push_back(std::move(cat1));
-
     auto cat2 = std::make_unique<SpriteComponent>(
-        device, L"DX3D/Assets/Textures/cat.jpg", 85.0f, 100.0f
+        device, L"DX3D/Assets/Textures/cat.jpg", 100.0f * 0.85f, 100.0f
     );
-    cat2->setPosition(640.0f, 0.0f, 0.0f); 
+    cat2->setPosition(300.0f, -150.0f, 0.0f); // Right and down
     m_sprites.push_back(std::move(cat2));
-
     auto cat3 = std::make_unique<SpriteComponent>(
-        device, L"DX3D/Assets/Textures/cat.jpg", 127.5f, 150.0f
+        device, L"DX3D/Assets/Textures/cat.jpg", 150.0f * 0.85f, 150.0f
     );
-    cat3->setPosition(-640.0f, 0.0f, 0.0f); 
+    cat3->setPosition(-250.0f, 200.0f, 0.0f); // Left and up
     m_sprites.push_back(std::move(cat3));
-
     // Add more sprites for testing camera movement
     auto cat4 = std::make_unique<SpriteComponent>(
-        device, L"DX3D/Assets/Textures/cat.jpg", 102.0f, 120.0f
+        device, L"DX3D/Assets/Textures/cat.jpg", 120.0f * 0.85f, 120.0f
     );
-    cat4->setPosition(0.0f, -300.0f, 0.0f); // Far right and up
+    cat4->setPosition(500.0f, 300.0f, 0.0f); // Far right and up
     m_sprites.push_back(std::move(cat4));
-
     auto cat5 = std::make_unique<SpriteComponent>(
-        device, L"DX3D/Assets/Textures/cat.jpg", 136.0f, 160.0f
+        device, L"DX3D/Assets/Textures/cat.jpg", 160.0f * 0.85f, 160.0f
     );
-    cat5->setPosition(0.0f, 300.0f, 0.0f); // Far left and down
+    cat5->setPosition(-400.0f, -250.0f, 0.0f); // Far left and down
     m_sprites.push_back(std::move(cat5));
 }
 
@@ -73,7 +60,7 @@ void TestScene::update(float dt) {
         float newX = amplitude * sin(time * speed);
         m_sprites[0]->setPosition(newX, m_sprites[0]->getPosition().y, m_sprites[0]->getPosition().z);
     }
-    
+
     // Rotate the second sprite
     if (m_sprites.size() > 1) {
         Vec3 currentRot = m_sprites[1]->getRotation();
@@ -82,19 +69,22 @@ void TestScene::update(float dt) {
 }
 
 void TestScene::updateCameraMovement(float dt) {
+    auto& input = Input::getInstance();
+
     float baseSpeed = 300.0f; // pixels per second
     float fastSpeed = 600.0f; // speed when shift is held
     float zoomSpeed = 2.0f;   // zoom units per second
 
-    float currentSpeed = m_input.leftShift ? fastSpeed : baseSpeed;
+    // Check if shift is held for faster movement
+    float currentSpeed = input.isKeyDown(Key::Shift) ? fastSpeed : baseSpeed;
 
-    // Calculate movement delta
+    // Calculate movement delta using the Input system
     Vec2 moveDelta(0.0f, 0.0f);
 
-    if (m_input.wPressed) moveDelta.y += currentSpeed * dt; // Up
-    if (m_input.sPressed) moveDelta.y -= currentSpeed * dt; // Down
-    if (m_input.aPressed) moveDelta.x -= currentSpeed * dt; // Left
-    if (m_input.dPressed) moveDelta.x += currentSpeed * dt; // Right
+    if (input.isKeyDown(Key::W)) moveDelta.y += currentSpeed * dt; // Up
+    if (input.isKeyDown(Key::S)) moveDelta.y -= currentSpeed * dt; // Down
+    if (input.isKeyDown(Key::A)) moveDelta.x -= currentSpeed * dt; // Left
+    if (input.isKeyDown(Key::D)) moveDelta.x += currentSpeed * dt; // Right
 
     // Apply movement
     if (moveDelta.x != 0.0f || moveDelta.y != 0.0f) {
@@ -103,36 +93,23 @@ void TestScene::updateCameraMovement(float dt) {
 
     // Handle zoom
     float zoomDelta = 0.0f;
-    if (m_input.qPressed) zoomDelta -= zoomSpeed * dt; // Zoom out
-    if (m_input.ePressed) zoomDelta += zoomSpeed * dt; // Zoom in
+    if (input.isKeyDown(Key::Q)) zoomDelta -= zoomSpeed * dt; // Zoom out
+    if (input.isKeyDown(Key::E)) zoomDelta += zoomSpeed * dt; // Zoom in
 
     if (zoomDelta != 0.0f) {
         m_camera->zoom(zoomDelta);
     }
-}
 
-void TestScene::onKeyDown(int keyCode) {
-    switch (keyCode) {
-    case VK_W: m_input.wPressed = true; break;
-    case VK_A: m_input.aPressed = true; break;
-    case VK_S: m_input.sPressed = true; break;
-    case VK_D: m_input.dPressed = true; break;
-    case VK_Q: m_input.qPressed = true; break;
-    case VK_E: m_input.ePressed = true; break;
-    case VK_SHIFT: m_input.leftShift = true; break;
+    // Example of using "just pressed" - maybe to reset camera position
+    if (input.isKeyDown(Key::Space)) {
+        m_camera->setPosition(0.0f, 0.0f);
+        m_camera->setZoom(1.0f);
     }
-}
 
-void TestScene::onKeyUp(int keyCode) {
-    switch (keyCode) {
-    case VK_W: m_input.wPressed = false; break;
-    case VK_A: m_input.aPressed = false; break;
-    case VK_S: m_input.sPressed = false; break;
-    case VK_D: m_input.dPressed = false; break;
-    case VK_Q: m_input.qPressed = false; break;
-    case VK_E: m_input.ePressed = false; break;
-    case VK_SHIFT: m_input.leftShift = false; break;
-    }
+    // Example of using raw key codes if needed
+    // if (input.isKeyDown(VK_ESCAPE)) {
+    //     // Handle escape key
+    // }
 }
 
 void TestScene::render(GraphicsEngine& engine, SwapChain& swapChain) {
@@ -152,43 +129,3 @@ void TestScene::render(GraphicsEngine& engine, SwapChain& swapChain) {
 
     engine.endFrame(swapChain);
 }
-
-// Alternative: If you don't have a separate input system, you can check keys directly in update()
-// Here's an example using GetAsyncKeyState (Windows):
-
-/*
-void TestScene::updateCameraMovement(float dt) {
-    float baseSpeed = 300.0f;
-    float fastSpeed = 600.0f;
-    float zoomSpeed = 2.0f;
-
-    // Check key states directly (Windows only)
-    bool wPressed = (GetAsyncKeyState(VK_W) & 0x8000) != 0;
-    bool aPressed = (GetAsyncKeyState(VK_A) & 0x8000) != 0;
-    bool sPressed = (GetAsyncKeyState(VK_S) & 0x8000) != 0;
-    bool dPressed = (GetAsyncKeyState(VK_D) & 0x8000) != 0;
-    bool qPressed = (GetAsyncKeyState(VK_Q) & 0x8000) != 0;
-    bool ePressed = (GetAsyncKeyState(VK_E) & 0x8000) != 0;
-    bool shiftPressed = (GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0;
-
-    float currentSpeed = shiftPressed ? fastSpeed : baseSpeed;
-
-    Vec2 moveDelta(0.0f, 0.0f);
-    if (wPressed) moveDelta.y += currentSpeed * dt;
-    if (sPressed) moveDelta.y -= currentSpeed * dt;
-    if (aPressed) moveDelta.x -= currentSpeed * dt;
-    if (dPressed) moveDelta.x += currentSpeed * dt;
-
-    if (moveDelta.x != 0.0f || moveDelta.y != 0.0f) {
-        m_camera->move(moveDelta);
-    }
-
-    float zoomDelta = 0.0f;
-    if (qPressed) zoomDelta -= zoomSpeed * dt;
-    if (ePressed) zoomDelta += zoomSpeed * dt;
-
-    if (zoomDelta != 0.0f) {
-        m_camera->zoom(zoomDelta);
-    }
-}
-*/
