@@ -158,7 +158,7 @@ namespace dx3d {
             Mat4 rotationMatrix = Mat4::rotationZ(m_rotation.z);
             Mat4 translationMatrix = Mat4::translation(m_position);
 
-            m_worldMatrix = rotationMatrix * scaleMatrix * translationMatrix;
+            m_worldMatrix = scaleMatrix* rotationMatrix   * translationMatrix;
             m_dirty = false;
         }
     };

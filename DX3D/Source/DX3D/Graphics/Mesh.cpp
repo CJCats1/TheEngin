@@ -21,6 +21,8 @@ std::shared_ptr<Mesh> Mesh::CreateQuadColored(GraphicsDevice& device, float w, f
     m->m_ib = device.createIndexBuffer({ idx, m->m_indexCount, sizeof(ui32) });
     auto whiteTexture = dx3d::Texture2D::CreateWhiteTexture(device.getD3DDevice());
     m->setTexture(whiteTexture);
+    m->m_width = w;
+    m->m_height = h;
     return m;
 }
 std::shared_ptr<Mesh> Mesh::CreateQuadSolidColored(GraphicsDevice& device, float w, float h, Vec4 Color)
@@ -44,7 +46,8 @@ std::shared_ptr<Mesh> Mesh::CreateQuadSolidColored(GraphicsDevice& device, float
     m->m_ib = device.createIndexBuffer({ idx, m->m_indexCount, sizeof(ui32) });
     auto whiteTexture = dx3d::Texture2D::CreateWhiteTexture(device.getD3DDevice());
     m->setTexture(whiteTexture);
-
+    m->m_width = w;
+    m->m_height = h;
     return m;
 }
 std::shared_ptr<Mesh> Mesh::CreateQuadTextured(GraphicsDevice& device, float w, float h)
@@ -64,6 +67,9 @@ std::shared_ptr<Mesh> Mesh::CreateQuadTextured(GraphicsDevice& device, float w, 
     m->m_indexCount = (ui32)std::size(idx);
     m->m_vb = device.createVertexBuffer({ verts, m->m_vertexCount, sizeof(Vertex) });
     m->m_ib = device.createIndexBuffer({ idx, m->m_indexCount, sizeof(ui32) });
+    m->m_width = w;
+    m->m_height = h;
+
     return m;
 }
 

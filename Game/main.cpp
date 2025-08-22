@@ -24,13 +24,17 @@ SOFTWARE.*/
 
 #include <DX3D/All.h>
 #include <DX3D/Game/Scenes/TestScene.h>
+#include <DX3D/Game/Scenes/BridgeScene.h>
+
 int main()
 {
 	try
 	{
 		//need to change this so I can resize the window
 		dx3d::Game game({ {1280,720},dx3d::Logger::LogLevel::Info });
-		game.setScene(std::make_unique<dx3d::TestScene>());
+		//game.setScene(std::make_unique<dx3d::TestScene>());
+		game.setScene(std::make_unique<dx3d::BridgeScene>());
+
 		game.run();
 	}
 	catch (const std::runtime_error&)

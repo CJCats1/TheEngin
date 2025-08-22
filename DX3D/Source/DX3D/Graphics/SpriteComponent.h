@@ -69,12 +69,14 @@ namespace dx3d {
 
         // Rendering
         void draw(DeviceContext& ctx) const;
+        GraphicsDevice& getGraphicsDevice() { return m_device; }
 
     private:
         std::shared_ptr<Mesh> m_mesh;
         std::shared_ptr<Texture2D> m_texture;
         TransformComponent m_transform;
         bool m_visible = true;
+        GraphicsDevice& m_device;
 
         void initialize(GraphicsDevice& device, float width, float height);
     };

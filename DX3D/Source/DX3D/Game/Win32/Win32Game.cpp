@@ -23,6 +23,7 @@ void dx3d::Game::run()
 			{
 				onKeyUp(static_cast<int>(msg.wParam));
 			}
+			
 
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);

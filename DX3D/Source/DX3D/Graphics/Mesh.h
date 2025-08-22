@@ -32,6 +32,8 @@ namespace dx3d
         void setTexture(std::shared_ptr<Texture2D> texture) { m_texture = texture; }
         bool isTextured() const { return (bool)m_texture; }
         void draw(DeviceContext& ctx) const;
+        float getWidth() const { return m_width; }
+        float getHeight() const { return m_height; }
 
     private:
         std::shared_ptr<VertexBuffer> m_vb;
@@ -40,6 +42,9 @@ namespace dx3d
         std::shared_ptr<Texture2D>    m_texture;
         ui32 m_vertexCount{ 0 };
         ui32 m_indexCount{ 0 };
+        float m_width = 0.0f;
+        float m_height = 0.0f;
+
     };
 
 }

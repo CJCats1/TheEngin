@@ -13,6 +13,70 @@ dx3d::DeviceContext::DeviceContext(const GraphicsResourceDesc& gDesc): GraphicsR
 		"CreateDeferredContext failed.")
 
 	createConstantBuffers();
+	createBlendStates();
+	createDepthStates();
+}
+void dx3d::DeviceContext::createBlendStates()
+{
+	// Alpha blend (for transparent textures)
+	D3D11_BLEND_DESC blendDesc = {};
+	blendDesc.RenderTarget[0].BlendEnable = TRUE;
+	blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+	blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+	blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+	blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+	blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+	DX3DGraphicsLogThrowOnFail(m_device.CreateBlendState(&blendDesc, m_alphaBlendState.GetAddressOf()),
+		"Failed to create alpha blend state");
+
+	// No blend (default opaque)
+	blendDesc.RenderTarget[0].BlendEnable = FALSE;
+	DX3DGraphicsLogThrowOnFail(m_device.CreateBlendState(&blendDesc, m_noBlendState.GetAddressOf()),
+		"Failed to create no-blend state");
+}
+
+void dx3d::DeviceContext::createDepthStates()
+{
+	// Default depth (writes enabled)
+	D3D11_DEPTH_STENCIL_DESC depthDesc = {};
+	depthDesc.DepthEnable = TRUE;
+	depthDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	depthDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	DX3DGraphicsLogThrowOnFail(m_device.CreateDepthStencilState(&depthDesc, m_defaultDepthState.GetAddressOf()),
+		"Failed to create default depth state");
+
+	// Transparent depth (disable writes)
+	depthDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+	DX3DGraphicsLogThrowOnFail(m_device.CreateDepthStencilState(&depthDesc, m_transparentDepthState.GetAddressOf()),
+		"Failed to create transparent depth state");
+}
+
+// Enable alpha blending
+void dx3d::DeviceContext::enableAlphaBlending()
+{
+	float blendFactor[4] = { 0,0,0,0 };
+	m_context->OMSetBlendState(m_alphaBlendState.Get(), blendFactor, 0xFFFFFFFF);
+}
+
+// Disable alpha blending (opaque)
+void dx3d::DeviceContext::disableAlphaBlending()
+{
+	float blendFactor[4] = { 0,0,0,0 };
+	m_context->OMSetBlendState(m_noBlendState.Get(), blendFactor, 0xFFFFFFFF);
+}
+
+// Use depth state for transparent objects
+void dx3d::DeviceContext::enableTransparentDepth()
+{
+	m_context->OMSetDepthStencilState(m_transparentDepthState.Get(), 0);
+}
+
+// Reset to default depth
+void dx3d::DeviceContext::enableDefaultDepth()
+{
+	m_context->OMSetDepthStencilState(m_defaultDepthState.Get(), 0);
 }
 
 void dx3d::DeviceContext::createConstantBuffers()

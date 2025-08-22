@@ -1,9 +1,15 @@
 #pragma once
 #include <unordered_map>
 #include <Windows.h>
+#include <DX3D/Math/Geometry.h>
 
 namespace dx3d {
-
+    enum class MouseClick
+    {
+        LeftMouse = WM_LBUTTONDOWN,
+        RightMouse = WM_RBUTTONDOWN,
+        MiddleMouse = WM_MBUTTONDOWN
+    };
     // Key codes enum for better readability (optional, you can still use raw codes)
     enum class Key {
         // Letters
@@ -66,7 +72,7 @@ namespace dx3d {
     class Input {
     public:
         static Input& getInstance();
-
+        void setWindowHandle(HWND hwnd) { m_windowHandle = hwnd; }
         // Called by the game engine when keys are pressed/released
         void setKeyDown(int keyCode);
         void setKeyUp(int keyCode);
@@ -92,7 +98,22 @@ namespace dx3d {
         // Utility methods
         void reset(); // Clear all input states
 
+        
+        // Mouse
+        void setMouseDown(MouseClick button);
+        void setMouseUp(MouseClick button);
+
+        bool isMouseDown(MouseClick button) const;
+        bool isMouseUp(MouseClick button) const;
+
+        bool wasMouseJustPressed(MouseClick button) const;
+        bool wasMouseJustReleased(MouseClick button) const;
+
+        Vec2 getMousePosition() const;
+
+
     private:
+        HWND m_windowHandle = nullptr;
         Input() = default;
         ~Input() = default;
         Input(const Input&) = delete;
@@ -102,6 +123,11 @@ namespace dx3d {
         std::unordered_map<int, bool> m_previousKeyStates;   // Previous frame key states
         std::unordered_map<int, bool> m_justPressed;         // Keys that were just pressed
         std::unordered_map<int, bool> m_justReleased;        // Keys that were just released
+
+        std::unordered_map<MouseClick, bool> m_mouseStates;
+        std::unordered_map<MouseClick, bool> m_prevMouseStates;
+        std::unordered_map<MouseClick, bool> m_mouseJustPressed;
+        std::unordered_map<MouseClick, bool> m_mouseJustReleased;
     };
 
     // Convenience macros for common usage patterns

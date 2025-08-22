@@ -32,15 +32,27 @@ namespace dx3d
 		void setViewMatrix(const Mat4& viewMatrix);
 		void setProjectionMatrix(const Mat4& projectionMatrix);
 		void updateTransformBuffer();
+
+		void enableAlphaBlending();
+		void disableAlphaBlending();
+		void enableTransparentDepth();
+		void enableDefaultDepth();
+
 	private:
 		Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_context{};
 		Microsoft::WRL::ComPtr<ID3D11SamplerState> m_defaultSampler;
 		Microsoft::WRL::ComPtr<ID3D11Buffer> m_worldMatrixBuffer;
+		Microsoft::WRL::ComPtr<ID3D11BlendState> m_alphaBlendState;
+		Microsoft::WRL::ComPtr<ID3D11BlendState> m_noBlendState;
+		Microsoft::WRL::ComPtr<ID3D11DepthStencilState> m_transparentDepthState;
+		Microsoft::WRL::ComPtr<ID3D11DepthStencilState> m_defaultDepthState;
+
 		TransformData m_currentTransforms;
 
 		friend class GraphicsDevice;
 		void createConstantBuffers();
-
+		void createBlendStates();
+		void createDepthStates();
 	};
 
 }
