@@ -29,7 +29,45 @@ namespace dx3d {
         i32 left{}, top{}, width{}, height{};
     };
 
-    struct Vec2 { f32 x{}, y{}; };
+    struct Vec2 {
+        f32 x{}, y{};
+
+        // Constructors
+        Vec2() = default;
+        Vec2(f32 x, f32 y) : x(x), y(y) {}
+
+        // Basic operators
+        Vec2 operator+(const Vec2& other) const { return Vec2(x + other.x, y + other.y); }
+        Vec2 operator-(const Vec2& other) const { return Vec2(x - other.x, y - other.y); }
+        Vec2 operator*(f32 scalar) const { return Vec2(x * scalar, y * scalar); }
+        Vec2 operator/(f32 scalar) const {
+            if (scalar != 0.0f) return Vec2(x / scalar, y / scalar);
+            return Vec2(0, 0);
+        }
+
+        // Assignment operators
+        Vec2& operator+=(const Vec2& other) { x += other.x; y += other.y; return *this; }
+        Vec2& operator-=(const Vec2& other) { x -= other.x; y -= other.y; return *this; }
+        Vec2& operator*=(f32 scalar) { x *= scalar; y *= scalar; return *this; }
+
+        // Utility methods
+        f32 length() const { return std::sqrt(x * x + y * y); }
+        f32 lengthSquared() const { return x * x + y * y; }
+
+        Vec2 normalized() const {
+            f32 len = length();
+            if (len > 0.0001f) return *this / len;
+            return Vec2(0, 0);
+        }
+
+        void normalize() {
+            f32 len = length();
+            if (len > 0.0001f) { x /= len; y /= len; }
+            else { x = 0; y = 0; }
+        }
+
+        f32 dot(const Vec2& other) const { return x * other.x + y * other.y; }
+    };
 
     class Vec3
     {
