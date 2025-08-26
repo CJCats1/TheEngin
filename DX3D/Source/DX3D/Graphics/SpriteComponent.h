@@ -70,13 +70,15 @@ namespace dx3d {
         // Rendering
         void draw(DeviceContext& ctx) const;
         GraphicsDevice& getGraphicsDevice() { return m_device; }
-
+        void setTint(const Vec4& tint) { m_tint = tint; }
+        Vec4 getTint() const { return m_tint; }
     private:
         std::shared_ptr<Mesh> m_mesh;
         std::shared_ptr<Texture2D> m_texture;
         TransformComponent m_transform;
         bool m_visible = true;
         GraphicsDevice& m_device;
+        Vec4 m_tint = { 1,1,1,1 };
 
         void initialize(GraphicsDevice& device, float width, float height);
     };

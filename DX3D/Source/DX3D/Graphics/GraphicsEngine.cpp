@@ -11,28 +11,39 @@ float dx3d::GraphicsEngine::m_windowWidth = 1280.0f;
 
 dx3d::GraphicsEngine::GraphicsEngine(const GraphicsEngineDesc& desc) : Base(desc.base)
 {
-	m_graphicsDevice = std::make_shared<GraphicsDevice>(GraphicsDeviceDesc{ m_logger });
-	auto& device = *m_graphicsDevice;
-	m_deviceContext = device.createDeviceContext();
+    m_graphicsDevice = std::make_shared<GraphicsDevice>(GraphicsDeviceDesc{ m_logger });
+    auto& device = *m_graphicsDevice;
+    m_deviceContext = device.createDeviceContext();
 
-	constexpr char shaderFilePath[] = "DX3D/Assets/Shaders/Basic.hlsl";
-	std::ifstream shaderStream(shaderFilePath);
-	if (!shaderStream) DX3DLogThrowError("Failed to open shader file.");
-	std::string shaderFileData{
-		std::istreambuf_iterator<char>(shaderStream),
-		std::istreambuf_iterator<char>()
-	};
+    // ---- Default world-space pipeline (Basic.hlsl) ----
+    {
+        constexpr char shaderFilePath[] = "DX3D/Assets/Shaders/Basic.hlsl";
+        std::ifstream shaderStream(shaderFilePath);
+        if (!shaderStream) DX3DLogThrowError("Failed to open shader file.");
+        std::string shaderFileData{ std::istreambuf_iterator<char>(shaderStream), std::istreambuf_iterator<char>() };
+        auto* src = shaderFileData.c_str();
+        auto   len = shaderFileData.length();
 
-	auto shaderSourceCode = shaderFileData.c_str();
-	auto shaderSourceCodeSize = shaderFileData.length();
+        auto vs = device.compileShader({ shaderFilePath, src, len, "VSMain", ShaderType::VertexShader });
+        auto ps = device.compileShader({ shaderFilePath, src, len, "PSMain", ShaderType::PixelShader });
+        auto vsSig = device.createVertexShaderSignature({ vs });
+        m_pipeline = device.createGraphicsPipelineState({ *vsSig, *ps });
+    }
 
-	auto vs = device.compileShader({ shaderFilePath, shaderSourceCode, shaderSourceCodeSize,
-		"VSMain", ShaderType::VertexShader });
-	auto ps = device.compileShader({ shaderFilePath, shaderSourceCode, shaderSourceCodeSize,
-		"PSMain", ShaderType::PixelShader });
-	auto vsSig = device.createVertexShaderSignature({ vs });
+    // ---- Text screen-space pipeline (Text.hlsl) ----
+    {
+        constexpr char shaderFilePath[] = "DX3D/Assets/Shaders/Text.hlsl";
+        std::ifstream shaderStream(shaderFilePath);
+        if (!shaderStream) DX3DLogThrowError("Failed to open Text.hlsl.");
+        std::string shaderFileData{ std::istreambuf_iterator<char>(shaderStream), std::istreambuf_iterator<char>() };
+        auto* src = shaderFileData.c_str();
+        auto   len = shaderFileData.length();
 
-	m_pipeline = device.createGraphicsPipelineState({ *vsSig, *ps });
+        auto vs = device.compileShader({ shaderFilePath, src, len, "VSMain", ShaderType::VertexShader });
+        auto ps = device.compileShader({ shaderFilePath, src, len, "PSMain", ShaderType::PixelShader });
+        auto vsSig = device.createVertexShaderSignature({ vs }); // reflects POSITION0/TEXCOORD0
+        m_textPipeline = device.createGraphicsPipelineState({ *vsSig, *ps });
+    }
 }
 
 

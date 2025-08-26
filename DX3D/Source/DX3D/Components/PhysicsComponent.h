@@ -35,6 +35,7 @@ namespace dx3d {
         bool isStressed() const { return m_isStressed; }
 
         Vec2 startingPos;
+        bool isTextureSet = false;
 
     private:
         Vec2 m_position;
@@ -75,7 +76,7 @@ namespace dx3d {
 
         // Constants
         static constexpr float MASS_PER_LENGTH = 0.01f;
-        static constexpr float STIFFNESS = 1000.0f;
+        static constexpr float STIFFNESS = 2500.0f;
         static constexpr float FORCE_BEAM_MAX = 2500.0f;
         static constexpr float GRAVITY = -9.81f * 100.0f; // Scale for your world units
 

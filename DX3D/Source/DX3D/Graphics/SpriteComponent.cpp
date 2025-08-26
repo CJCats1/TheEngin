@@ -47,7 +47,7 @@ namespace dx3d {
 
             // Set world matrix using the transform component
             ctx.setWorldMatrix(getWorldMatrix());
-
+            ctx.setTint(m_tint);
             // Draw the mesh (handles texture binding internally)
             m_mesh->draw(ctx);
 

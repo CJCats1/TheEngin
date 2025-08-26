@@ -12,7 +12,7 @@ using namespace dx3d;
 dx3d::GraphicsDevice::GraphicsDevice(const GraphicsDeviceDesc& desc) : Base(desc.base)
 {
 	D3D_FEATURE_LEVEL featureLevel{};
-	UINT createDeviceFlags{};
+	UINT createDeviceFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 #ifdef _DEBUG
 	createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif

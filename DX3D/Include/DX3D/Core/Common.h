@@ -49,7 +49,6 @@ namespace dx3d
 	struct GraphicsEngineDesc
 	{
 		BaseDesc base;
-
 	};
 
 	struct GraphicsDeviceDesc

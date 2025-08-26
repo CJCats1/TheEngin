@@ -173,7 +173,7 @@ namespace dx3d {
         }
         static Mat4 orthographicPixelSpace(f32 width, f32 height, f32 nearZ = 0.1f, f32 farZ = 100.0f) {
             Mat4 result;
-            // Map [0, width] to [-1, 1] and [0, height] to [1, -1] (flip Y for top-left origin)
+            // Map [0, width] to [-1, 1] and [0, height] to [1, -1] (Y flipped for top-left origin)
             result.m[0] = 2.0f / width;                    // X scale
             result.m[5] = -2.0f / height;                  // Y scale (negative to flip Y-axis)  
             result.m[10] = -2.0f / (farZ - nearZ);         // Z scale

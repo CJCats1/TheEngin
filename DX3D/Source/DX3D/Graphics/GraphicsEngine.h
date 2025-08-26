@@ -25,12 +25,15 @@ namespace dx3d
         static float getWindowHeight() { return m_windowHeight; }
         static void setWindowWidth(float newWindowWidth) { m_windowWidth = newWindowWidth; }
         static void setWindowHeight(float newWindowHeight) { m_windowHeight = newWindowHeight; }
+        GraphicsPipelineState& getTextPipeline() noexcept { return *m_textPipeline; }
+        GraphicsPipelineState& getDefaultPipeline() noexcept { return *m_pipeline; }
 
     private:
 
         std::shared_ptr<GraphicsDevice> m_graphicsDevice;
         std::shared_ptr<DeviceContext> m_deviceContext;
         std::shared_ptr<GraphicsPipelineState> m_pipeline;
+        std::shared_ptr<GraphicsPipelineState> m_textPipeline;
     };
 
 }

@@ -37,7 +37,10 @@ namespace dx3d
 		void disableAlphaBlending();
 		void enableTransparentDepth();
 		void enableDefaultDepth();
-
+		void setScreenSpaceMatrices(float screenWidth, float screenHeight);
+		void restoreWorldSpaceMatrices(const Mat4& viewMatrix, const Mat4& projectionMatrix);
+		TransformData getTransformData() { return m_currentTransforms; };
+		void setTint(const Vec4& tint);
 	private:
 		Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_context{};
 		Microsoft::WRL::ComPtr<ID3D11SamplerState> m_defaultSampler;
@@ -48,7 +51,7 @@ namespace dx3d
 		Microsoft::WRL::ComPtr<ID3D11DepthStencilState> m_defaultDepthState;
 
 		TransformData m_currentTransforms;
-
+		Microsoft::WRL::ComPtr<ID3D11Buffer> m_tintBuffer;
 		friend class GraphicsDevice;
 		void createConstantBuffers();
 		void createBlendStates();

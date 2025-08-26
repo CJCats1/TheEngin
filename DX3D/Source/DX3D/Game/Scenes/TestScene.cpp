@@ -72,12 +72,14 @@ void TestScene::load(GraphicsEngine& engine) {
         device, L"DX3D/Assets/Textures/cat.jpg", 120.0f * 0.85f, 120.0f
     );
     cat4Sprite.setPosition(500.0f, 300.0f, 0.0f);
+    cat4Sprite.setTint(Vec4(1.0f, 0.5f, 0.5f, 1.0f));
 
     auto& cat5Entity = m_entityManager->createEntity("Cat5");
     auto& cat5Sprite = cat5Entity.addComponent<SpriteComponent>(
         device, L"DX3D/Assets/Textures/cat.jpg", 160.0f * 0.85f, 160.0f
     );
     cat5Sprite.setPosition(-400.0f, -250.0f, 0.0f);
+    cat5Sprite.setTint(Vec4(0.5f, 0.5f, 1.0f, 1.0f));
 }
 
 void TestScene::update(float dt) {

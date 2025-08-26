@@ -5,11 +5,13 @@
 #include <DX3D/Graphics/Camera.h>
 #include <DX3D/Components/PhysicsComponent.h>
 #include <DX3D/Core/Input.h>
+#include <DX3D/Graphics/DirectWriteText.h>
 
 using namespace dx3d;
 
 void BridgeScene::load(GraphicsEngine& engine) {
     auto& device = engine.getGraphicsDevice();
+    m_graphicsDevice = &device;
     m_isSimulationRunning = true;
     m_entityManager = std::make_unique<EntityManager>();
 
@@ -19,10 +21,61 @@ void BridgeScene::load(GraphicsEngine& engine) {
     auto& camera = cameraEntity.addComponent<Camera>(screenWidth, screenHeight);
     camera.setPosition(0.0f, 0.0f);
     camera.setZoom(1.0f);
-
+    createSimpleTextTest(engine);
     createBridge(engine);
 }
+#include <iostream>
+void BridgeScene::createSimpleTextTest(GraphicsEngine& engine) {
+    auto& device = engine.getGraphicsDevice();
 
+    // Debug: Check if text system is initialized
+    if (!TextSystem::isInitialized()) {
+        // Try to initialize it here if it wasn't done earlier
+        TextSystem::initialize(device);
+
+        if (!TextSystem::isInitialized()) {
+            // Output debug message - replace with your logging system
+            std::cout <<"ERROR: TextSystem failed to initialize!"<<std::endl;
+            return;
+        }
+        else {
+            std::cout << "TextSystem initialized successfully in createSimpleTextTest" << std::endl;
+        }
+    }
+    else {
+        std::cout << "TextSystem already initialized" << std::endl;
+
+    }
+
+    auto& textRenderer = TextSystem::getRenderer();
+
+    // Create a simple title
+    auto& titleEntity = m_entityManager->createEntity("Title");
+    auto& titleText = titleEntity.addComponent<TextComponent>(
+        device, textRenderer, L"Bridge Physics Demo", 32.0f
+    );
+    titleText.setScreenPosition(50.0f, 50.0f);
+    titleText.setColor(Vec4(1.0f, 1.0f, 0.0f, 1.0f)); // Yellow
+
+
+    // Create instructions
+    auto& instructionsEntity = m_entityManager->createEntity("Instructions");
+    auto& instructionsText = instructionsEntity.addComponent<TextComponent>(
+        device, textRenderer, L"WASD: Move | Q/E: Zoom | Z: Toggle Physics | R: Reset", 18.0f
+    );
+    instructionsText.setScreenPosition(50.0f, 100.0f);
+    instructionsText.setColor(Vec4(0.8f, 0.8f, 1.0f, 1.0f)); // Light blue
+
+    // Create status display
+    auto& statusEntity = m_entityManager->createEntity("Status");
+    auto& statusText = statusEntity.addComponent<TextComponent>(
+        device, textRenderer, L"Physics: Running", 24.0f
+    );
+    statusText.setScreenPosition(50.0f, 150.0f);
+    statusText.setFontWeight(DWRITE_FONT_WEIGHT_BOLD);
+    statusText.setColor(Vec4(0.0f, 1.0f, 0.0f, 1.0f)); // Green
+
+}
 void BridgeScene::createBridge(GraphicsEngine& engine) {
 
     // Create bridge nodes (simple bridge example)
@@ -48,6 +101,9 @@ void BridgeScene::createBridge(GraphicsEngine& engine) {
     createNode(Vec2(50.0f, -100.0f), false, "Support3", engine);
     createNode(Vec2(150.0f, -100.0f), false, "Support4", engine);
 
+    createBeam("LeftAnchor", "Support1", "Support_Beam9", engine);
+    createBeam("RightAnchor", "Support4", "Support_Beam10", engine);
+
     // Create diagonal support beams
     createBeam("Node1", "Support1", "Support_Beam1", engine);
     createBeam("Node2", "Support1", "Support_Beam2", engine);
@@ -71,7 +127,7 @@ void BridgeScene::createNode(Vec2 position, bool fixed, const std::string& name,
     // Note: You'll need to create appropriate textures for nodes
     auto& sprite = nodeEntity.addComponent<SpriteComponent>(
         device,
-         L"DX3D/Assets/Textures/node.png",
+        L"DX3D/Assets/Textures/node.png",
         28.0f, 28.0f
     );
     sprite.setPosition(position.x, position.y, 0.0f);
@@ -101,34 +157,45 @@ void BridgeScene::createBeam(const std::string& node1Name, const std::string& no
     Vec2 center = beamComponent.getCenterPosition();
     sprite.setPosition(center.x, center.y, 0.0f);
 }
-#include <iostream>
 void BridgeScene::update(float dt) {
     // Update camera movement
     updateCameraMovement(dt);
-    
+
     auto& input = Input::getInstance();
 
-    if (input.wasKeyJustReleased(Key::Z))
+    if (input.isKeyDown(Key::Z))
     {
         m_isSimulationRunning = !m_isSimulationRunning;
+
+        // Update status text
+        if (auto* statusEntity = m_entityManager->findEntity("Status")) {
+            if (auto* textComp = statusEntity->getComponent<TextComponent>()) {
+                std::wstring statusText = m_isSimulationRunning ? L"Physics: Running" : L"Physics: Paused";
+                textComp->setText(statusText);
+
+                // Change color based on status
+                Vec4 color = m_isSimulationRunning ? Vec4(0.0f, 1.0f, 0.0f, 1.0f) : Vec4(1.0f, 0.0f, 0.0f, 1.0f);
+                textComp->setColor(color);
+            }
+        }
     }
+
     if (input.isKeyDown(Key::R)) {
         PhysicsSystem::resetPhysics(*m_entityManager);
         m_isSimulationRunning = false;
     }
+
     // Update physics if simulation is running
     if (m_isSimulationRunning) {
         PhysicsSystem::updateNodes(*m_entityManager, dt);
         PhysicsSystem::updateBeams(*m_entityManager, dt);
     }
+
+    // Handle node dragging (existing code...)
     if (input.isMouseDown(MouseClick::LeftMouse))
     {
         if (!m_draggedNode)
         {
-
-
-            //and if mouse is colliding a node
-            //std::cout << "mouse clicked down" << std::endl;
             Vec2 mousePos = input.getMousePosition();
             Vec2 mousePosWorld = screenToWorld(mousePos.x, mousePos.y);
             auto nodes = m_entityManager->getEntitiesWithComponent<NodeComponent>();
@@ -140,21 +207,45 @@ void BridgeScene::update(float dt) {
                 }
             }
         }
+        else
+        {
+            bool textureSet = m_draggedNode->getComponent<NodeComponent>()->isTextureSet;
+            if (!textureSet)
+            {
+                auto redTexture = Texture2D::LoadTexture2D(m_graphicsDevice->getD3DDevice(),
+                    L"DX3D/Assets/Textures/nodeRed.png");
+                m_draggedNode->getComponent<SpriteComponent>()->setTexture(redTexture);
+                m_draggedNode->getComponent<NodeComponent>()->isTextureSet = true;
+            }
+            Vec2 mousePos = input.getMousePosition();
+            Vec2 mousePosWorld = screenToWorld(mousePos.x, mousePos.y);
+            if (!m_draggedNode->getComponent<NodeComponent>()->mouseInside(mousePosWorld))
+            {
+                auto normalTexture = Texture2D::LoadTexture2D(m_graphicsDevice->getD3DDevice(),
+                    L"DX3D/Assets/Textures/node.png");
+                m_draggedNode->getComponent<SpriteComponent>()->setTexture(normalTexture);
+                m_draggedNode->getComponent<NodeComponent>()->isTextureSet = false;
+
+                m_draggedNode = nullptr;
+            }
+        }
     }
-    else
+    else if (m_draggedNode)
     {
-        //std::cout << "mouse released" << std::endl;
-        m_draggedNode = nullptr;
-    }
-    // Handle dragged node
-    if (m_draggedNode) {
-        // You'll need to implement mouse position getting in your input system
-        // Vec2 mouseWorld = screenToWorld(input.getMouseX(), input.getMouseY());
-        // if (auto* nodeComp = m_draggedNode->getComponent<NodeComponent>()) {
-        //     nodeComp->setPosition(mouseWorld - m_dragOffset);
-        // }
+        bool textureSet = m_draggedNode->getComponent<NodeComponent>()->isTextureSet;
+
+        if (textureSet)
+        {
+            auto normalTexture = Texture2D::LoadTexture2D(m_graphicsDevice->getD3DDevice(),
+                L"DX3D/Assets/Textures/node.png");
+            m_draggedNode->getComponent<SpriteComponent>()->setTexture(normalTexture);
+            m_draggedNode->getComponent<NodeComponent>()->isTextureSet = false;
+
+            m_draggedNode = nullptr;
+        }
     }
 }
+
 
 void BridgeScene::updateCameraMovement(float dt) {
     auto* cameraEntity = m_entityManager->findEntity("MainCamera");
@@ -199,7 +290,7 @@ void BridgeScene::render(GraphicsEngine& engine, SwapChain& swapChain) {
     engine.beginFrame(swapChain);
     auto& ctx = engine.getContext();
 
-    // Find and set camera matrices
+    // --- World rendering ---
     if (auto* cameraEntity = m_entityManager->findEntity("MainCamera")) {
         if (auto* camera = cameraEntity->getComponent<Camera>()) {
             ctx.setViewMatrix(camera->getViewMatrix());
@@ -207,23 +298,32 @@ void BridgeScene::render(GraphicsEngine& engine, SwapChain& swapChain) {
         }
     }
 
-    // Render all beams first (so they appear behind nodes)
-    auto beamEntities = m_entityManager->getEntitiesWithComponent<BeamComponent>();
-    for (auto* entity : beamEntities) {
+    // Use default pipeline for world objects
+    ctx.setGraphicsPipelineState(engine.getDefaultPipeline());
+
+    // Beams (background)
+    for (auto* entity : m_entityManager->getEntitiesWithComponent<BeamComponent>()) {
         if (auto* sprite = entity->getComponent<SpriteComponent>()) {
-            if (sprite->isVisible() && sprite->isValid()) {
+            if (sprite->isVisible() && sprite->isValid())
                 sprite->draw(ctx);
-            }
         }
     }
 
-    // Render all nodes on top
-    auto nodeEntities = m_entityManager->getEntitiesWithComponent<NodeComponent>();
-    for (auto* entity : nodeEntities) {
+    // Nodes (middle layer)
+    for (auto* entity : m_entityManager->getEntitiesWithComponent<NodeComponent>()) {
         if (auto* sprite = entity->getComponent<SpriteComponent>()) {
-            if (sprite->isVisible() && sprite->isValid()) {
+            if (sprite->isVisible() && sprite->isValid())
                 sprite->draw(ctx);
-            }
+        }
+    }
+
+    // --- Screen-space text rendering ---
+    ctx.setGraphicsPipelineState(engine.getTextPipeline());
+
+    for (auto* entity : m_entityManager->getEntitiesWithComponent<TextComponent>()) {
+        if (auto* textComp = entity->getComponent<TextComponent>()) {
+            if (textComp->isVisible())
+                textComp->draw(ctx);
         }
     }
 

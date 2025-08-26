@@ -78,7 +78,20 @@ void dx3d::DeviceContext::enableDefaultDepth()
 {
 	m_context->OMSetDepthStencilState(m_defaultDepthState.Get(), 0);
 }
+// 2. Implementation in DeviceContext.cpp
+void dx3d::DeviceContext::setScreenSpaceMatrices(float screenWidth, float screenHeight) {
+	// Set identity view matrix (no camera transformation)
+	setViewMatrix(Mat4::identity());
 
+	// Set orthographic projection for screen coordinates (0,0 at top-left)
+	Mat4 screenProjection = Mat4::orthographicPixelSpace(screenWidth, screenHeight);
+	setProjectionMatrix(screenProjection);
+}
+
+void dx3d::DeviceContext::restoreWorldSpaceMatrices(const Mat4& viewMatrix, const Mat4& projectionMatrix) {
+	setViewMatrix(viewMatrix);
+	setProjectionMatrix(projectionMatrix);
+}
 void dx3d::DeviceContext::createConstantBuffers()
 {
 	// Create constant buffer for transform matrices (now larger)
@@ -92,7 +105,15 @@ void dx3d::DeviceContext::createConstantBuffers()
 		m_device.CreateBuffer(&bufferDesc, nullptr, m_worldMatrixBuffer.GetAddressOf()),
 		"Failed to create transform constant buffer"
 	);
-
+	D3D11_BUFFER_DESC tintDesc{};
+	tintDesc.Usage = D3D11_USAGE_DYNAMIC;
+	tintDesc.ByteWidth = sizeof(Vec4); // RGBA color
+	tintDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	tintDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	DX3DGraphicsLogThrowOnFail(
+		m_device.CreateBuffer(&tintDesc, nullptr, m_tintBuffer.GetAddressOf()),
+		"Failed to create tint constant buffer"
+	);
 	// Create default sampler state
 	D3D11_SAMPLER_DESC samplerDesc = {};
 	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
@@ -118,7 +139,17 @@ void dx3d::DeviceContext::createConstantBuffers()
 	// Bind default sampler
 	m_context->PSSetSamplers(0, 1, m_defaultSampler.GetAddressOf());
 }
+void dx3d::DeviceContext::setTint(const Vec4& tint)
+{
+	D3D11_MAPPED_SUBRESOURCE mapped{};
+	HRESULT hr = m_context->Map(m_tintBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+	if (SUCCEEDED(hr)) {
+		memcpy(mapped.pData, &tint, sizeof(Vec4));
+		m_context->Unmap(m_tintBuffer.Get(), 0);
+	}
 
+	m_context->PSSetConstantBuffers(1, 1, m_tintBuffer.GetAddressOf()); // b1 matches shader
+}
 void dx3d::DeviceContext::setWorldMatrix(const Mat4& worldMatrix)
 {
 	m_currentTransforms.worldMatrix = worldMatrix;

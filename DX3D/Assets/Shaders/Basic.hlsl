@@ -1,14 +1,16 @@
 Texture2D tex : register(t0);
 SamplerState samp : register(s0);
 
-// Updated constant buffer with proper camera matrices
 cbuffer TransformBuffer : register(b0)
 {
     matrix worldMatrix;
     matrix viewMatrix;
     matrix projectionMatrix;
 };
-
+cbuffer TintBuffer : register(b1) // use b1 since b0 is your transform buffer
+{
+    float4 tintColor = float4(1, 1, 1, 1); // default: no tint
+};
 struct VSInput
 {
     float3 position : POSITION0;
@@ -23,7 +25,6 @@ struct VSOutput
     float2 uv : TEXCOORD0;
     float4 color : COLOR0;
 };
-
 VSOutput VSMain(VSInput input)
 {
     VSOutput output;
@@ -42,5 +43,5 @@ VSOutput VSMain(VSInput input)
 float4 PSMain(VSOutput input) : SV_Target
 {
     float4 texColor = tex.Sample(samp, input.uv);
-    return texColor * input.color;
+    return texColor * input.color * tintColor;
 }

@@ -25,9 +25,10 @@ SOFTWARE.*/
 #pragma once
 #include <DX3D/Core/Base.h>
 #include <DX3D/Core/Core.h>
-
+#include <chrono>
 namespace dx3d
 {
+	enum class SceneType { None, TestScene, BridgeScene };
 	class Scene;
 	class TestScene; // Forward declaration
 	class Game : public Base
@@ -42,7 +43,8 @@ namespace dx3d
 		void onKeyUp(int keyCode);
 	private:
 		void onInternalUpdate();
-	private:
+		std::chrono::steady_clock::time_point m_lastFrameTime;
+		SceneType m_currentSceneType = SceneType::None;
 		std::unique_ptr<Logger> m_loggerPtr{};
 		std::unique_ptr<GraphicsEngine> m_graphicsEngine{};
 		std::unique_ptr<Display> m_display{};

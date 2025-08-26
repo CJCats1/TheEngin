@@ -13,18 +13,15 @@ namespace dx3d {
         void setUpdateFunction(std::function<void(Entity&, float)> updateFunc) {
             m_updateFunction = updateFunc;
         }
-
         // Update this component
         void update(Entity& entity, float dt) {
             if (m_updateFunction) {
                 m_updateFunction(entity, dt);
             }
         }
-
     private:
         std::function<void(Entity&, float)> m_updateFunction;
     };
-
     // Movement component for simple movement behaviors
     class MovementComponent {
     public:

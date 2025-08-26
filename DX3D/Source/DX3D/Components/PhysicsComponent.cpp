@@ -14,6 +14,7 @@ namespace dx3d {
     void NodeComponent::update(float dt) {
         if (!m_positionFixed && m_totalMass > 0.0f) {
             // F = ma, so a = F/m
+            
             Vec2 acceleration = Vec2(m_totalForce.x / m_totalMass, m_totalForce.y / m_totalMass);
             m_velocity += acceleration * dt;
             m_position += m_velocity * dt;
@@ -238,17 +239,15 @@ namespace dx3d {
                 // Get the mesh dimensions to understand how to scale properly
                 auto mesh = sprite->getMesh();
                 if (mesh) {
-                    float meshWidth = mesh->getWidth();   // Should be 1.0f for a unit quad
-                    float meshHeight = mesh->getHeight(); // Should be 1.0f for a unit quad
+                    float meshWidth = mesh->getWidth();  
+                    float meshHeight = mesh->getHeight();
 
                     // Scale the mesh to match the beam dimensions
-                    // If mesh is 1x1, then scale directly to length x thickness
                     float scaleX = (meshWidth > 0.0f) ? length / meshWidth : length;
                     float scaleY = (meshHeight > 0.0f) ? thickness / meshHeight : thickness;
 
                     sprite->setPosition(center.x, center.y, 0.0f);
                     sprite->setRotationZ(angleRad);
-                    //sprite->setScale(scaleX, scaleY, 1.0f);
                     sprite->setScale(length, clamp(thickness,10,500), 1.0f);
 
                 }
