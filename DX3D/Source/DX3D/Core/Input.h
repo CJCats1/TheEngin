@@ -110,7 +110,9 @@ namespace dx3d {
         bool wasMouseJustReleased(MouseClick button) const;
 
         Vec2 getMousePosition() const;
-
+        Vec2 getMousePositionScreen() const;
+        Vec2 getMousePositionNDC() const;
+        Vec2 getMousePositionClient() const;
 
     private:
         HWND m_windowHandle = nullptr;

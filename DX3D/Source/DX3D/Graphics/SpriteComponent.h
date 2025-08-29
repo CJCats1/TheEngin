@@ -85,7 +85,8 @@ namespace dx3d {
         bool isScreenSpace() const {
             return m_useScreenSpace;
         }
-
+		float getWidth() const { return m_width; }
+		float getHeight() const { return m_height; }
     private:
         std::shared_ptr<Mesh> m_mesh;
         std::shared_ptr<Texture2D> m_texture;

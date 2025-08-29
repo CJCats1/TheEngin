@@ -26,12 +26,13 @@ void Input::setKeyDown(int keyCode)
 
 void Input::setKeyUp(int keyCode)
 {
-    m_keyStates[keyCode] = false;
-
-    // Just released this frame (if was down previously)
-    if (m_previousKeyStates[keyCode])
+    // If it was actually down before releasing
+    if (m_keyStates[keyCode])
         m_justReleased[keyCode] = true;
+
+    m_keyStates[keyCode] = false;
 }
+
 
 bool Input::isKeyDown(int keyCode) const
 {
@@ -87,6 +88,9 @@ void Input::update()
     // Reset transient states
     m_justPressed.clear();
     m_justReleased.clear();
+
+	m_mouseJustPressed.clear();
+	m_mouseJustReleased.clear();
 }
 
 //
@@ -154,4 +158,42 @@ Vec2 Input::getMousePosition() const
 
     // Fallback to screen coordinates
     return Vec2((float)cursorPos.x, (float)cursorPos.y);
+}
+
+Vec2 Input::getMousePositionScreen() const
+{
+    POINT cursorPos;
+    GetCursorPos(&cursorPos);
+    return Vec2((float)cursorPos.x, (float)cursorPos.y);
+}
+Vec2 Input::getMousePositionClient() const
+{
+    POINT cursorPos;
+    GetCursorPos(&cursorPos);
+
+    if (m_windowHandle && ScreenToClient(m_windowHandle, &cursorPos))
+    {
+        return Vec2((float)cursorPos.x, (float)cursorPos.y);
+    }
+
+    return Vec2((float)cursorPos.x, (float)cursorPos.y); // fallback
+}
+
+Vec2 Input::getMousePositionNDC() const
+{
+    Vec2 clientPos = getMousePositionClient();
+
+    RECT rect;
+    GetClientRect(m_windowHandle, &rect);
+    float width = (float)(rect.right - rect.left);
+    float height = (float)(rect.bottom - rect.top);
+
+    // Normalize 0..1 (left=0, right=1, top=0, bottom=1)
+    float u = clientPos.x / width;
+    float v = clientPos.y / height;
+
+    // Flip origin: bottom-right = (0,0), top-right = (1,1)
+    v = 1.0f - v;   // flip Y so top=1, bottom=0
+
+    return Vec2(u, v);
 }

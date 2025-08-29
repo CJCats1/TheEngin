@@ -56,7 +56,6 @@ float accumulator = 0.0f;
 
 void dx3d::Game::onInternalUpdate()
 {
-    Input::getInstance().update();
     auto& input = Input::getInstance();
     if (input.isKeyDown(Key::Num1) && m_currentSceneType != SceneType::TestScene)
     {
@@ -98,6 +97,8 @@ void dx3d::Game::onInternalUpdate()
         m_graphicsEngine->beginFrame(m_display->getSwapChain());
         m_graphicsEngine->endFrame(m_display->getSwapChain());
     }
+    Input::getInstance().update();
+
 }
 
 void dx3d::Game::setScene(std::unique_ptr<Scene> scene)

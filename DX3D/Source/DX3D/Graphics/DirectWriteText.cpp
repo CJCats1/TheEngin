@@ -433,8 +433,8 @@ namespace dx3d {
             ctx.setWorldMatrix(worldMatrix);
             ctx.setViewMatrix(viewMatrix);
             ctx.setProjectionMatrix(projMatrix);
-            printf("Screen-space: norm(%.2f, %.2f) \n",
-                m_screenPosition.x, m_screenPosition.y);
+            //printf("Screen-space: norm(%.2f, %.2f) \n",
+            //    m_screenPosition.x, m_screenPosition.y);
         }
         else {
             // Default to using transform’s world matrix

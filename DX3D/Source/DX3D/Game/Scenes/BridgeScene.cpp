@@ -6,6 +6,8 @@
 #include <DX3D/Components/PhysicsComponent.h>
 #include <DX3D/Core/Input.h>
 #include <DX3D/Graphics/DirectWriteText.h>
+#include <DX3D/Components/ButtonComponent.h>
+#include <iostream>
 
 using namespace dx3d;
 
@@ -28,43 +30,108 @@ void BridgeScene::load(GraphicsEngine& engine) {
 void BridgeScene::createUI(GraphicsEngine& engine) {
     auto& device = engine.getGraphicsDevice();
 
-    // Ensure text system is initialized
-    if (!TextSystem::isInitialized()) {
+    if (!TextSystem::isInitialized())
         TextSystem::initialize(device);
+    float screenWidth = static_cast<float>(GraphicsEngine::getWindowWidth());
+    float screenHeight = static_cast<float>(GraphicsEngine::getWindowHeight());
+    // --- Top-left status panel ---
+	auto StatusPanelPosition = Vec2(0.14f, 0.95f); // normalized [0,1] screen coords
+
+    // Status text
+    auto& statusTextEntity = m_entityManager->createEntity("UI_StatusText");
+    auto& statusText = statusTextEntity.addComponent<TextComponent>(
+        device,
+        TextSystem::getRenderer(),
+        L"Simulation Running: TRUE",
+        20.0f
+    );
+    statusText.setFontFamily(L"Consolas");
+    statusText.setColor(Vec4(1.0f, 1.0f, 0.0f, 1.0f));
+    statusText.setScreenPosition(StatusPanelPosition.x, StatusPanelPosition.y);
+    auto textSize = statusText.getTextSize();
+    auto& statusPanelEntity = m_entityManager->createEntity("StatusPanel");
+    auto& statusPanel = statusPanelEntity.addComponent<SpriteComponent>(
+        device,
+        L"DX3D/Assets/Textures/beam.png", // A simple semi-transparent panel texture
+        textSize.x, textSize.y
+    );
+    statusPanel.enableScreenSpace(true);
+    statusPanel.setScreenPosition(StatusPanelPosition.x, StatusPanelPosition.y); // top-left
+    statusPanel.setTint(Vec4(0.1f, 0.1f, 0.1f, 0.7f)); // dark semi-transparent
+
+    // --- Right-side button panel ---
+    float buttonWidth = 180.0f;
+    float buttonHeight = 40.0f;
+    float startX = 0.80f;
+    float startY = 0.8f;
+    float padding = 0.05f;
+
+    std::vector<std::wstring> buttonLabels = {
+        L"Toggle Simulation",
+        L"Reset Bridge",
+        L"Add Weight",
+        L"Remove Weight"
+    };
+
+    for (size_t i = 0; i < buttonLabels.size(); ++i) {
+        auto& btnEntity = m_entityManager->createEntity("Button_" + std::to_string(i));
+        auto& button = btnEntity.addComponent<ButtonComponent>(
+            device,
+            buttonLabels[i],
+            22.0f
+        );
+
+        button.setScreenPosition(startX, startY - i * (buttonHeight / screenHeight + padding));
+        button.setNormalTint(Vec4(0.2f, 0.6f, 0.8f, 1.0f));
+        button.setHoveredTint(Vec4(0.4f, 0.8f, 1.0f, 1.0f));
+        button.setPressedTint(Vec4(0.1f, 0.4f, 0.6f, 1.0f));
+        button.setTextColor(Vec4(1.0f, 1.0f, 1.0f, 1.0f));
+        button.setFontSize(18.0f);
+
+        // Callback logic
+        button.setOnClickCallback([this, i]() {
+            switch (i) {
+            case 0: // Toggle simulation
+                m_isSimulationRunning = !m_isSimulationRunning;
+                break;
+            case 1: // Reset bridge
+                PhysicsSystem::resetPhysics(*m_entityManager);
+                break;
+            case 2: // Add weight (example)
+                std::cout << "Add weight clicked!\n";
+                break;
+            case 3: // Remove weight (example)
+                std::cout << "Remove weight clicked!\n";
+                break;
+            }
+            });
     }
 
-    auto& uiEntity = m_entityManager->createEntity("UI_Text");
+    // --- Bottom-left mini-panel (example info panel) ---
+    auto MiniPanelPosition = Vec2(0.15f, 0.05f);
+    
 
-    // Add a text component (e.g. simulation state display)
-    auto& text = uiEntity.addComponent<TextComponent>(
+    auto& infoTextEntity = m_entityManager->createEntity("UI_InfoText");
+    auto& infoText = infoTextEntity.addComponent<TextComponent>(
         device,
-        TextSystem::getRenderer(),   // <-- no *
-        L"Simulation Running: TRUE",
-        24.0f
+        TextSystem::getRenderer(),
+        L"Click nodes to drag them around!",
+        18.0f
     );
-    text.setFontFamily(L"Consolas");
-    text.setColor(Vec4(1.0f, 1.0f, 0.0f, 1.0f)); // yellow
-    text.setScreenPosition(0.16, 0.94);        // top-left of screen
-
-
-
-
-    // Add this inside TestScene::load(GraphicsEngine& engine), after the cat sprites
-    auto& debugQuadEntity = m_entityManager->createEntity("DebugQuad");
-    auto& debugQuad = debugQuadEntity.addComponent<SpriteComponent>(
+    infoText.setFontFamily(L"Consolas");
+    infoText.setColor(Vec4(1.0f, 1.0f, 1.0f, 1.0f));
+    infoText.setScreenPosition(MiniPanelPosition.x, MiniPanelPosition.y);
+    
+    textSize = infoText.getTextSize();
+    auto& infoPanelEntity = m_entityManager->createEntity("InfoPanel");
+    auto& infoPanel = infoPanelEntity.addComponent<SpriteComponent>(
         device,
-        L"DX3D/Assets/Textures/beam.png", // You can also use a plain 1x1 white texture
-        18, 6.0f // width and height in pixels
+        L"DX3D/Assets/Textures/beam.png",
+        textSize.x, textSize.y
     );
-    debugQuad.setPosition(0.0f, 0.0f, 0.0f);
-    debugQuad.enableScreenSpace(true);
-    //debugQuad.setScreenPosition(-120.f, 60.0f);
-    debugQuad.setScreenPosition(0.16, 0.94);
-
-    // Tint so it stands out (semi-transparent red)
-    debugQuad.setTint(Vec4(1.0f, 0.0f, 0.0f, 0.5f));
-
-
+    infoPanel.enableScreenSpace(true);
+    infoPanel.setScreenPosition(MiniPanelPosition.x, MiniPanelPosition.y);
+    infoPanel.setTint(Vec4(0.1f, 0.1f, 0.1f, 0.6f));
 }
 void BridgeScene::createBridge(GraphicsEngine& engine) {
     // Create bridge nodes (simple bridge example)
@@ -147,20 +214,20 @@ void BridgeScene::update(float dt) {
     updateCameraMovement(dt);
     auto& input = Input::getInstance();
 
-    if (input.isKeyDown(Key::Z)) {
+    if (input.wasKeyJustReleased(Key::Z)) {
         m_isSimulationRunning = !m_isSimulationRunning;
     }
 
     if (input.isKeyDown(Key::R)) {
         PhysicsSystem::resetPhysics(*m_entityManager);
-        m_isSimulationRunning = false;
+        //m_isSimulationRunning = false;
     }
 
     if (m_isSimulationRunning) {
         PhysicsSystem::updateNodes(*m_entityManager, dt);
         PhysicsSystem::updateBeams(*m_entityManager, dt);
     }
-    auto* uiEntity = m_entityManager->findEntity("UI_Text");
+    auto* uiEntity = m_entityManager->findEntity("UI_StatusText");
     if (uiEntity) {
         if (auto* text = uiEntity->getComponent<TextComponent>()) {
             std::wstring status = m_isSimulationRunning ? L"Simulation Running: TRUE" : L"Simulation Running: FALSE";
@@ -243,6 +310,62 @@ void BridgeScene::update(float dt) {
             debugQuadSprite->setScreenPosition(newPos.x, newPos.y);
         }
     }
+
+
+
+
+    if (auto* debugQuad = m_entityManager->findEntity("DebugQuad"))
+    {
+        auto debugQuadSprite = debugQuad->getComponent<SpriteComponent>();
+        auto& input = Input::getInstance();
+
+        // Mouse in pixel space
+        Vec2 mousePx = input.getMousePositionNDC();
+
+        // Quad center (pixel coords)
+        Vec2 center = debugQuadSprite->getScreenPosition();
+
+        float winW = (float)GraphicsEngine::getWindowWidth();
+        float winH = (float)GraphicsEngine::getWindowHeight();
+
+        Vec2 centerNDC = debugQuadSprite->getScreenPosition(); // already in NDC
+        float halfW_NDC = (debugQuadSprite->getWidth() * 0.5f) / winW;
+        float halfH_NDC = (debugQuadSprite->getHeight() * 0.5f) / winH;
+
+        float left = centerNDC.x - halfW_NDC;
+        float right = centerNDC.x + halfW_NDC;
+        float top = centerNDC.y - halfH_NDC;
+        float bottom = centerNDC.y + halfH_NDC;
+
+        Vec2 mouseNDC = input.getMousePositionNDC();
+
+        bool inside = (mouseNDC.x >= left && mouseNDC.x <= right &&
+            mouseNDC.y >= top && mouseNDC.y <= bottom);
+
+        if (inside) {
+            debugQuadSprite->setTint(Vec4(1, 0, 0, 0.5f)); // red hover
+            if (input.isMouseDown(MouseClick::LeftMouse))
+            {
+                debugQuadSprite->setTint(Vec4(1, 0, 0, 0.8f)); // red hover
+
+            }
+            if (input.wasMouseJustReleased(MouseClick::LeftMouse))
+            {
+                m_isSimulationRunning = !m_isSimulationRunning;
+            }
+        }
+        else {
+            debugQuadSprite->setTint(Vec4(0, 0, 1, 0.5f)); // blue default
+        }
+    }
+    auto mouse = Input::getInstance().getMousePositionNDC();
+    auto buttonEntities = m_entityManager->getEntitiesWithComponent<ButtonComponent>();
+    for (auto* entity : buttonEntities) {
+        if (auto* movement = entity->getComponent<ButtonComponent>()) {
+            movement->update(dt);
+        }
+    }
+
 }
 
 void BridgeScene::updateCameraMovement(float dt) {
@@ -322,6 +445,13 @@ void BridgeScene::render(GraphicsEngine& engine, SwapChain& swapChain) {
         if (auto* sprite = entity->getComponent<SpriteComponent>()) {
             if (sprite->isScreenSpace()) {
                 sprite->draw(ctx);
+            }
+        }
+    }
+    for (auto* entity : m_entityManager->getEntitiesWithComponent<ButtonComponent>()) {
+        if (auto* text = entity->getComponent<ButtonComponent>()) {
+            if (text->isVisible()) {
+                text->draw(ctx); // Will respect m_useScreenSpace
             }
         }
     }

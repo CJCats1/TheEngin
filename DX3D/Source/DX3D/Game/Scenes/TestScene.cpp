@@ -6,6 +6,9 @@
 #include <DX3D/Components/AnimationComponent.h>
 #include <DX3D/Core/Input.h>
 #include <cmath>
+#include <DX3D/Graphics/DirectWriteText.h>
+#include <DX3D/Components/ButtonComponent.h>
+#include <iostream>
 
 using namespace dx3d;
 
@@ -88,7 +91,7 @@ void TestScene::load(GraphicsEngine& engine) {
     auto& debugQuad = debugQuadEntity.addComponent<SpriteComponent>(
         device,
         L"DX3D/Assets/Textures/node.png", // You can also use a plain 1x1 white texture
-        5.0f * 0.85f, 5.0f // width and height in pixels
+        25.0f , 25.0f // width and height in pixels
     );
     debugQuad.setPosition(0.0f, 0.0f, 0.0f);
     debugQuad.enableScreenSpace(true);
@@ -97,6 +100,77 @@ void TestScene::load(GraphicsEngine& engine) {
 
     // Tint so it stands out (semi-transparent red)
     debugQuad.setTint(Vec4(1.0f, 0.0f, 0.0f, 0.5f));
+
+
+
+
+    auto& uiTest = m_entityManager->createEntity("UI_Text");
+    auto& textTest = uiTest.addComponent<TextComponent>(
+        device,
+        TextSystem::getRenderer(),
+        L"<--Test           Test-->",
+        24.0f
+    );
+
+    textTest.setFontFamily(L"Consolas");
+    textTest.setColor(Vec4(0.0f, 0.0f, 1.0f, 1.0f)); // yellow
+    textTest.setScreenPosition(0.16, 0.94);        // top-left of screen
+
+    Vec2 textSize = textTest.getTextSize();
+
+    auto& debugQuadTestEntity = m_entityManager->createEntity("DebugQuadTest");
+    float padding = 10.0f;
+    auto& debugQuadTest = debugQuadTestEntity.addComponent<SpriteComponent>(
+        device,
+        L"DX3D/Assets/Textures/beam.png", // You can also use a plain 1x1 white texture
+        textSize.x + padding, textSize.y + padding // width and height in pixels
+    );
+    debugQuadTest.setPosition(0.0f, 0.0f, 0.0f);
+    debugQuadTest.enableScreenSpace(true);
+    debugQuadTest.setScreenPosition(0.16, 0.94);
+
+
+
+
+
+
+
+    auto& testButtonE = m_entityManager->createEntity("UI_TextButton");
+
+    auto& testButton = testButtonE.addComponent<ButtonComponent>(
+        device,
+        L"Make Cat Big", // Button text
+        48.0f
+
+    );
+
+    // Position the button in screen space
+    testButton.setScreenPosition(0.8f, 0.1f); // Bottom right area
+
+    // Set button colors
+    testButton.setNormalTint(Vec4(0.2f, 0.6f, 1.0f, 1.0f));   // Blue
+    testButton.setHoveredTint(Vec4(0.4f, 0.8f, 1.0f, 1.0f));  // Light blue
+    testButton.setPressedTint(Vec4(0.1f, 0.4f, 0.8f, 1.0f));  // Dark blue
+
+    // Set button text properties
+    testButton.setTextColor(Vec4(1.0f, 1.0f, 1.0f, 1.0f)); // White text
+    testButton.setFontSize(18.0f);
+
+    // Set the callback function - this will be called when button is clicked
+    // Change this lambda in TestScene::load to capture 'this':
+    testButton.setOnClickCallback([this]() {
+        std::cout << "Test Button Clicked!" << std::endl;
+
+        if (auto* cat1 = m_entityManager->findEntity("Cat1")) {
+            if (auto* sprite = cat1->getComponent<SpriteComponent>()) {
+                Vec3 currentScale = sprite->getScale(); // assuming getScale() exists
+                float scaleFactor = 1.2f;              // increase by 20%
+                sprite->setScale(currentScale * scaleFactor);
+            }
+        }
+    });
+
+
 
 }
 
@@ -156,6 +230,34 @@ void TestScene::update(float dt) {
             movement->update(*entity, dt);
         }
     }
+    auto buttonEntities = m_entityManager->getEntitiesWithComponent<ButtonComponent>();
+    for (auto* entity : buttonEntities) {
+        if (auto* movement = entity->getComponent<ButtonComponent>()) {
+            movement->update(dt);
+        }
+    }
+	auto mouse = Input::getInstance().getMousePositionNDC();
+    if (auto* debugQuad = m_entityManager->findEntity("DebugQuad")) {
+        float speed = 0.005f; // normalized space movement per frame
+        auto debugQuadSprite = debugQuad->getComponent<SpriteComponent>();
+        Vec2 newPos = debugQuadSprite->getScreenPosition();
+
+        if (input.isKeyDown(Key::I)) {
+            newPos.y += speed;
+        }
+        if (input.isKeyDown(Key::K)) {
+            newPos.y -= speed;
+        }
+        if (input.isKeyDown(Key::J)) {
+            newPos.x -= speed;
+        }
+        if (input.isKeyDown(Key::L)) {
+            newPos.x += speed;
+        }
+
+        debugQuadSprite->setScreenPosition(mouse.x, mouse.y);
+    }
+    printf("%f,%f\n",mouse.x,mouse.y);
 }
 
 void TestScene::updateCameraMovement(float dt) {
@@ -232,6 +334,23 @@ void TestScene::render(GraphicsEngine& engine, SwapChain& swapChain) {
         if (auto* sprite = entity->getComponent<SpriteComponent>()) {
             if (sprite->isScreenSpace()) {
                 sprite->draw(ctx);
+            }
+        }
+    }
+
+
+    for (auto* entity : m_entityManager->getEntitiesWithComponent<TextComponent>()) {
+        if (auto* text = entity->getComponent<TextComponent>()) {
+            if (text->isVisible()) {
+                text->draw(ctx); // Will respect m_useScreenSpace
+            }
+        }
+    }
+
+    for (auto* entity : m_entityManager->getEntitiesWithComponent<ButtonComponent>()) {
+        if (auto* text = entity->getComponent<ButtonComponent>()) {
+            if (text->isVisible()) {
+                text->draw(ctx); // Will respect m_useScreenSpace
             }
         }
     }

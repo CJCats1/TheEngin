@@ -57,13 +57,12 @@ namespace dx3d {
             float normalizedX = m_screenPosition.x -0.5f;  // [0,1] -> [-0.5, 0.5]
             float normalizedY = m_screenPosition.y - 0.5f; // [0,1] -> [-0.5, 0.5]
 
-            float worldX = normalizedX  * (screenWidth)  / (m_width);   // Scale to world units
-            float worldY = normalizedY  * (screenHeight) / (m_height);  // Scale to world units
+            float worldX = normalizedX * (screenWidth);// (m_width);   // Scale to world units
+            float worldY = normalizedY * (screenHeight); // (m_height);  // Scale to world units
 
             // Create world matrix for the sprite
             Mat4 worldMatrix =
-                Mat4::translation(Vec3(worldX, worldY, 0.0f))
-                * Mat4::scale(Vec3(m_width, m_height, 1.0f));
+                Mat4::translation(Vec3(worldX, worldY, 0.0f));
 
             // Use identity view matrix (no camera transform)
             Mat4 viewMatrix = Mat4::identity();
@@ -74,8 +73,8 @@ namespace dx3d {
             ctx.setWorldMatrix(worldMatrix);
             ctx.setViewMatrix(viewMatrix);
             ctx.setProjectionMatrix(projMatrix);
-            printf("Screen-space: norm(%.2f, %.2f)\n",
-                m_screenPosition.x, m_screenPosition.y);
+            //printf("Screen-space: norm(%.2f, %.2f)\n",
+            //    m_screenPosition.x, m_screenPosition.y);
         }
         else {
             // default: use transform's 2D world matrix
