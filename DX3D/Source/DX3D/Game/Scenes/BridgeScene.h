@@ -15,7 +15,7 @@ namespace dx3d {
         void onMouseClick(int button, int x, int y) override;
         void onMouseRelease(int button, int x, int y) override;
         void onMouseMove(int x, int y) override;
-        void createSimpleTextTest(GraphicsEngine& engine);
+        void createUI(GraphicsEngine& engine);
     private:
         std::unique_ptr<EntityManager> m_entityManager;
         Entity* m_draggedNode = nullptr;

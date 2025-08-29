@@ -72,13 +72,30 @@ namespace dx3d {
         GraphicsDevice& getGraphicsDevice() { return m_device; }
         void setTint(const Vec4& tint) { m_tint = tint; }
         Vec4 getTint() const { return m_tint; }
+
+        bool m_useScreenSpace = false;   // default: world space
+        Vec2 m_screenPosition = { 0, 0 };  // pixel coordinates when in screen space
+
+        void setScreenPosition(float x, float y) { m_screenPosition = { x, y }; }
+        Vec2 getScreenPosition() const { return m_screenPosition; }
+        void enableScreenSpace(bool enable = true) {
+            m_useScreenSpace = enable;
+        }
+
+        bool isScreenSpace() const {
+            return m_useScreenSpace;
+        }
+
     private:
         std::shared_ptr<Mesh> m_mesh;
         std::shared_ptr<Texture2D> m_texture;
         TransformComponent m_transform;
         bool m_visible = true;
         GraphicsDevice& m_device;
-        Vec4 m_tint = { 1,1,1,1 };
+        Vec4 m_tint = { 1,1,1,0 };
+        // inside SpriteComponent class (private:)
+        float m_width = 1.0f;
+        float m_height = 1.0f;
 
         void initialize(GraphicsDevice& device, float width, float height);
     };

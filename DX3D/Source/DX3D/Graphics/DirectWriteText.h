@@ -132,7 +132,12 @@ namespace dx3d {
 
         // Rendering
         virtual void draw(class DeviceContext& ctx) const;
-
+        TransformComponent m_transform;
+        bool m_useScreenSpace;
+        Vec2 m_screenPosition;
+        // Rendered texture and sprite mesh
+        mutable std::shared_ptr<Texture2D> m_textTexture;
+        mutable std::shared_ptr<class Mesh> m_textMesh;
     protected:
         GraphicsDevice& m_device;
         DirectWriteRenderer& m_textRenderer;
@@ -147,16 +152,12 @@ namespace dx3d {
         UINT32 m_maxWidth;
         UINT32 m_maxHeight;
 
-        TransformComponent m_transform;
         bool m_visible;
         mutable bool m_needsRebuild;
 
-        // Rendered texture and sprite mesh
-        mutable std::shared_ptr<Texture2D> m_textTexture;
-        mutable std::shared_ptr<class Mesh> m_textMesh;
+        
 
-        bool m_useScreenSpace;
-        Vec2 m_screenPosition;
+        
 
         virtual void rebuildTexture() const;
     };

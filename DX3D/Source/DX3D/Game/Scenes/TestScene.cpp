@@ -66,20 +66,38 @@ void TestScene::load(GraphicsEngine& engine) {
         device, L"DX3D/Assets/Textures/cat.jpg", 150.0f * 0.85f, 150.0f
     );
     cat3Sprite.setPosition(-250.0f, 200.0f, 0.0f);
+    cat3Sprite.setTint(Vec4(0.0f, 1.0f, 0.0f, 0.5f));
 
     auto& cat4Entity = m_entityManager->createEntity("Cat4");
     auto& cat4Sprite = cat4Entity.addComponent<SpriteComponent>(
         device, L"DX3D/Assets/Textures/cat.jpg", 120.0f * 0.85f, 120.0f
     );
     cat4Sprite.setPosition(500.0f, 300.0f, 0.0f);
-    cat4Sprite.setTint(Vec4(1.0f, 0.5f, 0.5f, 1.0f));
+    cat4Sprite.setTint(Vec4(1.0f, 0.5f, 0.5f, 0.5f));
 
     auto& cat5Entity = m_entityManager->createEntity("Cat5");
     auto& cat5Sprite = cat5Entity.addComponent<SpriteComponent>(
         device, L"DX3D/Assets/Textures/cat.jpg", 160.0f * 0.85f, 160.0f
     );
-    cat5Sprite.setPosition(-400.0f, -250.0f, 0.0f);
-    cat5Sprite.setTint(Vec4(0.5f, 0.5f, 1.0f, 1.0f));
+    cat5Sprite.setPosition(-40.0f, -250.0f, 0.0f);
+    cat5Sprite.setTint(Vec4(0.5f, 0.5f, 1.0f, 0.5f));
+
+
+    // Add this inside TestScene::load(GraphicsEngine& engine), after the cat sprites
+    auto& debugQuadEntity = m_entityManager->createEntity("DebugQuad");
+    auto& debugQuad = debugQuadEntity.addComponent<SpriteComponent>(
+        device,
+        L"DX3D/Assets/Textures/node.png", // You can also use a plain 1x1 white texture
+        5.0f * 0.85f, 5.0f // width and height in pixels
+    );
+    debugQuad.setPosition(0.0f, 0.0f, 0.0f);
+    debugQuad.enableScreenSpace(true);
+    //debugQuad.setScreenPosition(-120.f, 60.0f);
+    debugQuad.setScreenPosition(0.5f, 0.5f);
+
+    // Tint so it stands out (semi-transparent red)
+    debugQuad.setTint(Vec4(1.0f, 0.0f, 0.0f, 0.5f));
+
 }
 
 void TestScene::update(float dt) {
@@ -101,6 +119,26 @@ void TestScene::update(float dt) {
 
             movement->setVelocity(velocity);
         }
+    }
+    if (auto* debugQuad = m_entityManager->findEntity("DebugQuad")) {
+        float speed = 0.005f; // normalized space movement per frame
+        auto debugQuadSprite = debugQuad->getComponent<SpriteComponent>();
+        Vec2 newPos = debugQuadSprite->getScreenPosition();
+
+        if (input.isKeyDown(Key::I)) {
+            newPos.y += speed;
+        }
+        if (input.isKeyDown(Key::K)) {
+            newPos.y -= speed;
+        }
+        if (input.isKeyDown(Key::J)) {
+            newPos.x -= speed;
+        }
+        if (input.isKeyDown(Key::L)) {
+            newPos.x += speed;
+        }
+
+        debugQuadSprite->setScreenPosition(newPos.x, newPos.y);
     }
 
     // Update all animation components
@@ -162,8 +200,12 @@ void TestScene::updateCameraMovement(float dt) {
 void TestScene::render(GraphicsEngine& engine, SwapChain& swapChain) {
     engine.beginFrame(swapChain);
     auto& ctx = engine.getContext();
+    float screenWidth = GraphicsEngine::getWindowWidth();
+    float screenHeight = GraphicsEngine::getWindowHeight();
 
-    // Find and set camera matrices
+    // ---------- PASS 1: world-space sprites using default pipeline ----------
+    ctx.setGraphicsPipelineState(engine.getDefaultPipeline());
+    // set camera matrices
     if (auto* cameraEntity = m_entityManager->findEntity("MainCamera")) {
         if (auto* camera = cameraEntity->getComponent<Camera>()) {
             ctx.setViewMatrix(camera->getViewMatrix());
@@ -171,9 +213,9 @@ void TestScene::render(GraphicsEngine& engine, SwapChain& swapChain) {
         }
     }
 
-    // Render all sprite components
     auto spriteEntities = m_entityManager->getEntitiesWithComponent<SpriteComponent>();
-    for (auto* entity : spriteEntities) {
+    for (auto* entity : spriteEntities) { 
+        if (entity->getName() == "DebugQuad") continue; // skip debug quad in world pass
         if (auto* sprite = entity->getComponent<SpriteComponent>()) {
             if (sprite->isVisible() && sprite->isValid()) {
                 sprite->draw(ctx);
@@ -181,5 +223,17 @@ void TestScene::render(GraphicsEngine& engine, SwapChain& swapChain) {
         }
     }
 
+    // ---------- PASS 2: screen-space sprites (UI/debug) using text/screen pipeline ----------
+    ctx.setGraphicsPipelineState(engine.getDefaultPipeline());
+
+    // identity view, pixel-orthographic projection (0,0 top-left)
+    // draw only screen-space sprites
+    for (auto* entity : spriteEntities) {
+        if (auto* sprite = entity->getComponent<SpriteComponent>()) {
+            if (sprite->isScreenSpace()) {
+                sprite->draw(ctx);
+            }
+        }
+    }
     engine.endFrame(swapChain);
 }

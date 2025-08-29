@@ -41,6 +41,10 @@ namespace dx3d
 		void restoreWorldSpaceMatrices(const Mat4& viewMatrix, const Mat4& projectionMatrix);
 		TransformData getTransformData() { return m_currentTransforms; };
 		void setTint(const Vec4& tint);
+
+		void disableDepthTest();
+		void enableDepthTest();
+
 	private:
 		Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_context{};
 		Microsoft::WRL::ComPtr<ID3D11SamplerState> m_defaultSampler;

@@ -80,12 +80,26 @@ void dx3d::DeviceContext::enableDefaultDepth()
 }
 // 2. Implementation in DeviceContext.cpp
 void dx3d::DeviceContext::setScreenSpaceMatrices(float screenWidth, float screenHeight) {
-	// Set identity view matrix (no camera transformation)
-	setViewMatrix(Mat4::identity());
+	// Manual orthographic matrix for screen space
+	// Maps (0,0) to top-left, (width,height) to bottom-right
+	Mat4 projection;
+	float* m = projection.data();
 
-	// Set orthographic projection for screen coordinates (0,0 at top-left)
-	Mat4 screenProjection = Mat4::orthographicPixelSpace(screenWidth, screenHeight);
-	setProjectionMatrix(screenProjection);
+	// Clear matrix
+	for (int i = 0; i < 16; i++) m[i] = 0.0f;
+
+	// Orthographic projection: pixel space to NDC
+	m[0] = 2.0f / screenWidth;   // X scale
+	m[5] = -2.0f / screenHeight; // Y scale (negative to flip Y)
+	m[10] = -1.0f;               // Z scale 
+	m[12] = -1.0f;               // X offset
+	m[13] = 1.0f;                // Y offset  
+	m[14] = 0.0f;                // Z offset
+	m[15] = 1.0f;                // W
+
+	setViewMatrix(Mat4::identity());
+	setProjectionMatrix(projection);
+
 }
 
 void dx3d::DeviceContext::restoreWorldSpaceMatrices(const Mat4& viewMatrix, const Mat4& projectionMatrix) {
@@ -204,7 +218,28 @@ void dx3d::DeviceContext::setViewportSize(const Rect& size)
 	vp.MaxDepth = 1.0f;
 	m_context->RSSetViewports(1,&vp);
 }
+void dx3d::DeviceContext::disableDepthTest()
+{
+	// Disable depth
+	D3D11_DEPTH_STENCIL_DESC depthDesc = {};
+	depthDesc.DepthEnable = FALSE;
+	depthDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+	depthDesc.DepthFunc = D3D11_COMPARISON_ALWAYS;
 
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> noDepthState;
+	DX3DGraphicsLogThrowOnFail(
+		m_device.CreateDepthStencilState(&depthDesc, noDepthState.GetAddressOf()),
+		"Failed to create no-depth state"
+	);
+
+	m_context->OMSetDepthStencilState(noDepthState.Get(), 0);
+}
+
+// Re-enable default depth
+void dx3d::DeviceContext::enableDepthTest()
+{
+	enableDefaultDepth(); // You already have this
+}
 void dx3d::DeviceContext::drawTriangleList(ui32 vertexCount, ui32 startVertexLocation)
 {
 	m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);

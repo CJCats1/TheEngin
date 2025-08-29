@@ -83,7 +83,7 @@ namespace dx3d {
         Mat4 rotationMatrix = Mat4::rotationZ(-rotation); // Negative because we're moving the world
         Mat4 scale = Mat4::scale(Vec3(m_zoom, m_zoom, 1.0f));
 
-        return translation * scale * rotationMatrix;
+        return translation  * rotationMatrix * scale;
     }
 
     inline Mat4 Camera::getViewProjectionMatrix() const {

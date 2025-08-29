@@ -1,4 +1,4 @@
-#include "DirectWriteText.h"
+﻿#include "DirectWriteText.h"
 #include <DX3D/Graphics/Mesh.h>
 #include <DX3D/Graphics/DeviceContext.h>
 #include <vector>
@@ -284,7 +284,7 @@ namespace dx3d {
         m_fontSize(fontSize), m_fontWeight(DWRITE_FONT_WEIGHT_NORMAL),
         m_fontStyle(DWRITE_FONT_STYLE_NORMAL), m_color(1.0f, 1.0f, 1.0f, 1.0f),
         m_maxWidth(1024), m_maxHeight(512), m_visible(true), m_needsRebuild(true),
-        m_useScreenSpace(true), m_screenPosition(0.0f, 0.0f){
+        m_useScreenSpace(true), m_screenPosition(0.0f, 0.0f) {
     }
     void TextComponent::setScreenPosition(float x, float y) {
         m_screenPosition = Vec2(x, y);
@@ -356,7 +356,11 @@ namespace dx3d {
     }
 
     void TextComponent::rebuildTexture() const {
+        std::cout << "=== rebuildTexture() called ===" << std::endl;
+        float screenWidth = GraphicsEngine::getWindowWidth();
+
         if (m_text.empty()) {
+            std::cout << "Text is empty, clearing texture and mesh" << std::endl;
             m_textTexture.reset();
             m_textMesh.reset();
             m_needsRebuild = false;
@@ -368,78 +372,81 @@ namespace dx3d {
             m_text, m_fontFamily, m_fontSize, m_fontWeight, m_fontStyle, m_color, m_maxWidth, m_maxHeight
         );
 
-        if (m_textTexture) {
-            // Get text dimensions for mesh sizing
-            Vec2 textSize = getTextSize();
-
-            // Create mesh with appropriate size
-            m_textMesh = Mesh::CreateQuadTextured(m_device, textSize.x, textSize.y);
-            if (m_textMesh) {
-                m_textMesh->setTexture(m_textTexture);
-            }
+        if (!m_textTexture) {
+            std::cout << "ERROR: Failed to create text texture!" << std::endl;
+            m_needsRebuild = false;
+            return;
         }
 
+        // Get text dimensions for mesh sizing
+        Vec2 textSize = getTextSize();
+        std::cout << "Measured text size: " << textSize.x << "x" << textSize.y << std::endl;
+        float worldScale = 1.0f; // Your current divisor, but make it configurable
+
+        m_textMesh = Mesh::CreateQuadTextured(m_device,
+            textSize.x / worldScale,
+            textSize.y / worldScale);
+
+        if (!m_textMesh) {
+            std::cout << "ERROR: Failed to create text mesh!" << std::endl;
+            m_needsRebuild = false;
+            return;
+        }
+
+        // Assign texture
+        m_textMesh->setTexture(m_textTexture);
+
         m_needsRebuild = false;
+        std::cout << "=== rebuildTexture() complete ===" << std::endl;
     }
 
     void TextComponent::draw(DeviceContext& ctx) const {
-        if (!isVisible() || m_text.empty()) {
-            return;
-        }
+        if (!isVisible() || m_text.empty()) return;
 
-        if (m_needsRebuild) {
-            rebuildTexture();
-        }
+        // Make sure texture + mesh are built
+        if (m_needsRebuild) rebuildTexture();
+        if (!m_textMesh || !m_textTexture) return;
 
-        if (!m_textMesh || !m_textTexture) {
-            return;
-        }
+        float screenWidth = GraphicsEngine::getWindowWidth();
+        float screenHeight = GraphicsEngine::getWindowHeight();
 
-        // Store current matrices if we're switching to screen space
-        Mat4 savedView, savedProj;
-        if (m_useScreenSpace) {
-            savedView = ctx.getTransformData().viewMatrix;
-            savedProj = ctx.getTransformData().projectionMatrix;
-
-            // Switch to screen space
-            float screenWidth = static_cast<float>(GraphicsEngine::getWindowWidth());
-            float screenHeight = static_cast<float>(GraphicsEngine::getWindowHeight());
-            ctx.setScreenSpaceMatrices(screenWidth, screenHeight);
-        }
-
-        // Enable alpha blending for text
         ctx.enableAlphaBlending();
         ctx.enableTransparentDepth();
 
-        // Set world matrix based on positioning mode
-        Mat4 worldMatrix;
         if (m_useScreenSpace) {
-            // In screen space, use screen position directly
-            worldMatrix = Mat4::translation(Vec3(m_screenPosition.x, m_screenPosition.y, 0.0f));
+            // Same normalized → world mapping as SpriteComponent
+            float normalizedX = m_screenPosition.x - 0.5f; // [0,1] → [-0.5,0.5]
+            float normalizedY = m_screenPosition.y - 0.5f;
 
-            // Apply scale from transform if needed
-            Vec3 scale = m_transform.getScale();
-            if (scale.x != 1.0f || scale.y != 1.0f || scale.z != 1.0f) {
-                Mat4 scaleMatrix = Mat4::scale(scale);
-                worldMatrix = worldMatrix * scaleMatrix;
-            }
+            // Scale to world units relative to text size
+            Vec2 textSize = getTextSize();
+            float worldX = normalizedX * (screenWidth);
+            float worldY = normalizedY * (screenHeight);
+
+            // Build world matrix
+            Mat4 worldMatrix = Mat4::translation(Vec3(worldX, worldY, 0.0f));
+
+            // Identity view + ortho projection (just like sprites)
+            Mat4 viewMatrix = Mat4::identity();
+            Mat4 projMatrix = Mat4::orthographic(screenWidth, screenHeight, -100.0f, 100.0f);
+
+            ctx.setWorldMatrix(worldMatrix);
+            ctx.setViewMatrix(viewMatrix);
+            ctx.setProjectionMatrix(projMatrix);
+            printf("Screen-space: norm(%.2f, %.2f) \n",
+                m_screenPosition.x, m_screenPosition.y);
         }
         else {
-            // Use normal world space transform
-            worldMatrix = m_transform.getWorldMatrix2D();
+            // Default to using transform’s world matrix
+            ctx.setWorldMatrix(m_transform.getWorldMatrix());
         }
 
-        ctx.setWorldMatrix(worldMatrix);
+        // Tint handling — add like sprites if needed
+        ctx.setTint(m_color);
 
-        // Draw the text mesh
+        // Draw text mesh
         m_textMesh->draw(ctx);
 
-        // Restore world space matrices if we switched
-        if (m_useScreenSpace) {
-            ctx.restoreWorldSpaceMatrices(savedView, savedProj);
-        }
-
-        // Restore default states
         ctx.disableAlphaBlending();
         ctx.enableDefaultDepth();
     }

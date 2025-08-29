@@ -1,4 +1,5 @@
-#include "SpriteComponent.h"
+﻿#include "SpriteComponent.h"
+#include <DX3D/Graphics/GraphicsEngine.h>
 
 namespace dx3d {
 
@@ -26,6 +27,8 @@ namespace dx3d {
 
     void SpriteComponent::initialize(GraphicsDevice& device, float width, float height) {
         // Create textured quad mesh
+        m_width = width;
+        m_height = height;
         m_mesh = Mesh::CreateQuadTextured(device, width, height);
         if (m_mesh && m_texture) {
             m_mesh->setTexture(m_texture);
@@ -40,20 +43,53 @@ namespace dx3d {
     }
 
     void SpriteComponent::draw(DeviceContext& ctx) const {
-        if (isVisible() && isValid()) {
-            // Enable alpha blending for this sprite
-            ctx.enableAlphaBlending();
-            ctx.enableTransparentDepth(); // optional if you want depth test but no depth writes
+        if (!isVisible() || !isValid()) return;
+        float screenWidth = GraphicsEngine::getWindowWidth();
+        float screenHeight = GraphicsEngine::getWindowHeight();
+        // Choose alpha/depth states used by your engine
+        ctx.enableAlphaBlending();
+        ctx.enableTransparentDepth();
 
-            // Set world matrix using the transform component
-            ctx.setWorldMatrix(getWorldMatrix());
-            ctx.setTint(m_tint);
-            // Draw the mesh (handles texture binding internally)
-            m_mesh->draw(ctx);
+        // If sprite is in screen-space, compute a world matrix that places the *center*
+        // of the centered quad at the requested pixel coordinates. CreateWorldMatrix2D
+        if (m_useScreenSpace) {
 
-            // Disable alpha blending afterward (so other objects are not affected)
-            ctx.disableAlphaBlending();
-            ctx.enableDefaultDepth(); // reset depth state if you changed it
+            float normalizedX = m_screenPosition.x -0.5f;  // [0,1] -> [-0.5, 0.5]
+            float normalizedY = m_screenPosition.y - 0.5f; // [0,1] -> [-0.5, 0.5]
+
+            float worldX = normalizedX  * (screenWidth)  / (m_width);   // Scale to world units
+            float worldY = normalizedY  * (screenHeight) / (m_height);  // Scale to world units
+
+            // Create world matrix for the sprite
+            Mat4 worldMatrix =
+                Mat4::translation(Vec3(worldX, worldY, 0.0f))
+                * Mat4::scale(Vec3(m_width, m_height, 1.0f));
+
+            // Use identity view matrix (no camera transform)
+            Mat4 viewMatrix = Mat4::identity();
+
+            // Use the same orthographic projection as the camera
+            Mat4 projMatrix = Mat4::orthographic(screenWidth, screenHeight, -100.0f, 100.0f);
+
+            ctx.setWorldMatrix(worldMatrix);
+            ctx.setViewMatrix(viewMatrix);
+            ctx.setProjectionMatrix(projMatrix);
+            printf("Screen-space: norm(%.2f, %.2f)\n",
+                m_screenPosition.x, m_screenPosition.y);
         }
+        else {
+            // default: use transform's 2D world matrix
+            ctx.setWorldMatrix(getWorldMatrix());
+        }
+
+        // Set tint (PS expects it in b1)
+        ctx.setTint(m_tint);
+
+        // Bind texture + draw
+        m_mesh->draw(ctx);
+
+        // restore states
+        ctx.disableAlphaBlending();
+        ctx.enableDefaultDepth();
     }
 }

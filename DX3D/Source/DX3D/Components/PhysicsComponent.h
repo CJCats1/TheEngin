@@ -78,7 +78,7 @@ namespace dx3d {
         static constexpr float MASS_PER_LENGTH = 0.01f;
         static constexpr float STIFFNESS = 2500.0f;
         static constexpr float FORCE_BEAM_MAX = 2500.0f;
-        static constexpr float GRAVITY = -9.81f * 100.0f; // Scale for your world units
+        static constexpr float GRAVITY = -9.81f * 10.0f; // Scale for your world units
 
     private:
         Entity* m_node1Entity;

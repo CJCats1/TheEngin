@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <DX3D/Core/Core.h>
 #include <vector>
 #include <d3d11.h>
@@ -162,6 +162,53 @@ namespace dx3d {
         static Mat4 identity() {
             return Mat4();
         }
+        static Mat4 orthographicLH(f32 left, f32 right, f32 bottom, f32 top, f32 nearZ, f32 farZ) {
+            Mat4 result;
+
+            f32 width = right - left;
+            f32 height = top - bottom;
+            f32 depth = farZ - nearZ;
+
+            if (width == 0.0f || height == 0.0f || depth == 0.0f) {
+                return identity();
+            }
+
+            result.m[0] = 2.0f / width;                           // Scale X
+            result.m[5] = 2.0f / height;                          // Scale Y  
+            result.m[10] = 1.0f / depth;                          // Scale Z
+            result.m[12] = -(right + left) / width;               // Translate X
+            result.m[13] = -(top + bottom) / height;              // Translate Y
+            result.m[14] = -nearZ / depth;                        // Translate Z
+            result.m[15] = 1.0f;                                  // W
+
+            return result;
+        }
+
+        // Screen-space projection: (0,0) at top-left, (width, height) at bottom-right
+        static Mat4 orthographicScreen(f32 screenWidth, f32 screenHeight, f32 nearZ = 0.0f, f32 farZ = 1.0f) {
+            // DirectX screen-space projection:
+            // X: [0, screenWidth] → [-1, 1] (left to right)
+            // Y: [0, screenHeight] → [1, -1] (top to bottom, flipped for DirectX clip space)
+            // Z: [nearZ, farZ] → [0, 1] (DirectX depth range)
+
+            Mat4 result;
+
+            // X: map [0, screenWidth] to [-1, 1]
+            result.m[0] = 2.0f / screenWidth;     // Scale
+            result.m[12] = -1.0f;                 // Translate to start at -1
+
+            // Y: map [0, screenHeight] to [1, -1] (flip for DirectX)
+            result.m[5] = -2.0f / screenHeight;   // Scale and flip
+            result.m[13] = 1.0f;                  // Translate to start at 1
+
+            // Z: map [nearZ, farZ] to [0, 1] (DirectX depth)
+            result.m[10] = 1.0f / (farZ - nearZ); // Scale
+            result.m[14] = -nearZ / (farZ - nearZ); // Translate
+
+            result.m[15] = 1.0f;                  // W component
+
+            return result;
+        }
         static Mat4 orthographic(f32 width, f32 height, f32 nearZ, f32 farZ) {
             Mat4 result;
             result.m[0] = 2.0f / width;                    // X scale
@@ -182,6 +229,15 @@ namespace dx3d {
             result.m[14] = -(farZ + nearZ) / (farZ - nearZ); // Z offset
             result.m[15] = 1.0f;                           // W component
             return result;
+        }
+        static Mat4 createScreenSpaceProjection(float screenWidth, float screenHeight) {
+            // Same as camera's orthographic projection - maps screen pixels to world units
+            return Mat4::orthographic(
+                screenWidth,   // width
+                screenHeight,  // height  
+                -100.0f,       // near plane
+                100.0f         // far plane
+            );
         }
         static Mat4 translation(const Vec3& pos) {
             Mat4 result;
