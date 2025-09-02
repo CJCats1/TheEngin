@@ -64,30 +64,58 @@ dx3d::Window::~Window()
 LRESULT dx3d::Window::handleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     auto& input = Input::getInstance();
-
     switch (msg)
     {
     case WM_CLOSE:
         PostQuitMessage(0);
         return 0;
 
-        // Keyboard
-    case WM_KEYDOWN: input.setKeyDown((int)wParam); return 0;
-    case WM_KEYUP:   input.setKeyUp((int)wParam);   return 0;
+        // Keyboard - Remove the repeat check that was blocking inputs
+    case WM_KEYDOWN:
+        input.setKeyDown((int)wParam);
+        return 0;
+    case WM_KEYUP:
+        input.setKeyUp((int)wParam);
+        return 0;
 
         // Mouse
     case WM_LBUTTONDOWN: input.setMouseDown(MouseClick::LeftMouse); return 0;
     case WM_LBUTTONUP:   input.setMouseUp(MouseClick::LeftMouse);   return 0;
     case WM_RBUTTONDOWN: input.setMouseDown(MouseClick::RightMouse); return 0;
     case WM_RBUTTONUP:   input.setMouseUp(MouseClick::RightMouse);   return 0;
+    case WM_MBUTTONDOWN: input.setMouseDown(MouseClick::MiddleMouse); return 0;
+    case WM_MBUTTONUP:   input.setMouseUp(MouseClick::MiddleMouse);   return 0;
 
-        // Resize handling (optional, useful for DX swapchain)
+        // ONLY reset on actual focus loss - when user clicks away from window
+    case WM_KILLFOCUS:
+        input.reset();
+        return 0;
+
+        // DO NOT reset on any other events - let the hardware state check in update() handle it
+    case WM_SETFOCUS:
+        // Only validate when we regain focus
+        Input::getInstance().validateHardwareState();
+        return 0;
+
+    case WM_DISPLAYCHANGE:
+        // Only validate when display changes
+        Input::getInstance().validateHardwareState();
+        return 0;
+
+    case WM_POWERBROADCAST:
+        return 0;  // Don't reset!
+
     case WM_SIZE:
         m_size.width = LOWORD(lParam);
         m_size.height = HIWORD(lParam);
-        // TODO: Notify graphics engine / resize swapchain
+        return 0;  // Don't reset!
+
+    case WM_ACTIVATE:
+        // Only reset if we're becoming completely inactive (not just losing active status)
+        if (LOWORD(wParam) == WA_INACTIVE) {
+            input.reset();
+        }
         return 0;
     }
-
     return DefWindowProc(hwnd, msg, wParam, lParam);
 }

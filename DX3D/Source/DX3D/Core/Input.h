@@ -1,7 +1,8 @@
-#pragma once
+﻿#pragma once
 #include <unordered_map>
 #include <Windows.h>
 #include <DX3D/Math/Geometry.h>
+#include <iostream>
 
 namespace dx3d {
     enum class MouseClick
@@ -98,7 +99,25 @@ namespace dx3d {
         // Utility methods
         void reset(); // Clear all input states
 
-        
+        void validateHardwareState()
+        {
+            std::cout << "Validating hardware state..." << std::endl;
+
+            if (!m_windowHandle) return;
+
+            // Only check when we regain focus or during display changes
+            for (auto& [keyCode, isDown] : m_keyStates) {
+                if (isDown) {
+                    SHORT keyState = GetAsyncKeyState(keyCode);
+                    bool hardwareDown = (keyState & 0x8000) != 0;
+
+                    if (!hardwareDown) {
+                        std::cout << "Hardware validation: Key " << keyCode << " should be released" << std::endl;
+                        m_keyStates[keyCode] = false;  // Just fix the state, don't trigger "just released"
+                    }
+                }
+            }
+        }
         // Mouse
         void setMouseDown(MouseClick button);
         void setMouseUp(MouseClick button);
@@ -113,6 +132,16 @@ namespace dx3d {
         Vec2 getMousePositionScreen() const;
         Vec2 getMousePositionNDC() const;
         Vec2 getMousePositionClient() const;
+        inline int MouseClickToVK(dx3d::MouseClick button)
+        {
+            switch (button)
+            {
+            case dx3d::MouseClick::LeftMouse: return VK_LBUTTON;
+            case dx3d::MouseClick::RightMouse: return VK_RBUTTON;
+            case dx3d::MouseClick::MiddleMouse: return VK_MBUTTON;
+            default: return 0;
+            }
+        }
 
     private:
         HWND m_windowHandle = nullptr;

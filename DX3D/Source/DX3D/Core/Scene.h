@@ -11,6 +11,7 @@ namespace dx3d {
         // Core scene methods
         virtual void load(GraphicsEngine& engine) = 0;
         virtual void update(float dt) = 0;
+		virtual void fixedUpdate(float dt) {}
         virtual void render(GraphicsEngine& engine, SwapChain& swapChain) = 0;
 
         // Input handling methods - override these in derived classes if needed

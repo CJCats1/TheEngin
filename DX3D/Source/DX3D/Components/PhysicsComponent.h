@@ -13,7 +13,6 @@ namespace dx3d {
     class NodeComponent {
     public:
         NodeComponent(Vec2 position, bool positionFixed = false);
-
         void update(float dt);
         void calculateForces(const std::vector<Entity*>& beamEntities);
         void resetTotalMass();
@@ -23,9 +22,12 @@ namespace dx3d {
         void setPosition(const Vec2& pos) { m_position = pos; }
         Vec2 getVelocity() const { return m_velocity; }
         void setVelocity(const Vec2& vel) { m_velocity = vel; }
-
         bool isPositionFixed() const { return m_positionFixed; }
         void setPositionFixed(bool fixed) { m_positionFixed = fixed; }
+
+        // Starting position management (for reset functionality)
+        Vec2 getStartingPosition() const { return startingPos; }
+        void setStartingPosition(const Vec2& pos) { startingPos = pos; }
 
         // Mouse interaction
         bool mouseInside(const Vec2& mouseWorldPos, float nodeSize = 28.0f) const;
@@ -33,6 +35,9 @@ namespace dx3d {
         // Visual state
         void setStressed(bool stressed) { m_isStressed = stressed; }
         bool isStressed() const { return m_isStressed; }
+
+        // Fixed node check (needed for delete mode)
+        bool isFixed() const { return m_positionFixed; }
 
         Vec2 startingPos;
         bool isTextureSet = false;
@@ -50,7 +55,6 @@ namespace dx3d {
     class BeamComponent {
     public:
         BeamComponent(Entity* node1Entity, Entity* node2Entity);
-
         void update(float dt);
         void resetBeam();
 
@@ -61,6 +65,7 @@ namespace dx3d {
         // State queries
         bool isBroken() const { return m_isBroken; }
         bool isConnectedToNode(const NodeComponent& node) const;
+        bool isConnectedToNode(const Entity* nodeEntity) const; // Overload for Entity*
         float getStressFactor() const { return m_colorForceFactor; }
 
         // Visual properties
@@ -74,6 +79,15 @@ namespace dx3d {
         Entity* getNode2Entity() const { return m_node2Entity; }
         void setNode2Entity(Entity* node2) { m_node2Entity = node2; }
 
+        // Node connection updates (needed for building system)
+        void updateNodeConnection(Entity* oldNode, Entity* newNode);
+        void setNodeConnection1(Entity* node1) ;
+        void setNodeConnection2(Entity* node2) ;
+
+        // Breaking check
+        bool getIsBroken() const { return m_isBroken; }
+        void setBroken(bool broken) { m_isBroken = broken; }
+
         // Constants
         static constexpr float MASS_PER_LENGTH = 0.01f;
         static constexpr float STIFFNESS = 2500.0f;
@@ -85,7 +99,6 @@ namespace dx3d {
         Entity* m_node2Entity;
         Entity* m_node1StartEntity;
         Entity* m_node2StartEntity;
-
         float m_length0 = 0.0f;
         float m_mass = 0.0f;
         float m_colorForceFactor = 0.0f;
@@ -99,5 +112,9 @@ namespace dx3d {
         static void updateNodes(EntityManager& entityManager, float dt);
         static void updateBeams(EntityManager& entityManager, float dt);
         static void resetPhysics(EntityManager& entityManager);
+
+        // Additional utility methods for the building system
+        static void removeBeamsConnectedToNode(EntityManager& entityManager, Entity* nodeEntity);
+        static std::vector<Entity*> getBeamsConnectedToNode(EntityManager& entityManager, Entity* nodeEntity);
     };
 }

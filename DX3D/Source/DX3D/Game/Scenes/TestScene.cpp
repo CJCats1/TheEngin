@@ -95,7 +95,6 @@ void TestScene::load(GraphicsEngine& engine) {
     );
     debugQuad.setPosition(0.0f, 0.0f, 0.0f);
     debugQuad.enableScreenSpace(true);
-    //debugQuad.setScreenPosition(-120.f, 60.0f);
     debugQuad.setScreenPosition(0.5f, 0.5f);
 
     // Tint so it stands out (semi-transparent red)
@@ -148,9 +147,9 @@ void TestScene::load(GraphicsEngine& engine) {
     testButton.setScreenPosition(0.8f, 0.1f); // Bottom right area
 
     // Set button colors
-    testButton.setNormalTint(Vec4(0.2f, 0.6f, 1.0f, 1.0f));   // Blue
-    testButton.setHoveredTint(Vec4(0.4f, 0.8f, 1.0f, 1.0f));  // Light blue
-    testButton.setPressedTint(Vec4(0.1f, 0.4f, 0.8f, 1.0f));  // Dark blue
+    testButton.setNormalTint(Vec4(0.2f, 0.6f, 1.0f, 0.5f));   // Blue
+    testButton.setHoveredTint(Vec4(0.4f, 0.8f, 1.0f, 0.5f));  // Light blue
+    testButton.setPressedTint(Vec4(0.1f, 0.4f, 0.8f, 0.5f));  // Dark blue
 
     // Set button text properties
     testButton.setTextColor(Vec4(1.0f, 1.0f, 1.0f, 1.0f)); // White text
@@ -171,7 +170,22 @@ void TestScene::load(GraphicsEngine& engine) {
     });
 
 
+    // 1. A button that resets cat1 scale
+    auto& resetButtonE = m_entityManager->createEntity("UI_ResetButton");
+    auto& resetButton = resetButtonE.addComponent<ButtonComponent>(device, L"Reset Cat", 36.0f);
+    resetButton.setScreenPosition(0.8f, 0.2f);
+    resetButton.setNormalTint(Vec4(0.6f, 0.2f, 1, 0.5f));
+    resetButton.setOnClickCallback([this]() {
+        if (auto* cat1 = m_entityManager->findEntity("Cat1"))
+            if (auto* sprite = cat1->getComponent<SpriteComponent>())
+                sprite->setScale(Vec3(1, 1, 1));
+        });
 
+    // 2. Text that updates each frame (fps counter)
+    auto& fpsTextE = m_entityManager->createEntity("UI_FPS");
+    auto& fpsText = fpsTextE.addComponent<TextComponent>(device, TextSystem::getRenderer(), L"FPS: 0", 20.0f);
+    fpsText.setScreenPosition(0.05, 0.02);
+    fpsText.setColor(Vec4(1, 1, 0, 1));
 }
 
 void TestScene::update(float dt) {
@@ -257,6 +271,15 @@ void TestScene::update(float dt) {
 
         debugQuadSprite->setScreenPosition(mouse.x, mouse.y);
     }
+    static float timer = 0; static int frames = 0;
+    timer += dt; frames++;
+    if (timer >= 1.0f) {
+        if (auto* fpsEntity = m_entityManager->findEntity("UI_FPS"))
+            if (auto* fpsText = fpsEntity->getComponent<TextComponent>()) {
+                fpsText->setText(L"FPS: " + std::to_wstring(frames));
+            }
+        frames = 0; timer = 0;
+    }
     printf("%f,%f\n",mouse.x,mouse.y);
 }
 
@@ -297,6 +320,7 @@ void TestScene::updateCameraMovement(float dt) {
         camera->setPosition(0.0f, 0.0f);
         camera->setZoom(1.0f);
     }
+    
 }
 
 void TestScene::render(GraphicsEngine& engine, SwapChain& swapChain) {

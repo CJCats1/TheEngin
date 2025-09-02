@@ -280,4 +280,93 @@ namespace dx3d {
             }
         }
     }
+
+        // Additional BeamComponent methods
+        bool BeamComponent::isConnectedToNode(const Entity* nodeEntity) const {
+            return (m_node1Entity == nodeEntity) || (m_node2Entity == nodeEntity);
+        }
+
+        void BeamComponent::updateNodeConnection(Entity* oldNode, Entity* newNode) {
+            if (m_node1Entity == oldNode) {
+                m_node1Entity = newNode;
+            }
+            else if (m_node2Entity == oldNode) {
+                m_node2Entity = newNode;
+            }
+
+            // Recalculate beam properties with new connection
+            if (m_node1Entity && m_node2Entity) {
+                auto* node1 = m_node1Entity->getComponent<NodeComponent>();
+                auto* node2 = m_node2Entity->getComponent<NodeComponent>();
+                if (node1 && node2) {
+                    Vec2 diff = node1->getPosition() - node2->getPosition();
+                    m_length0 = diff.length();
+                    m_mass = MASS_PER_LENGTH * m_length0;
+                }
+            }
+        }
+
+        void BeamComponent::setNodeConnection1(Entity* node1) {
+            m_node1Entity = node1;
+
+            // Recalculate beam properties
+            if (m_node1Entity && m_node2Entity) {
+                auto* nodeComp1 = m_node1Entity->getComponent<NodeComponent>();
+                auto* nodeComp2 = m_node2Entity->getComponent<NodeComponent>();
+                if (nodeComp1 && nodeComp2) {
+                    Vec2 diff = nodeComp1->getPosition() - nodeComp2->getPosition();
+                    m_length0 = diff.length();
+                    m_mass = MASS_PER_LENGTH * m_length0;
+                }
+            }
+        }
+
+        void BeamComponent::setNodeConnection2(Entity* node2) {
+            m_node2Entity = node2;
+
+            // Recalculate beam properties
+            if (m_node1Entity && m_node2Entity) {
+                auto* nodeComp1 = m_node1Entity->getComponent<NodeComponent>();
+                auto* nodeComp2 = m_node2Entity->getComponent<NodeComponent>();
+                if (nodeComp1 && nodeComp2) {
+                    Vec2 diff = nodeComp1->getPosition() - nodeComp2->getPosition();
+                    m_length0 = diff.length();
+                    m_mass = MASS_PER_LENGTH * m_length0;
+                }
+            }
+        }
+
+        // Additional PhysicsSystem methods
+        void PhysicsSystem::removeBeamsConnectedToNode(EntityManager& entityManager, Entity* nodeEntity) {
+            auto beamEntities = entityManager.getEntitiesWithComponent<BeamComponent>();
+            std::vector<std::string> beamsToRemove;
+
+            for (auto* beamEntity : beamEntities) {
+                if (auto* beam = beamEntity->getComponent<BeamComponent>()) {
+                    if (beam->isConnectedToNode(nodeEntity)) {
+                        beamsToRemove.push_back(beamEntity->getName());
+                    }
+                }
+            }
+
+            // Remove the beams
+            for (const auto& beamName : beamsToRemove) {
+                entityManager.removeEntity(beamName);
+            }
+        }
+
+        std::vector<Entity*> PhysicsSystem::getBeamsConnectedToNode(EntityManager& entityManager, Entity* nodeEntity) {
+            std::vector<Entity*> connectedBeams;
+            auto beamEntities = entityManager.getEntitiesWithComponent<BeamComponent>();
+
+            for (auto* beamEntity : beamEntities) {
+                if (auto* beam = beamEntity->getComponent<BeamComponent>()) {
+                    if (beam->isConnectedToNode(nodeEntity)) {
+                        connectedBeams.push_back(beamEntity);
+                    }
+                }
+            }
+
+            return connectedBeams;
+        }
 }

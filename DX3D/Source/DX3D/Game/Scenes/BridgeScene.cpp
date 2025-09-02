@@ -7,14 +7,47 @@
 #include <DX3D/Core/Input.h>
 #include <DX3D/Graphics/DirectWriteText.h>
 #include <DX3D/Components/ButtonComponent.h>
+#include <DX3D/Components/PanelComponent.h>
 #include <iostream>
 
 using namespace dx3d;
+void BridgeScene::resetBridge() {
+    std::vector<std::string> entitiesToRemove;
+
+    // Collect all nodes except anchors
+    auto nodes = m_entityManager->getEntitiesWithComponent<NodeComponent>();
+    for (auto* entity : nodes) {
+        if (entity->getName() != "LeftAnchor" && entity->getName() != "RightAnchor") {
+            entitiesToRemove.push_back(entity->getName());
+        }
+    }
+
+    // Collect all beams
+    auto beams = m_entityManager->getEntitiesWithComponent<BeamComponent>();
+    for (auto* entity : beams) {
+        entitiesToRemove.push_back(entity->getName());
+    }
+
+    // Remove collected entities
+    for (const auto& name : entitiesToRemove) {
+        m_entityManager->removeEntity(name);
+    }
+
+    // Reset counts
+    m_numberOfNodes = 2; // only anchors remain
+    m_numberOfBeams = 0;
+
+    // Reset physics state
+    PhysicsSystem::resetPhysics(*m_entityManager);
+    PhysicsSystem::updateBeams(*m_entityManager, 0.01f);
+    PhysicsSystem::updateNodes(*m_entityManager, 0.01f);
+}
 
 void BridgeScene::load(GraphicsEngine& engine) {
     auto& device = engine.getGraphicsDevice();
     m_graphicsDevice = &device;
-    m_isSimulationRunning = true;
+    m_isSimulationRunning = false;
+    
     m_entityManager = std::make_unique<EntityManager>();
 
     auto& cameraEntity = m_entityManager->createEntity("MainCamera");
@@ -26,38 +59,30 @@ void BridgeScene::load(GraphicsEngine& engine) {
 
     createBridge(engine);
     createUI(engine);
+    PhysicsSystem::updateNodes(*m_entityManager, 0.01f);
+    PhysicsSystem::updateBeams(*m_entityManager, 0.01f);
 }
 void BridgeScene::createUI(GraphicsEngine& engine) {
     auto& device = engine.getGraphicsDevice();
 
     if (!TextSystem::isInitialized())
         TextSystem::initialize(device);
+
     float screenWidth = static_cast<float>(GraphicsEngine::getWindowWidth());
     float screenHeight = static_cast<float>(GraphicsEngine::getWindowHeight());
-    // --- Top-left status panel ---
-	auto StatusPanelPosition = Vec2(0.14f, 0.95f); // normalized [0,1] screen coords
 
-    // Status text
-    auto& statusTextEntity = m_entityManager->createEntity("UI_StatusText");
-    auto& statusText = statusTextEntity.addComponent<TextComponent>(
+    // --- Top-left status panel ---
+    auto statusPanelPos = Vec2(0.14f, 0.95f); // normalized [0,1] screen coords
+    auto& statusPanelEntity = m_entityManager->createEntity("StatusPanel");
+    auto& statusPanel = statusPanelEntity.addComponent<PanelComponent>(
         device,
-        TextSystem::getRenderer(),
+        300.0f,   // width (a bit larger than the text for padding)
+        40.0f,    // height
         L"Simulation Running: TRUE",
         20.0f
     );
-    statusText.setFontFamily(L"Consolas");
-    statusText.setColor(Vec4(1.0f, 1.0f, 0.0f, 1.0f));
-    statusText.setScreenPosition(StatusPanelPosition.x, StatusPanelPosition.y);
-    auto textSize = statusText.getTextSize();
-    auto& statusPanelEntity = m_entityManager->createEntity("StatusPanel");
-    auto& statusPanel = statusPanelEntity.addComponent<SpriteComponent>(
-        device,
-        L"DX3D/Assets/Textures/beam.png", // A simple semi-transparent panel texture
-        textSize.x, textSize.y
-    );
-    statusPanel.enableScreenSpace(true);
-    statusPanel.setScreenPosition(StatusPanelPosition.x, StatusPanelPosition.y); // top-left
-    statusPanel.setTint(Vec4(0.1f, 0.1f, 0.1f, 0.7f)); // dark semi-transparent
+    statusPanel.setScreenPosition(statusPanelPos.x, statusPanelPos.y);
+    statusPanel.setTint(Vec4(0.1f, 0.1f, 0.1f, 0.7f));
 
     // --- Right-side button panel ---
     float buttonWidth = 180.0f;
@@ -67,10 +92,10 @@ void BridgeScene::createUI(GraphicsEngine& engine) {
     float padding = 0.05f;
 
     std::vector<std::wstring> buttonLabels = {
-        L"Toggle Simulation",
-        L"Reset Bridge",
-        L"Add Weight",
-        L"Remove Weight"
+        L"Build Mode",
+        L"Simulate Mode",
+        L"Delete Mode",
+        L"Reset Bridge"
     };
 
     for (size_t i = 0; i < buttonLabels.size(); ++i) {
@@ -80,99 +105,103 @@ void BridgeScene::createUI(GraphicsEngine& engine) {
             buttonLabels[i],
             22.0f
         );
-
+        button.enableScreenSpace(true);
         button.setScreenPosition(startX, startY - i * (buttonHeight / screenHeight + padding));
-        button.setNormalTint(Vec4(0.2f, 0.6f, 0.8f, 1.0f));
-        button.setHoveredTint(Vec4(0.4f, 0.8f, 1.0f, 1.0f));
-        button.setPressedTint(Vec4(0.1f, 0.4f, 0.6f, 1.0f));
+        button.setNormalTint(Vec4(0.2f, 0.6f, 0.8f, 0.5f));
+        button.setHoveredTint(Vec4(0.4f, 0.8f, 1.0f, 0.5f));
+        button.setPressedTint(Vec4(0.1f, 0.4f, 0.6f, 0.5f));
         button.setTextColor(Vec4(1.0f, 1.0f, 1.0f, 1.0f));
         button.setFontSize(18.0f);
 
         // Callback logic
         button.setOnClickCallback([this, i]() {
             switch (i) {
-            case 0: // Toggle simulation
-                m_isSimulationRunning = !m_isSimulationRunning;
+            case 0: // Build mode
+                setMode(SceneMode::Build);
                 break;
-            case 1: // Reset bridge
-                PhysicsSystem::resetPhysics(*m_entityManager);
+            case 1: // Simulate mode
+                setMode(SceneMode::Simulating);
                 break;
-            case 2: // Add weight (example)
-                std::cout << "Add weight clicked!\n";
-                break;
-            case 3: // Remove weight (example)
-                std::cout << "Remove weight clicked!\n";
+            case 2: // Delete mode
+                if (m_currentMode == SceneMode::Build) {
+                    toggleDeleteMode();
+                }
+				break;
+            case 3: // Reset bridge
+                resetBridge();
                 break;
             }
+           
             });
     }
 
-    // --- Bottom-left mini-panel (example info panel) ---
-    auto MiniPanelPosition = Vec2(0.15f, 0.05f);
-    
-
-    auto& infoTextEntity = m_entityManager->createEntity("UI_InfoText");
-    auto& infoText = infoTextEntity.addComponent<TextComponent>(
+    // --- Bottom-left mini info panel ---
+    auto miniPanelPos = Vec2(0.15f, 0.05f);
+    auto& infoPanelEntity = m_entityManager->createEntity("InfoPanel");
+    auto& infoPanel = infoPanelEntity.addComponent<PanelComponent>(
         device,
-        TextSystem::getRenderer(),
-        L"Click nodes to drag them around!",
+        350.0f,  // width
+        40.0f,   // height
+        L"Click nodes to create new ones!",
         18.0f
     );
-    infoText.setFontFamily(L"Consolas");
-    infoText.setColor(Vec4(1.0f, 1.0f, 1.0f, 1.0f));
-    infoText.setScreenPosition(MiniPanelPosition.x, MiniPanelPosition.y);
-    
-    textSize = infoText.getTextSize();
-    auto& infoPanelEntity = m_entityManager->createEntity("InfoPanel");
-    auto& infoPanel = infoPanelEntity.addComponent<SpriteComponent>(
-        device,
-        L"DX3D/Assets/Textures/beam.png",
-        textSize.x, textSize.y
-    );
-    infoPanel.enableScreenSpace(true);
-    infoPanel.setScreenPosition(MiniPanelPosition.x, MiniPanelPosition.y);
+    infoPanel.setScreenPosition(miniPanelPos.x, miniPanelPos.y);
     infoPanel.setTint(Vec4(0.1f, 0.1f, 0.1f, 0.6f));
+
+
+    auto& modePanelEntity = m_entityManager->createEntity("ModePanel");
+    auto& modePanel = modePanelEntity.addComponent<PanelComponent>(
+        device,
+        250.0f,  // width
+        40.0f,   // height
+        L"Mode: BUILD",
+        20.0f
+    );
+    modePanel.setScreenPosition(0.14f, 0.90f);
+    modePanel.setTint(Vec4(0.15f, 0.15f, 0.15f, 0.7f));
+
 }
+
 void BridgeScene::createBridge(GraphicsEngine& engine) {
     // Create bridge nodes (simple bridge example)
-    createNode(Vec2(-300.0f, 0.0f), true, "LeftAnchor", engine);
-    createNode(Vec2(-200.0f, 0.0f), false, "Node1", engine);
-    createNode(Vec2(-100.0f, 0.0f), false, "Node2", engine);
-    createNode(Vec2(0.0f, 0.0f), false, "Node3", engine);
-    createNode(Vec2(100.0f, 0.0f), false, "Node4", engine);
-    createNode(Vec2(200.0f, 0.0f), false, "Node5", engine);
-    createNode(Vec2(300.0f, 0.0f), true, "RightAnchor", engine);
+    createNode(Vec2(-300.0f, 0.0f), true, "LeftAnchor");
+    createNode(Vec2(-200.0f, 0.0f), false, "Node1");
+    createNode(Vec2(-100.0f, 0.0f), false, "Node2");
+    createNode(Vec2(0.0f, 0.0f), false, "Node3");
+    createNode(Vec2(100.0f, 0.0f), false, "Node4");
+    createNode(Vec2(200.0f, 0.0f), false, "Node5");
+    createNode(Vec2(300.0f, 0.0f), true, "RightAnchor");
 
     // Create horizontal beams
-    createBeam("LeftAnchor", "Node1", "Beam1", engine);
-    createBeam("Node1", "Node2", "Beam2", engine);
-    createBeam("Node2", "Node3", "Beam3", engine);
-    createBeam("Node3", "Node4", "Beam4", engine);
-    createBeam("Node4", "Node5", "Beam5", engine);
-    createBeam("Node5", "RightAnchor", "Beam6", engine);
+    createBeam("LeftAnchor", "Node1", "Beam1");
+    createBeam("Node1", "Node2", "Beam2");
+    createBeam("Node2", "Node3", "Beam3");
+    createBeam("Node3", "Node4", "Beam4");
+    createBeam("Node4", "Node5", "Beam5");
+    createBeam("Node5", "RightAnchor", "Beam6");
 
     // Create support nodes
-    createNode(Vec2(-150.0f, -100.0f), false, "Support1", engine);
-    createNode(Vec2(-50.0f, -100.0f), false, "Support2", engine);
-    createNode(Vec2(50.0f, -100.0f), false, "Support3", engine);
-    createNode(Vec2(150.0f, -100.0f), false, "Support4", engine);
+    createNode(Vec2(-150.0f, -100.0f), false, "Support1");
+    createNode(Vec2(-50.0f, -100.0f), false, "Support2");
+    createNode(Vec2(50.0f, -100.0f), false, "Support3");
+    createNode(Vec2(150.0f, -100.0f), false, "Support4");
 
-    createBeam("LeftAnchor", "Support1", "Support_Beam9", engine);
-    createBeam("RightAnchor", "Support4", "Support_Beam10", engine);
+    createBeam("LeftAnchor", "Support1", "Support_Beam9");
+    createBeam("RightAnchor", "Support4", "Support_Beam10");
 
     // Create diagonal support beams
-    createBeam("Node1", "Support1", "Support_Beam1", engine);
-    createBeam("Node2", "Support1", "Support_Beam2", engine);
-    createBeam("Node2", "Support2", "Support_Beam3", engine);
-    createBeam("Node3", "Support2", "Support_Beam4", engine);
-    createBeam("Node3", "Support3", "Support_Beam5", engine);
-    createBeam("Node4", "Support3", "Support_Beam6", engine);
-    createBeam("Node4", "Support4", "Support_Beam7", engine);
-    createBeam("Node5", "Support4", "Support_Beam8", engine);
+    createBeam("Node1", "Support1", "Support_Beam1");
+    createBeam("Node2", "Support1", "Support_Beam2");
+    createBeam("Node2", "Support2", "Support_Beam3");
+    createBeam("Node3", "Support2", "Support_Beam4");
+    createBeam("Node3", "Support3", "Support_Beam5");
+    createBeam("Node4", "Support3", "Support_Beam6");
+    createBeam("Node4", "Support4", "Support_Beam7");
+    createBeam("Node5", "Support4", "Support_Beam8");
 }
 
-void BridgeScene::createNode(Vec2 position, bool fixed, const std::string& name, GraphicsEngine& engine) {
-    auto& device = engine.getGraphicsDevice();
+void BridgeScene::createNode(Vec2 position, bool fixed, const std::string& name) {
+    auto& device = *m_graphicsDevice;
     auto& nodeEntity = m_entityManager->createEntity(name);
 
     // Physics component
@@ -185,10 +214,11 @@ void BridgeScene::createNode(Vec2 position, bool fixed, const std::string& name,
         28.0f, 28.0f
     );
     sprite.setPosition(position.x, position.y, 0.0f);
+    m_numberOfNodes++;
 }
 
-void BridgeScene::createBeam(const std::string& node1Name, const std::string& node2Name, const std::string& beamName, GraphicsEngine& engine) {
-    auto& device = engine.getGraphicsDevice();
+void BridgeScene::createBeam(const std::string& node1Name, const std::string& node2Name, const std::string& beamName) {
+    auto& device = *m_graphicsDevice;
     auto* node1Entity = m_entityManager->findEntity(node1Name);
     auto* node2Entity = m_entityManager->findEntity(node2Name);
 
@@ -208,164 +238,36 @@ void BridgeScene::createBeam(const std::string& node1Name, const std::string& no
 
     Vec2 center = beamComponent.getCenterPosition();
     sprite.setPosition(center.x, center.y, 0.0f);
+	m_numberOfBeams++;
 }
 
 void BridgeScene::update(float dt) {
     updateCameraMovement(dt);
+
     auto& input = Input::getInstance();
 
     if (input.wasKeyJustReleased(Key::Z)) {
         m_isSimulationRunning = !m_isSimulationRunning;
     }
 
-    if (input.isKeyDown(Key::R)) {
+    if (input.wasKeyJustReleased(Key::R)) {
         PhysicsSystem::resetPhysics(*m_entityManager);
-        //m_isSimulationRunning = false;
     }
 
-    if (m_isSimulationRunning) {
-        PhysicsSystem::updateNodes(*m_entityManager, dt);
-        PhysicsSystem::updateBeams(*m_entityManager, dt);
+    
+    // Update UI panels
+    updateUIStatus();
+
+    // Handle different modes
+    if (m_currentMode == SceneMode::Build && !m_inDeleteMode) {
+        handleBuildMode();
     }
-    auto* uiEntity = m_entityManager->findEntity("UI_StatusText");
-    if (uiEntity) {
-        if (auto* text = uiEntity->getComponent<TextComponent>()) {
-            std::wstring status = m_isSimulationRunning ? L"Simulation Running: TRUE" : L"Simulation Running: FALSE";
-            text->setText(status);
-        }
-    }
-    // Handle node dragging
-    if (input.isMouseDown(MouseClick::LeftMouse)) {
-        if (!m_draggedNode) {
-            Vec2 mousePos = input.getMousePosition();
-            Vec2 mousePosWorld = screenToWorld(mousePos.x, mousePos.y);
-            auto nodes = m_entityManager->getEntitiesWithComponent<NodeComponent>();
-            for (auto* entity : nodes) {
-                if (entity->getComponent<NodeComponent>()->mouseInside(mousePosWorld)) {
-                    m_draggedNode = entity;
-                    break;
-                }
-            }
-        }
-        else {
-            bool textureSet = m_draggedNode->getComponent<NodeComponent>()->isTextureSet;
-            if (!textureSet) {
-                auto redTexture = Texture2D::LoadTexture2D(
-                    m_graphicsDevice->getD3DDevice(),
-                    L"DX3D/Assets/Textures/nodeRed.png"
-                );
-                m_draggedNode->getComponent<SpriteComponent>()->setTexture(redTexture);
-                m_draggedNode->getComponent<NodeComponent>()->isTextureSet = true;
-            }
-            Vec2 mousePos = input.getMousePosition();
-            Vec2 mousePosWorld = screenToWorld(mousePos.x, mousePos.y);
-            if (!m_draggedNode->getComponent<NodeComponent>()->mouseInside(mousePosWorld)) {
-                auto normalTexture = Texture2D::LoadTexture2D(
-                    m_graphicsDevice->getD3DDevice(),
-                    L"DX3D/Assets/Textures/node.png"
-                );
-                m_draggedNode->getComponent<SpriteComponent>()->setTexture(normalTexture);
-                m_draggedNode->getComponent<NodeComponent>()->isTextureSet = false;
-                m_draggedNode = nullptr;
-            }
-        }
-    }
-    else if (m_draggedNode) {
-        bool textureSet = m_draggedNode->getComponent<NodeComponent>()->isTextureSet;
-        if (textureSet) {
-            auto normalTexture = Texture2D::LoadTexture2D(
-                m_graphicsDevice->getD3DDevice(),
-                L"DX3D/Assets/Textures/node.png"
-            );
-            m_draggedNode->getComponent<SpriteComponent>()->setTexture(normalTexture);
-            m_draggedNode->getComponent<NodeComponent>()->isTextureSet = false;
-            m_draggedNode = nullptr;
-        }
+    else if (m_inDeleteMode && m_currentMode == SceneMode::Build) {
+        handleDeleteMode();
     }
 
-
-
-
-    if (auto* textEntity = m_entityManager->findEntity("UI_Text")) {
-        if (auto* debugQuad = m_entityManager->findEntity("DebugQuad"))
-        {
-            float speed = 0.005f; // normalized space movement per frame
-            auto theText = textEntity->getComponent<TextComponent>();
-            auto debugQuadSprite = debugQuad->getComponent<SpriteComponent>();
-            Vec2 newPos = debugQuadSprite->getScreenPosition();
-
-            if (input.isKeyDown(Key::I)) {
-                newPos.y += speed;
-            }
-            if (input.isKeyDown(Key::K)) {
-                newPos.y -= speed;
-            }
-            if (input.isKeyDown(Key::J)) {
-                newPos.x -= speed;
-            }
-            if (input.isKeyDown(Key::L)) {
-                newPos.x += speed;
-            }
-            theText->setScreenPosition(newPos.x, newPos.y);
-            debugQuadSprite->setScreenPosition(newPos.x, newPos.y);
-        }
-    }
-
-
-
-
-    if (auto* debugQuad = m_entityManager->findEntity("DebugQuad"))
-    {
-        auto debugQuadSprite = debugQuad->getComponent<SpriteComponent>();
-        auto& input = Input::getInstance();
-
-        // Mouse in pixel space
-        Vec2 mousePx = input.getMousePositionNDC();
-
-        // Quad center (pixel coords)
-        Vec2 center = debugQuadSprite->getScreenPosition();
-
-        float winW = (float)GraphicsEngine::getWindowWidth();
-        float winH = (float)GraphicsEngine::getWindowHeight();
-
-        Vec2 centerNDC = debugQuadSprite->getScreenPosition(); // already in NDC
-        float halfW_NDC = (debugQuadSprite->getWidth() * 0.5f) / winW;
-        float halfH_NDC = (debugQuadSprite->getHeight() * 0.5f) / winH;
-
-        float left = centerNDC.x - halfW_NDC;
-        float right = centerNDC.x + halfW_NDC;
-        float top = centerNDC.y - halfH_NDC;
-        float bottom = centerNDC.y + halfH_NDC;
-
-        Vec2 mouseNDC = input.getMousePositionNDC();
-
-        bool inside = (mouseNDC.x >= left && mouseNDC.x <= right &&
-            mouseNDC.y >= top && mouseNDC.y <= bottom);
-
-        if (inside) {
-            debugQuadSprite->setTint(Vec4(1, 0, 0, 0.5f)); // red hover
-            if (input.isMouseDown(MouseClick::LeftMouse))
-            {
-                debugQuadSprite->setTint(Vec4(1, 0, 0, 0.8f)); // red hover
-
-            }
-            if (input.wasMouseJustReleased(MouseClick::LeftMouse))
-            {
-                m_isSimulationRunning = !m_isSimulationRunning;
-            }
-        }
-        else {
-            debugQuadSprite->setTint(Vec4(0, 0, 1, 0.5f)); // blue default
-        }
-    }
-    auto mouse = Input::getInstance().getMousePositionNDC();
-    auto buttonEntities = m_entityManager->getEntitiesWithComponent<ButtonComponent>();
-    for (auto* entity : buttonEntities) {
-        if (auto* movement = entity->getComponent<ButtonComponent>()) {
-            movement->update(dt);
-        }
-    }
-
+    // Update button interactions
+    updateButtonInteractions(dt);
 }
 
 void BridgeScene::updateCameraMovement(float dt) {
@@ -448,11 +350,17 @@ void BridgeScene::render(GraphicsEngine& engine, SwapChain& swapChain) {
             }
         }
     }
+
     for (auto* entity : m_entityManager->getEntitiesWithComponent<ButtonComponent>()) {
         if (auto* text = entity->getComponent<ButtonComponent>()) {
             if (text->isVisible()) {
                 text->draw(ctx); // Will respect m_useScreenSpace
             }
+        }
+    }
+    for (auto* entity : m_entityManager->getEntitiesWithComponent<PanelComponent>()) {
+        if (auto* text = entity->getComponent<PanelComponent>()) {
+                text->draw(ctx); // Will respect m_useScreenSpace
         }
     }
     for (auto* entity : m_entityManager->getEntitiesWithComponent<TextComponent>()) {
@@ -465,34 +373,11 @@ void BridgeScene::render(GraphicsEngine& engine, SwapChain& swapChain) {
     engine.endFrame(swapChain);
 }
 
-void BridgeScene::onMouseClick(int button, int x, int y) {
-    if (button == 0) {
-        Vec2 mouseWorld = screenToWorld(x, y);
-        auto nodeEntities = m_entityManager->getEntitiesWithComponent<NodeComponent>();
-        for (auto* entity : nodeEntities) {
-            if (auto* node = entity->getComponent<NodeComponent>()) {
-                if (node->mouseInside(mouseWorld) && !node->isPositionFixed()) {
-                    m_draggedNode = entity;
-                    m_dragOffset = mouseWorld - node->getPosition();
-                    break;
-                }
-            }
-        }
-    }
-}
-
-void BridgeScene::onMouseRelease(int button, int x, int y) {
-    if (button == 0) {
-        m_draggedNode = nullptr;
-    }
-}
-
-void BridgeScene::onMouseMove(int x, int y) {
-    if (m_draggedNode) {
-        Vec2 mouseWorld = screenToWorld(x, y);
-        if (auto* nodeComp = m_draggedNode->getComponent<NodeComponent>()) {
-            nodeComp->setPosition(mouseWorld - m_dragOffset);
-        }
+void dx3d::BridgeScene::fixedUpdate(float dt)
+{
+    if (m_isSimulationRunning) {
+        PhysicsSystem::updateNodes(*m_entityManager, dt);
+        PhysicsSystem::updateBeams(*m_entityManager, dt);
     }
 }
 
@@ -503,4 +388,334 @@ Vec2 BridgeScene::screenToWorld(int screenX, int screenY) {
         }
     }
     return Vec2((float)screenX, (float)screenY);
+}
+void BridgeScene::setMode(SceneMode mode) {
+    m_currentMode = mode;
+
+    // Update status booleans
+    m_isSimulationRunning = (mode == SceneMode::Simulating);
+    if (!m_isSimulationRunning)
+    {
+        PhysicsSystem::resetPhysics(*m_entityManager);
+        PhysicsSystem::updateBeams(*m_entityManager, 0.01f);
+        PhysicsSystem::updateNodes(*m_entityManager, 0.01f);
+    }
+
+    // Update panel
+    auto* modeEntity = m_entityManager->findEntity("ModePanel");
+    if (modeEntity) {
+        auto* panel = modeEntity->getComponent<PanelComponent>();
+        if (panel) {
+            std::wstring modeText = (mode == SceneMode::Build) ? L"Mode: BUILD" : L"Mode: SIMULATING";
+            panel->setTitle(modeText);
+        }
+    }
+}
+void BridgeScene::handleBuildMode() {
+    auto& input = Input::getInstance();
+    Vec2 mousePos = input.getMousePosition();
+    Vec2 mousePosWorld = screenToWorld(mousePos.x, mousePos.y);
+    auto nodes = m_entityManager->getEntitiesWithComponent<NodeComponent>();
+
+    // First phase: Check for node clicks to start building
+    if (!m_nodeAttachedToMouse) {
+        for (auto* entity : nodes) {
+            bool isMouseOver = entity->getComponent<NodeComponent>()->mouseInside(mousePosWorld);
+
+            if (isMouseOver) {
+                // Highlight node
+                auto redTexture = Texture2D::LoadTexture2D(
+                    m_graphicsDevice->getD3DDevice(),
+                    L"DX3D/Assets/Textures/nodeRed.png"
+                );
+                entity->getComponent<SpriteComponent>()->setTexture(redTexture);
+
+                // Start building if clicked
+                if (input.isMouseDown(MouseClick::LeftMouse)) {
+                    startBuildingFromNode(entity, mousePosWorld);
+                    break;
+                }
+            }
+            else {
+                // Reset to normal texture
+                auto normalTexture = Texture2D::LoadTexture2D(
+                    m_graphicsDevice->getD3DDevice(),
+                    L"DX3D/Assets/Textures/node.png"
+                );
+                entity->getComponent<SpriteComponent>()->setTexture(normalTexture);
+            }
+        }
+    }
+
+    // Second phase: Handle dragging the temporary node
+    if (m_nodeAttachedToMouse && m_tempNode) {
+        // Update temp node position to follow mouse
+        m_tempNode->getComponent<NodeComponent>()->setPosition(mousePosWorld);
+        m_tempNode->getComponent<SpriteComponent>()->setPosition(mousePosWorld.x, mousePosWorld.y, 0.0f);
+
+        // Handle mouse release to complete the beam
+        if (input.wasMouseJustReleased(MouseClick::LeftMouse)) {
+            completeBuildOperation(mousePosWorld);
+        }
+    }
+}
+
+void BridgeScene::startBuildingFromNode(Entity* sourceNode, Vec2 mousePos) {
+    m_savedNode = sourceNode;
+
+    // Create temporary node at mouse position
+    std::string tempNodeName = "TempNode_" + std::to_string(m_numberOfNodes + 1);
+    createNode(mousePos, false, tempNodeName);
+    m_tempNode = m_entityManager->findEntity(tempNodeName);
+
+    // Create temporary beam connecting source to temp node
+    std::string tempBeamName = "TempBeam_" + std::to_string(m_numberOfBeams + 1);
+    createBeam(sourceNode->getName(), tempNodeName, tempBeamName);
+    m_tempBeam = m_entityManager->findEntity(tempBeamName);
+
+    m_nodeAttachedToMouse = true;
+}
+
+void BridgeScene::completeBuildOperation(Vec2 mousePos) {
+    auto nodes = m_entityManager->getEntitiesWithComponent<NodeComponent>();
+    bool connectedToExistingNode = false;
+    bool releasedOnSourceNode = false;
+
+    // Check if mouse is over an existing node
+    for (auto* entity : nodes) {
+        if (entity == m_tempNode) continue; // Skip the temp node
+
+        if (entity->getComponent<NodeComponent>()->mouseInside(mousePos)) {
+            if (entity == m_savedNode) {
+                // Released on the source node - cancel the operation
+                releasedOnSourceNode = true;
+            }
+            else {
+                // Found a different existing node to connect to
+
+                // Remove the temporary beam first
+                if (m_tempBeam) {
+                    m_entityManager->removeEntity(m_tempBeam->getName());
+                    m_numberOfBeams--; // Decrement since we incremented when creating temp beam
+                    m_tempBeam = nullptr;
+                }
+
+                // Remove the temporary node
+                if (m_tempNode) {
+                    m_entityManager->removeEntity(m_tempNode->getName());
+                    m_numberOfNodes--; // Decrement since we incremented when creating temp node
+                    m_tempNode = nullptr;
+                }
+
+                // Create a new beam connecting the saved node to the existing node
+                std::string newBeamName = "Beam_" + std::to_string(m_numberOfBeams + 1);
+                createBeam(m_savedNode->getName(), entity->getName(), newBeamName);
+
+                connectedToExistingNode = true;
+            }
+            break;
+        }
+    }
+
+    // Handle cancellation (released on source node)
+    if (releasedOnSourceNode) {
+        // Remove temporary objects without creating anything permanent
+        if (m_tempBeam) {
+            m_entityManager->removeEntity(m_tempBeam->getName());
+            m_numberOfBeams--; // Decrement since we incremented when creating temp beam
+            m_tempBeam = nullptr;
+        }
+
+        if (m_tempNode) {
+            m_entityManager->removeEntity(m_tempNode->getName());
+            m_numberOfNodes--; // Decrement since we incremented when creating temp node
+            m_tempNode = nullptr;
+        }
+    }
+    // If not connected to existing node and not cancelled, finalize the temp node position
+    else if (!connectedToExistingNode && m_tempNode) {
+        // The temp node becomes permanent - just update its starting position
+        m_tempNode->getComponent<NodeComponent>()->setStartingPosition(mousePos);
+        // No need to decrement counters since the temp node and beam become permanent
+    }
+
+    // Update physics
+    PhysicsSystem::resetPhysics(*m_entityManager);
+    PhysicsSystem::updateBeams(*m_entityManager, 0.01f);
+    PhysicsSystem::updateNodes(*m_entityManager, 0.01f);
+
+    // Reset state
+    m_nodeAttachedToMouse = false;
+    m_savedNode = nullptr;
+    m_tempNode = nullptr;
+    m_tempBeam = nullptr;
+}
+void BridgeScene::handleDeleteMode() {
+    auto& input = Input::getInstance();
+    Vec2 mousePos = input.getMousePosition();
+    Vec2 mousePosWorld = screenToWorld(mousePos.x, mousePos.y);
+    auto nodes = m_entityManager->getEntitiesWithComponent<NodeComponent>();
+    auto beams = m_entityManager->getEntitiesWithComponent<BeamComponent>();
+
+    // Reset all visuals first
+    resetAllNodeAndBeamTextures();
+
+    bool foundNodeToDelete = false;
+    Entity* nodeToDelete = nullptr;
+
+    // Find node under mouse
+    for (auto* entity : nodes) {
+        if (!entity->getComponent<NodeComponent>()->isFixed() &&
+            entity->getComponent<NodeComponent>()->mouseInside(mousePosWorld)) {
+
+            foundNodeToDelete = true;
+            nodeToDelete = entity;
+
+            // Highlight node in red
+            auto redTexture = Texture2D::LoadTexture2D(
+                m_graphicsDevice->getD3DDevice(),
+                L"DX3D/Assets/Textures/nodeRed.png"
+            );
+            entity->getComponent<SpriteComponent>()->setTexture(redTexture);
+
+            // Highlight connected beams in red
+            for (auto* beamEntity : beams) {
+                auto* beam = beamEntity->getComponent<BeamComponent>();
+                if (beam && (beam->isConnectedToNode(entity))) {
+                    // Set beam to red texture/tint
+                    if (auto* sprite = beamEntity->getComponent<SpriteComponent>()) {
+                        sprite->setTint(Vec4(1.0f, 0.0f, 0.0f, 1.0f));
+                    }
+                }
+            }
+
+            // Handle deletion on click
+            if (input.wasMouseJustPressed(MouseClick::LeftMouse)) {
+                m_deleteBeamsAndNodes = true;
+            }
+            break;
+        }
+    }
+
+    // Execute deletion
+    if (m_deleteBeamsAndNodes && nodeToDelete) {
+        deleteNodeAndConnectedBeams(nodeToDelete);
+        m_deleteBeamsAndNodes = false;
+
+        // Exit delete mode unless shift is held
+        if (!input.isKeyDown(Key::Shift)) {
+            m_inDeleteMode = false;
+        }
+    }
+
+    // Exit delete mode on shift release
+    if (input.wasKeyJustReleased(Key::Shift)) {
+        m_inDeleteMode = false;
+    }
+}
+
+void BridgeScene::deleteNodeAndConnectedBeams(Entity* nodeToDelete) {
+    auto beams = m_entityManager->getEntitiesWithComponent<BeamComponent>();
+    std::vector<std::string> beamsToDelete;
+
+    // Find all beams connected to this node
+    for (auto* beamEntity : beams) {
+        auto* beam = beamEntity->getComponent<BeamComponent>();
+        if (beam && beam->isConnectedToNode(nodeToDelete)) {
+            beamsToDelete.push_back(beamEntity->getName());
+        }
+    }
+
+    // Delete connected beams
+    for (const auto& beamName : beamsToDelete) {
+        m_entityManager->removeEntity(beamName);
+        m_numberOfBeams--;
+    }
+
+    // Delete the node
+    m_entityManager->removeEntity(nodeToDelete->getName());
+    m_numberOfNodes--;
+}
+
+void BridgeScene::resetAllNodeAndBeamTextures() {
+    auto nodes = m_entityManager->getEntitiesWithComponent<NodeComponent>();
+    auto beams = m_entityManager->getEntitiesWithComponent<BeamComponent>();
+
+    // Reset node textures
+    for (auto* entity : nodes) {
+        auto normalTexture = Texture2D::LoadTexture2D(
+            m_graphicsDevice->getD3DDevice(),
+            L"DX3D/Assets/Textures/node.png"
+        );
+        entity->getComponent<SpriteComponent>()->setTexture(normalTexture);
+    }
+
+    // Reset beam tints
+    for (auto* entity : beams) {
+        if (auto* sprite = entity->getComponent<SpriteComponent>()) {
+            sprite->setTint(Vec4(1.0f, 1.0f, 1.0f, 1.0f)); // Normal tint
+        }
+    }
+}
+
+void BridgeScene::updateUIStatus() {
+    // Update simulation status panel
+    auto* uiEntity = m_entityManager->findEntity("StatusPanel");
+    if (uiEntity) {
+        uiEntity->getComponent<PanelComponent>()->setTitle(
+            m_isSimulationRunning ? L"Simulation Running: TRUE" : L"Simulation Running: FALSE"
+        );
+    }
+
+    // Update mode panel
+    auto* modeEntity = m_entityManager->findEntity("ModePanel");
+    if (modeEntity) {
+        auto* panel = modeEntity->getComponent<PanelComponent>();
+        if (panel) {
+            std::wstring modeText;
+            if (m_currentMode == SceneMode::Build) {
+                if (m_inDeleteMode) {
+                    modeText = L"Mode: DELETE";
+                }
+                else {
+                    modeText = L"Mode: BUILD";
+                }
+            }
+            else {
+                modeText = L"Mode: SIMULATING";
+            }
+            panel->setTitle(modeText);
+        }
+    }
+}
+
+void BridgeScene::updateButtonInteractions(float dt) {
+    auto buttonEntities = m_entityManager->getEntitiesWithComponent<ButtonComponent>();
+    for (auto* entity : buttonEntities) {
+        if (auto* button = entity->getComponent<ButtonComponent>()) {
+            button->update(dt);
+        }
+    }
+}
+
+// Add this method to toggle delete mode (call from a button or key press)
+void BridgeScene::toggleDeleteMode() {
+    if (m_currentMode == SceneMode::Simulating) {
+        return; // Can't delete in simulation mode
+    }
+    m_inDeleteMode = !m_inDeleteMode;
+
+    // Reset any ongoing build operation
+    if (m_nodeAttachedToMouse) {
+        if (m_tempNode) {
+            m_entityManager->removeEntity(m_tempNode->getName());
+        }
+        if (m_tempBeam) {
+            m_entityManager->removeEntity(m_tempBeam->getName());
+        }
+        m_nodeAttachedToMouse = false;
+        m_savedNode = nullptr;
+        m_tempNode = nullptr;
+        m_tempBeam = nullptr;
+    }
 }

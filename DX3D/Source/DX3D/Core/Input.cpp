@@ -17,19 +17,20 @@ Input& Input::getInstance()
 //
 void Input::setKeyDown(int keyCode)
 {
-    m_keyStates[keyCode] = true;
-
-    // Just pressed this frame (if wasn't down previously)
-    if (!m_previousKeyStates[keyCode])
+    if (!m_keyStates[keyCode]) {
         m_justPressed[keyCode] = true;
+
+        // Debug output
+        std::cout << "Key pressed: " << keyCode << " (just pressed set to true)" << std::endl;
+    }
+    m_keyStates[keyCode] = true;
 }
 
 void Input::setKeyUp(int keyCode)
 {
-    // If it was actually down before releasing
-    if (m_keyStates[keyCode])
+    if (m_keyStates[keyCode]) {
         m_justReleased[keyCode] = true;
-
+    }
     m_keyStates[keyCode] = false;
 }
 
@@ -37,7 +38,7 @@ void Input::setKeyUp(int keyCode)
 bool Input::isKeyDown(int keyCode) const
 {
     auto it = m_keyStates.find(keyCode);
-    return it != m_keyStates.end() && it->second;
+    return (it != m_keyStates.end()) ? it->second : false;
 }
 
 bool Input::isKeyDown(Key key) const
@@ -58,7 +59,13 @@ bool Input::isKeyUp(Key key) const
 bool Input::wasKeyJustPressed(int keyCode) const
 {
     auto it = m_justPressed.find(keyCode);
-    return it != m_justPressed.end() && it->second;
+    bool result = it != m_justPressed.end() && it->second;
+
+    if (keyCode == 90) { // Z key for example
+        std::cout << "Checking wasKeyJustPressed for Z: " << (result ? "TRUE" : "FALSE") << std::endl;
+    }
+
+    return result;
 }
 
 bool Input::wasKeyJustPressed(Key key) const
@@ -82,15 +89,22 @@ bool Input::wasKeyJustReleased(Key key) const
 //
 void Input::update()
 {
-    // Save current states for comparison in the next frame
-    m_previousKeyStates = m_keyStates;
+    // Show what "just pressed" keys we have before clearing
+    for (const auto& [key, pressed] : m_justPressed) {
+        if (pressed) {
+            std::cout << "About to clear just pressed: " << key << std::endl;
+        }
+    }
 
-    // Reset transient states
+    // Store previous states
+    m_previousKeyStates = m_keyStates;
+    m_prevMouseStates = m_mouseStates;
+
+    // Clear "just pressed/released" flags for next frame
     m_justPressed.clear();
     m_justReleased.clear();
-
-	m_mouseJustPressed.clear();
-	m_mouseJustReleased.clear();
+    m_mouseJustPressed.clear();
+    m_mouseJustReleased.clear();
 }
 
 //
@@ -98,28 +112,32 @@ void Input::update()
 //
 void Input::reset()
 {
+    std::cout << "INPUT RESET CALLED!" << std::endl;
     m_keyStates.clear();
     m_previousKeyStates.clear();
     m_justPressed.clear();
     m_justReleased.clear();
+
+    m_mouseStates.clear();
+    m_prevMouseStates.clear();
+    m_mouseJustPressed.clear();
+    m_mouseJustReleased.clear();
 }
 
 void Input::setMouseDown(MouseClick button)
 {
-    m_prevMouseStates[button] = m_mouseStates[button];
-    m_mouseStates[button] = true;
-
-    if (!m_prevMouseStates[button] && m_mouseStates[button])
+    if (!m_mouseStates[button]) {
         m_mouseJustPressed[button] = true;
+    }
+    m_mouseStates[button] = true;
 }
 
 void Input::setMouseUp(MouseClick button)
 {
-    m_prevMouseStates[button] = m_mouseStates[button];
-    m_mouseStates[button] = false;
-
-    if (m_prevMouseStates[button] && !m_mouseStates[button])
+    if (m_mouseStates[button]) {
         m_mouseJustReleased[button] = true;
+    }
+    m_mouseStates[button] = false;
 }
 
 bool Input::isMouseDown(MouseClick button) const

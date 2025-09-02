@@ -1,4 +1,4 @@
-/*MIT License
+﻿/*MIT License
 
 C++ 3D Game Tutorial Series (https://github.com/PardCode/CPP-3D-Game-Tutorial-Series)
 
@@ -72,6 +72,9 @@ void dx3d::Game::onInternalUpdate()
         m_isRunning = false;
         return;
     }
+    if (input.wasKeyJustReleased(Key::Z)) {
+        std::cout << "Z KEY FUNCTIONALITY TRIGGERED!" << std::endl;
+    }
     auto now = std::chrono::steady_clock::now();
     std::chrono::duration<float> elapsed = now - m_lastFrameTime;
     m_lastFrameTime = now;
@@ -85,10 +88,10 @@ void dx3d::Game::onInternalUpdate()
     while (accumulator >= fixedStep)
     {
         if (m_activeScene)
-            m_activeScene->update(fixedStep); // physics & logic at fixed rate
+            m_activeScene->fixedUpdate(fixedStep); // physics & logic at fixed rate
         accumulator -= fixedStep;
     }
-
+    m_activeScene->update(frameTime);
     // Render once per frame
     if (m_activeScene)
         m_activeScene->render(*m_graphicsEngine, m_display->getSwapChain());
@@ -97,7 +100,7 @@ void dx3d::Game::onInternalUpdate()
         m_graphicsEngine->beginFrame(m_display->getSwapChain());
         m_graphicsEngine->endFrame(m_display->getSwapChain());
     }
-    Input::getInstance().update();
+    input.update();
 
 }
 

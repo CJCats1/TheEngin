@@ -64,7 +64,7 @@ namespace dx3d {
         void setState(ButtonState state);
         ButtonState getState() const { return m_currentState; }
 
-        void setNormalTint(const Vec4& tint) { m_normalTint = tint; }
+        void setNormalTint(const Vec4& tint) { if (m_sprite) m_sprite->setTint(tint) ;m_normalTint = tint; }
         void setHoveredTint(const Vec4& tint) { m_hoveredTint = tint; }
         void setPressedTint(const Vec4& tint) { m_pressedTint = tint; }
         void setDisabledTint(const Vec4& tint) { m_disabledTint = tint; }
@@ -107,9 +107,9 @@ namespace dx3d {
 
         // Button states and styling
         ButtonState m_currentState = ButtonState::Normal;
-        Vec4 m_normalTint = { 0.8f, 0.8f, 0.8f, 1.0f };      // Light gray
-        Vec4 m_hoveredTint = { 1.0f, 1.0f, 1.0f, 1.0f };     // White
-        Vec4 m_pressedTint = { 0.6f, 0.6f, 0.6f, 1.0f };     // Dark gray
+        Vec4 m_normalTint = { 0.8f, 0.8f, 0.8f, 0.5f };      // Light gray
+        Vec4 m_hoveredTint = { 1.0f, 1.0f, 1.0f, 0.5f };     // White
+        Vec4 m_pressedTint = { 0.6f, 0.6f, 0.6f, 0.5f };     // Dark gray
         Vec4 m_disabledTint = { 0.5f, 0.5f, 0.5f, 0.5f };    // Translucent gray
 
         // Custom textures (optional)

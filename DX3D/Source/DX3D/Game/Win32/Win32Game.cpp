@@ -14,17 +14,6 @@ void dx3d::Game::run()
 				break;
 			}
 
-			// Handle keyboard input for camera controls
-			if (msg.message == WM_KEYDOWN || msg.message == WM_SYSKEYDOWN)
-			{
-				onKeyDown(static_cast<int>(msg.wParam));
-			}
-			else if (msg.message == WM_KEYUP || msg.message == WM_SYSKEYUP)
-			{
-				onKeyUp(static_cast<int>(msg.wParam));
-			}
-			
-
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
