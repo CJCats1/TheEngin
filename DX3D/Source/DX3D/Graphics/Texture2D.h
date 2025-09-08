@@ -4,7 +4,7 @@
 #include <memory>
 #include <wincodec.h> // For WIC
 #include <comdef.h>
-
+#include <iostream>
 namespace dx3d
 {
     class Texture2D {
@@ -19,7 +19,6 @@ namespace dx3d
         {
             // Initialize COM
             CoInitializeEx(nullptr, COINIT_MULTITHREADED);
-
             // Create WIC factory
             Microsoft::WRL::ComPtr<IWICImagingFactory> wicFactory;
             HRESULT hr = CoCreateInstance(
@@ -41,7 +40,10 @@ namespace dx3d
                 &decoder
             );
 
-            if (FAILED(hr)) return nullptr;
+            if (FAILED(hr))
+            {
+                return nullptr;
+            }
 
             // Get first frame
             Microsoft::WRL::ComPtr<IWICBitmapFrameDecode> frame;
@@ -111,11 +113,34 @@ namespace dx3d
             return std::make_shared<Texture2D>(srv);
         }
 
-        static std::shared_ptr<Texture2D> CreateWhiteTexture(ID3D11Device* device)
+        static std::shared_ptr<Texture2D> CreateDebugTexture(ID3D11Device* device)
         {
+            std::cout << "DebugTextureUsed" << std::endl;
+			int size = 8; // 8x8 
+            // Small checkerboard texture (default 8x8)
+            UINT width = size;
+            UINT height = size;
+
+            std::unique_ptr<UINT[]> pixels(new UINT[width * height]);
+
+            UINT magenta = 0xFFFF00FF;   
+            UINT black = 0xFF000000;
+            UINT transparent = 0x00000000;
+
+            // Fill checkerboard pattern
+            for (UINT y = 0; y < height; y++)
+            {
+                for (UINT x = 0; x < width; x++)
+                {
+                    bool isCyan = ((x / (size / 2)) + (y / (size / 2))) % 2 == 0;
+                    pixels[y * width + x] = isCyan ? magenta : black;
+                }
+            }
+
+            // Describe texture
             D3D11_TEXTURE2D_DESC texDesc{};
-            texDesc.Width = 1;
-            texDesc.Height = 1;
+            texDesc.Width = width;
+            texDesc.Height = height;
             texDesc.MipLevels = 1;
             texDesc.ArraySize = 1;
             texDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -123,16 +148,20 @@ namespace dx3d
             texDesc.Usage = D3D11_USAGE_DEFAULT;
             texDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 
-            UINT whitePixel[1] = { 0xFFFFFFFF }; // RGBA = 1,1,1,1
+            // Subresource data
             D3D11_SUBRESOURCE_DATA data{};
-            data.pSysMem = whitePixel;
-            data.SysMemPitch = sizeof(UINT);
+            data.pSysMem = pixels.get();
+            data.SysMemPitch = width * sizeof(UINT);
 
+            // Create texture
             Microsoft::WRL::ComPtr<ID3D11Texture2D> tex;
-            device->CreateTexture2D(&texDesc, &data, tex.GetAddressOf());
+            HRESULT hr = device->CreateTexture2D(&texDesc, &data, tex.GetAddressOf());
+            if (FAILED(hr)) return nullptr;
 
+            // Create SRV
             Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> srv;
-            device->CreateShaderResourceView(tex.Get(), nullptr, srv.GetAddressOf());
+            hr = device->CreateShaderResourceView(tex.Get(), nullptr, srv.GetAddressOf());
+            if (FAILED(hr)) return nullptr;
 
             return std::make_shared<Texture2D>(srv);
         }

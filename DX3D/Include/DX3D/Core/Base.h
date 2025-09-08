@@ -52,7 +52,7 @@ namespace dx3d
 #define DX3DLogWarning(message)\
 		DX3DLog(getLogger(),Logger::LogLevel::Warning, message)
 
-#define DX3DLogInfo(message)\
+#define DX3DLogError(message)\
 		DX3DLog(getLogger(),Logger::LogLevel::Error, message)
 
 #define DX3DLogThrowError(message)\

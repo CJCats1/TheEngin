@@ -53,7 +53,7 @@ void BridgeScene::load(GraphicsEngine& engine) {
     auto& cameraEntity = m_entityManager->createEntity("MainCamera");
     float screenWidth = GraphicsEngine::getWindowWidth();
     float screenHeight = GraphicsEngine::getWindowHeight();
-    auto& camera = cameraEntity.addComponent<Camera>(screenWidth, screenHeight);
+    auto& camera = cameraEntity.addComponent<Camera2D>(screenWidth, screenHeight);
     camera.setPosition(0.0f, 0.0f);
     camera.setZoom(1.0f);
 
@@ -273,7 +273,7 @@ void BridgeScene::update(float dt) {
 void BridgeScene::updateCameraMovement(float dt) {
     auto* cameraEntity = m_entityManager->findEntity("MainCamera");
     if (!cameraEntity) return;
-    auto* camera = cameraEntity->getComponent<Camera>();
+    auto* camera = cameraEntity->getComponent<Camera2D>();
     if (!camera) return;
 
     auto& input = Input::getInstance();
@@ -311,7 +311,7 @@ void BridgeScene::render(GraphicsEngine& engine, SwapChain& swapChain) {
 
     // WORLD RENDERING
     if (auto* cameraEntity = m_entityManager->findEntity("MainCamera")) {
-        if (auto* camera = cameraEntity->getComponent<Camera>()) {
+        if (auto* camera = cameraEntity->getComponent<Camera2D>()) {
             ctx.setViewMatrix(camera->getViewMatrix());
             ctx.setProjectionMatrix(camera->getProjectionMatrix());
         }
@@ -383,7 +383,7 @@ void dx3d::BridgeScene::fixedUpdate(float dt)
 
 Vec2 BridgeScene::screenToWorld(int screenX, int screenY) {
     if (auto* cameraEntity = m_entityManager->findEntity("MainCamera")) {
-        if (auto* camera = cameraEntity->getComponent<Camera>()) {
+        if (auto* camera = cameraEntity->getComponent<Camera2D>()) {
             return camera->screenToWorld(Vec2((float)screenX, (float)screenY));
         }
     }
@@ -685,6 +685,26 @@ void BridgeScene::updateUIStatus() {
                 modeText = L"Mode: SIMULATING";
             }
             panel->setTitle(modeText);
+        }
+    }
+    if (auto* infoEntity = m_entityManager->findEntity("InfoPanel")) {
+        auto* panel = infoEntity->getComponent<PanelComponent>();
+        if (panel) {
+            std::wstring infoText;
+
+            if (m_currentMode == SceneMode::Build) {
+                if (m_inDeleteMode)
+                    infoText = L"Click nodes to delete them (hold Shift for multi-delete).";
+                else if (m_nodeAttachedToMouse)
+                    infoText = L"Drag to place a new node, release to connect.";
+                else
+                    infoText = L"Click a node to start building.";
+            }
+            else if (m_currentMode == SceneMode::Simulating) {
+                infoText = L"Simulation is running";
+            }
+
+            panel->setTitle(infoText);
         }
     }
 }

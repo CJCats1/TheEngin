@@ -238,7 +238,7 @@ void dx3d::DeviceContext::disableDepthTest()
 // Re-enable default depth
 void dx3d::DeviceContext::enableDepthTest()
 {
-	enableDefaultDepth(); // You already have this
+	enableDefaultDepth(); 
 }
 void dx3d::DeviceContext::drawTriangleList(ui32 vertexCount, ui32 startVertexLocation)
 {

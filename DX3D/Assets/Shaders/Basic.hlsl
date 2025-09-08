@@ -1,4 +1,3 @@
-// ScreenMesh.hlsl
 Texture2D tex : register(t0);
 SamplerState samp : register(s0);
 

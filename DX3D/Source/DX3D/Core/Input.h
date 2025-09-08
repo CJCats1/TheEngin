@@ -101,7 +101,6 @@ namespace dx3d {
 
         void validateHardwareState()
         {
-            std::cout << "Validating hardware state..." << std::endl;
 
             if (!m_windowHandle) return;
 
@@ -112,8 +111,7 @@ namespace dx3d {
                     bool hardwareDown = (keyState & 0x8000) != 0;
 
                     if (!hardwareDown) {
-                        std::cout << "Hardware validation: Key " << keyCode << " should be released" << std::endl;
-                        m_keyStates[keyCode] = false;  // Just fix the state, don't trigger "just released"
+                        m_keyStates[keyCode] = false;  
                     }
                 }
             }

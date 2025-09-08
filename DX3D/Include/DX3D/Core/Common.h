@@ -94,6 +94,7 @@ namespace dx3d
 		const void* vertexList{};
 		ui32 vertexListSize{};
 		ui32 vertexSize{};
+		bool isDynamic = false;
 	};
 	struct GameDesc
 	{

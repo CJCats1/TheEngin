@@ -360,8 +360,6 @@ void ButtonComponent::handleInput() {
             m_wasPressed = true;
         }
         else if (m_wasPressed && mouseJustReleased) {
-            std::cout << "Button released: " << std::endl;
-
             // Button was clicked!
             if (m_onClickCallback) {
                 m_onClickCallback();

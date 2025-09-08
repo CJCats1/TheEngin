@@ -21,6 +21,20 @@ namespace dx3d {
         void createUI(GraphicsEngine& engine);
         void setMode(SceneMode mode);
         void toggleDeleteMode();
+        struct OriginalNode {
+            Vec2 position;
+            bool fixed;
+            std::string name;
+        };
+
+        struct OriginalBeam {
+            std::string node1Name;
+            std::string node2Name;
+            std::string name;
+        };
+
+        std::vector<OriginalNode> m_originalNodes;
+        std::vector<OriginalBeam> m_originalBeams;
 
     private:
         // Core systems

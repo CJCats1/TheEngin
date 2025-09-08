@@ -3,10 +3,10 @@
 #include <DX3D/Core/TransformComponent.h>
 
 namespace dx3d {
-    class Camera {
+    class Camera2D {
     public:
-        Camera(float screenWidth, float screenHeight);
-        ~Camera() = default;
+        Camera2D(float screenWidth, float screenHeight);
+        ~Camera2D() = default;
 
         // Transform access (direct access to transform component)
         TransformComponent& transform() { return m_transform; }
@@ -58,7 +58,7 @@ namespace dx3d {
         void updateProjectionMatrix();
     };
 
-    inline Camera::Camera(float screenWidth, float screenHeight)
+    inline Camera2D::Camera2D(float screenWidth, float screenHeight)
         : m_zoom(1.0f)
         , m_screenWidth(screenWidth)
         , m_screenHeight(screenHeight) {
@@ -66,15 +66,15 @@ namespace dx3d {
         updateProjectionMatrix();
     }
 
-    inline void Camera::setZoom(float zoom) {
+    inline void Camera2D::setZoom(float zoom) {
         m_zoom = clamp(zoom, 0.1f, 10.0f); // Reasonable zoom limits
     }
 
-    inline void Camera::zoom(float deltaZoom) {
+    inline void Camera2D::zoom(float deltaZoom) {
         setZoom(m_zoom + deltaZoom);
     }
 
-    inline Mat4 Camera::getViewMatrix() const {
+    inline Mat4 Camera2D::getViewMatrix() const {
         Vec2 pos = getPosition();
         float rotation = getRotation();
 
@@ -86,11 +86,11 @@ namespace dx3d {
         return translation  * rotationMatrix * scale;
     }
 
-    inline Mat4 Camera::getViewProjectionMatrix() const {
+    inline Mat4 Camera2D::getViewProjectionMatrix() const {
         return m_projectionMatrix * getViewMatrix();
     }
 
-    inline Vec2 Camera::screenToWorld(const Vec2& screenPos) const {
+    inline Vec2 Camera2D::screenToWorld(const Vec2& screenPos) const {
         Vec2 pos = getPosition();
         float rotation = getRotation();
 
@@ -115,7 +115,7 @@ namespace dx3d {
         return Vec2(worldX, worldY);
     }
 
-    inline Vec2 Camera::worldToScreen(const Vec2& worldPos) const {
+    inline Vec2 Camera2D::worldToScreen(const Vec2& worldPos) const {
         Vec2 pos = getPosition();
         float rotation = getRotation();
 
@@ -140,7 +140,7 @@ namespace dx3d {
         return Vec2(screenX, screenY);
     }
 
-    inline Camera::Bounds Camera::getWorldBounds() const {
+    inline Camera2D::Bounds Camera2D::getWorldBounds() const {
         // Get the four corners of the screen in world space
         Vec2 topLeft = screenToWorld(Vec2(0, 0));
         Vec2 topRight = screenToWorld(Vec2(m_screenWidth, 0));
@@ -156,13 +156,13 @@ namespace dx3d {
         return { left, right, top, bottom };
     }
 
-    inline void Camera::setScreenSize(float width, float height) {
+    inline void Camera2D::setScreenSize(float width, float height) {
         m_screenWidth = width;
         m_screenHeight = height;
         updateProjectionMatrix();
     }
 
-    inline void Camera::updateProjectionMatrix() {
+    inline void Camera2D::updateProjectionMatrix() {
         // Create orthographic projection for 2D
         // Map screen pixels to world units (1 pixel = 1 world unit at zoom 1.0)
         float halfWidth = m_screenWidth * 0.5f;

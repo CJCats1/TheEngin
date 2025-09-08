@@ -2,8 +2,10 @@
 #include <DX3D/Graphics/Mesh.h>
 #include <DX3D/Graphics/DeviceContext.h>
 #include <vector>
-#include<iostream>
+#include <DX3D/Core/Logger.h>
 #include <DX3D/Graphics/GraphicsEngine.h>
+#include <iostream>
+#include <DX3D/Core/Logger.h>
 
 namespace dx3d {
 
@@ -30,7 +32,6 @@ namespace dx3d {
             return false;
         }
 
-        std::cout << "DirectWriteRenderer: DWriteCreateFactory SUCCESS\n";
 
         if (!initializeWIC()) {
             std::cout << "DirectWriteRenderer: WIC initialization FAILED\n";
@@ -356,7 +357,6 @@ namespace dx3d {
     }
 
     void TextComponent::rebuildTexture() const {
-        std::cout << "=== rebuildTexture() called ===" << std::endl;
         float screenWidth = GraphicsEngine::getWindowWidth();
 
         if (m_text.empty()) {
@@ -380,7 +380,6 @@ namespace dx3d {
 
         // Get text dimensions for mesh sizing
         Vec2 textSize = getTextSize();
-        std::cout << "Measured text size: " << textSize.x << "x" << textSize.y << std::endl;
         float worldScale = 1.0f; // Your current divisor, but make it configurable
 
         m_textMesh = Mesh::CreateQuadTextured(m_device,
@@ -397,7 +396,6 @@ namespace dx3d {
         m_textMesh->setTexture(m_textTexture);
 
         m_needsRebuild = false;
-        std::cout << "=== rebuildTexture() complete ===" << std::endl;
     }
 
     void TextComponent::draw(DeviceContext& ctx) const {

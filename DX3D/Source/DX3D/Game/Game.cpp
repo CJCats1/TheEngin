@@ -72,9 +72,6 @@ void dx3d::Game::onInternalUpdate()
         m_isRunning = false;
         return;
     }
-    if (input.wasKeyJustReleased(Key::Z)) {
-        std::cout << "Z KEY FUNCTIONALITY TRIGGERED!" << std::endl;
-    }
     auto now = std::chrono::steady_clock::now();
     std::chrono::duration<float> elapsed = now - m_lastFrameTime;
     m_lastFrameTime = now;

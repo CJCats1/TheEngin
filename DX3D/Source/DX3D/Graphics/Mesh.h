@@ -6,6 +6,7 @@
 #include <DX3D/Graphics/IndexBuffer.h>
 #include <DX3D/Graphics/Texture2D.h>
 #include <memory>
+
 namespace dx3d
 {
     struct Color
@@ -23,17 +24,29 @@ namespace dx3d
     inline const Vec4 Color::RED = Vec4(1, 0, 0, 1);
     inline const Vec4 Color::GREEN = Vec4(0, 1, 0, 1);
     inline const Vec4 Color::BLUE = Vec4(0, 0, 1, 1);
+
     class Mesh {
     public:
         static std::shared_ptr<Mesh> CreateQuadColored(GraphicsDevice& device, float w, float h);
-        static std::shared_ptr<Mesh> CreateQuadSolidColored(GraphicsDevice& device, float w, float h,Vec4 color);
-
+        static std::shared_ptr<Mesh> CreateQuadSolidColored(GraphicsDevice& device, float w, float h, Vec4 color);
         static std::shared_ptr<Mesh> CreateQuadTextured(GraphicsDevice& device, float w, float h);
+
+        // Spritesheet support
+        void setSpriteFrame(int frameX, int frameY, int totalFramesX, int totalFramesY);
+        void setSpriteFrameByIndex(int frameIndex, int totalFramesX, int totalFramesY);
+        void setCustomUVRect(float u, float v, float uWidth, float vHeight);
+
         void setTexture(std::shared_ptr<Texture2D> texture) { m_texture = texture; }
         bool isTextured() const { return (bool)m_texture; }
         void draw(DeviceContext& ctx) const;
         float getWidth() const { return m_width; }
         float getHeight() const { return m_height; }
+
+        // UV accessors
+        float getCurrentU() const { return m_currentU; }
+        float getCurrentV() const { return m_currentV; }
+        float getCurrentUWidth() const { return m_currentUWidth; }
+        float getCurrentVHeight() const { return m_currentVHeight; }
 
     private:
         std::shared_ptr<VertexBuffer> m_vb;
@@ -45,6 +58,16 @@ namespace dx3d
         float m_width = 0.0f;
         float m_height = 0.0f;
 
-    };
+        // Store current UV coordinates for sprite sheet support
+        float m_currentU = 0.0f;
+        float m_currentV = 0.0f;
+        float m_currentUWidth = 1.0f;
+        float m_currentVHeight = 1.0f;
 
+        // Keep reference to device for updating vertex buffer
+        GraphicsDevice* m_device = nullptr;
+
+        // Helper method to update UV coordinates
+        void updateUVCoordinates();
+    };
 }

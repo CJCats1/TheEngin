@@ -87,6 +87,83 @@ namespace dx3d {
         }
 		float getWidth() const { return m_width; }
 		float getHeight() const { return m_height; }
+
+        // SPRITESHEET FUNCTIONALITY
+        // Set up spritesheet parameters
+        void setupSpritesheet(int totalFramesX, int totalFramesY) {
+            m_spritesheetFramesX = totalFramesX;
+            m_spritesheetFramesY = totalFramesY;
+            m_isSpritesheetEnabled = true;
+        }
+
+        // Set frame by X,Y coordinates
+        void setSpriteFrame(int frameX, int frameY) {
+            if (!m_isSpritesheetEnabled || !m_mesh) return;
+            m_currentFrameX = frameX;
+            m_currentFrameY = frameY;
+            m_mesh->setSpriteFrame(frameX, frameY, m_spritesheetFramesX, m_spritesheetFramesY);
+        }
+
+        // Set frame by index (0-based, left-to-right, top-to-bottom)
+        void setSpriteFrameByIndex(int frameIndex) {
+            if (!m_isSpritesheetEnabled || !m_mesh) return;
+            m_currentFrameIndex = frameIndex;
+            m_mesh->setSpriteFrameByIndex(frameIndex, m_spritesheetFramesX, m_spritesheetFramesY);
+
+            // Update frame X,Y for consistency
+            m_currentFrameX = frameIndex % m_spritesheetFramesX;
+            m_currentFrameY = frameIndex / m_spritesheetFramesX;
+        }
+
+        // Animation support
+        void startAnimation(int startFrame, int endFrame, float frameRate) {
+            m_animationStartFrame = startFrame;
+            m_animationEndFrame = endFrame;
+            m_animationFrameRate = frameRate;
+            m_animationTimer = 0.0f;
+            m_isAnimating = true;
+            setSpriteFrameByIndex(startFrame);
+        }
+
+        void stopAnimation() {
+            m_isAnimating = false;
+        }
+
+        void updateAnimation(float deltaTime) {
+            if (!m_isAnimating) return;
+
+            m_animationTimer += deltaTime;
+            float frameDuration = 1.0f / m_animationFrameRate;
+
+            if (m_animationTimer >= frameDuration) {
+                m_animationTimer = 0.0f;
+                m_currentFrameIndex++;
+
+                if (m_currentFrameIndex > m_animationEndFrame) {
+                    if (m_animationLoop) {
+                        m_currentFrameIndex = m_animationStartFrame;
+                    }
+                    else {
+                        m_currentFrameIndex = m_animationEndFrame;
+                        m_isAnimating = false;
+                    }
+                }
+
+                setSpriteFrameByIndex(m_currentFrameIndex);
+            }
+        }
+
+        void setAnimationLoop(bool loop) { m_animationLoop = loop; }
+        bool isAnimating() const { return m_isAnimating; }
+
+        // Getters for spritesheet info
+        int getCurrentFrameX() const { return m_currentFrameX; }
+        int getCurrentFrameY() const { return m_currentFrameY; }
+        int getCurrentFrameIndex() const { return m_currentFrameIndex; }
+        int getSpritesheetFramesX() const { return m_spritesheetFramesX; }
+        int getSpritesheetFramesY() const { return m_spritesheetFramesY; }
+        bool isSpritesheetEnabled() const { return m_isSpritesheetEnabled; }
+
     private:
         std::shared_ptr<Mesh> m_mesh;
         std::shared_ptr<Texture2D> m_texture;
@@ -94,9 +171,23 @@ namespace dx3d {
         bool m_visible = true;
         GraphicsDevice& m_device;
         Vec4 m_tint = { 1,1,1,0 };
-        // inside SpriteComponent class (private:)
         float m_width = 1.0f;
         float m_height = 1.0f;
+        // Spritesheet members
+        bool m_isSpritesheetEnabled = false;
+        int m_spritesheetFramesX = 1;
+        int m_spritesheetFramesY = 1;
+        int m_currentFrameX = 0;
+        int m_currentFrameY = 0;
+        int m_currentFrameIndex = 0;
+
+        // Animation members
+        bool m_isAnimating = false;
+        bool m_animationLoop = true;
+        int m_animationStartFrame = 0;
+        int m_animationEndFrame = 0;
+        float m_animationFrameRate = 10.0f; // frames per second
+        float m_animationTimer = 0.0f;
 
         void initialize(GraphicsDevice& device, float width, float height);
     };

@@ -20,8 +20,6 @@ void Input::setKeyDown(int keyCode)
     if (!m_keyStates[keyCode]) {
         m_justPressed[keyCode] = true;
 
-        // Debug output
-        std::cout << "Key pressed: " << keyCode << " (just pressed set to true)" << std::endl;
     }
     m_keyStates[keyCode] = true;
 }
@@ -89,12 +87,6 @@ bool Input::wasKeyJustReleased(Key key) const
 //
 void Input::update()
 {
-    // Show what "just pressed" keys we have before clearing
-    for (const auto& [key, pressed] : m_justPressed) {
-        if (pressed) {
-            std::cout << "About to clear just pressed: " << key << std::endl;
-        }
-    }
 
     // Store previous states
     m_previousKeyStates = m_keyStates;
@@ -112,7 +104,6 @@ void Input::update()
 //
 void Input::reset()
 {
-    std::cout << "INPUT RESET CALLED!" << std::endl;
     m_keyStates.clear();
     m_previousKeyStates.clear();
     m_justPressed.clear();
