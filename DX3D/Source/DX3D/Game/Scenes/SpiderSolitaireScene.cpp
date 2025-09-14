@@ -1,0 +1,1122 @@
+#include "SpiderSolitaireScene.h"
+#include <DX3D/Graphics/SpriteComponent.h>
+#include <DX3D/Graphics/GraphicsEngine.h>
+#include <DX3D/Graphics/SwapChain.h>
+#include <DX3D/Graphics/Camera.h>
+#include <DX3D/Components/AnimationComponent.h>
+#include <DX3D/Core/Input.h>
+#include <DX3D/Graphics/DirectWriteText.h>
+#include <DX3D/Components/ButtonComponent.h>
+#include <DX3D/Components/DraggableComponent.h>
+#include <DX3D/Components/ColliderComponent.h>
+#include <DX3D/Components/CardComponent.h>
+#include <iostream>
+#include <algorithm>
+#include <random>
+
+using namespace dx3d;
+
+// CardStack implementation
+void CardStack::addCard(Entity* card, float zSpacing) {
+    cards.push_back(card);
+    updateCardPositions(zSpacing);
+}
+
+Entity* CardStack::removeTopCard(float zSpacing) {
+    if (cards.empty()) return nullptr;
+    Entity* card = cards.back();
+    cards.pop_back();
+    updateCardPositions(zSpacing);
+    return card;
+}
+
+Entity* CardStack::getTopCard() const {
+    return cards.empty() ? nullptr : cards.back();
+}
+
+void CardStack::updateCardPositions(float zSpacing) {
+    for (size_t i = 0; i < cards.size(); ++i) {
+        if (auto* sprite = cards[i]->getComponent<SpriteComponent>()) {
+            float yOffset = faceDown ? cardOffset * 0.3f : cardOffset;
+            float Z_DEPTH_STOCK = -90.0f;
+            if (cardOffset < 5.0f) { // Stock pile
+                float stockZSpacing = 0.02f;  // small Z increment
+                float zDepth = 1;
+
+                sprite->setPosition(
+                    position.x,  // small X shift
+                    position.y - (i * 0.3f),  // small Y shift
+                    zDepth
+                );
+            }
+            else {
+                // Normal tableau/foundation positioning
+                float zDepth = baseZDepth - (static_cast<float>(i) * zSpacing);
+                zDepth = std::max(-99.0f, std::min(0.0f, zDepth));
+
+                sprite->setPosition(
+                    position.x,
+                    position.y - (i * yOffset),
+                    zDepth
+                );
+            }
+        }
+    }
+}
+
+bool CardStack::canDropCard(Entity* card) const {
+    if (cards.empty()) {
+        return true; // Can always drop on empty stack
+    }
+
+    auto* cardComp = card->getComponent<CardComponent>();
+    auto* topCardComp = getTopCard()->getComponent<CardComponent>();
+
+    if (!cardComp || !topCardComp) return false;
+
+    // In Spider Solitaire, cards must be placed in descending rank order
+    // Suit doesn't matter for initial placement, but matters for moving sequences
+    return static_cast<int>(cardComp->getRank()) == static_cast<int>(topCardComp->getRank()) - 1;
+}
+
+// SpiderSolitaireScene implementation
+SpiderSolitaireScene::SpiderSolitaireScene(SpiderDifficulty difficulty)
+    : m_difficulty(difficulty), m_completedSuits(0), m_draggedCard(nullptr),
+    m_isDragging(false), m_dragOffset(0, 0) {
+}
+
+void SpiderSolitaireScene::load(GraphicsEngine& engine) {
+    auto& device = engine.getGraphicsDevice();
+    m_graphicsDevice = &device;
+    // Initialize Entity manager
+    m_entityManager = std::make_unique<EntityManager>();
+
+    // Create camera
+    auto& cameraEntity = m_entityManager->createEntity("MainCamera");
+    float screenWidth = GraphicsEngine::getWindowWidth();
+    float screenHeight = GraphicsEngine::getWindowHeight();
+    auto& camera = cameraEntity.addComponent<Camera2D>(screenWidth, screenHeight);
+    camera.setPosition(0.0f, 0.0f);
+    camera.setZoom(0.8f); // Zoom out to see more cards
+
+    // Setup tableau (10 columns)
+    m_tableau.resize(10);
+    for (int i = 0; i < 10; ++i) {
+        m_tableau[i].position = Vec2(TABLEAU_START_X + i * COLUMN_SPACING, TABLEAU_Y);
+        m_tableau[i].cardOffset = 25.0f;
+    }
+
+    // Setup foundations (8 completed suit stacks)
+    m_foundations.resize(8);
+    for (int i = 0; i < 8; ++i) {
+        // Use full column spacing for better visibility
+        m_foundations[i].position = Vec2(TABLEAU_START_X + i * COLUMN_SPACING*0.8, FOUNDATION_Y);
+        m_foundations[i].cardOffset = 2.0f; // Tightly stacked
+    }
+    // Setup stock pile
+    m_stock.position = Vec2(STOCK_X, STOCK_Y);
+    m_stock.cardOffset = 1.0f; // Very tight stack
+
+    // Create empty spot indicators
+    createEmptySpots(device);
+
+    // Create all cards and setup game
+    createCards(device);
+    setupTableau();
+    dealInitialCards();
+    createUI(device);
+
+    int numDeals = m_stock.size() / 10; // each deal = 10 cards
+    m_stockIndicators.clear();
+
+    for (int i = 0; i < numDeals; ++i) {
+        auto& fakeStock = m_entityManager->createEntity("StockIndicator_" + std::to_string(i));
+        auto& sprite = fakeStock.addComponent<SpriteComponent>(
+            device, L"DX3D/Assets/Textures/CardSpriteSheet.png", CARD_WIDTH, CARD_HEIGHT
+        );
+
+        sprite.setupSpritesheet(13, 6);
+        sprite.setSpriteFrame(3, 4); // card back
+
+        // Position each indicator with proper Z-depth
+        float x = STOCK_X;
+        float y = STOCK_Y + i * 5;
+        float z = Z_DEPTH_STOCK - (i * 0.1f); // Each indicator slightly in front
+
+        sprite.setPosition(Vec3(x, y, z));
+        sprite.setVisible(true); // Ensure visibility
+
+        m_stockIndicators.push_back(&fakeStock);
+    }
+
+    // Update empty spot visibility after initial setup
+   // updateEmptySpotVisibility();
+}
+
+void SpiderSolitaireScene::createEmptySpots(GraphicsDevice& device) {
+    // Create empty spots for tableau columns
+    m_tableauEmptySpots.resize(10);
+    for (int i = 0; i < 10; ++i) {
+        auto& emptySpot = m_entityManager->createEntity("TableauEmpty_" + std::to_string(i));
+        auto& sprite = emptySpot.addComponent<SpriteComponent>(
+            device, L"DX3D/Assets/Textures/CardSpriteSheet.png", CARD_WIDTH, CARD_HEIGHT
+        );
+
+        sprite.setupSpritesheet(13, 6);
+        sprite.setSpriteFrame(12, 4); // Empty spot frame
+
+        // Position at tableau base with appropriate Z-depth
+        float x = TABLEAU_START_X + i * COLUMN_SPACING;
+        float y = TABLEAU_Y;
+        float z = Z_DEPTH_TABLEAU_BASE + 0.5f; // Slightly behind cards but in front of background
+
+        sprite.setPosition(Vec3(x, y, z));
+        sprite.setVisible(true); // Initially hidden, will show when column is empty
+
+        m_tableauEmptySpots[i] = &emptySpot;
+    }
+
+    // Create empty spots for foundations
+    m_foundationEmptySpots.resize(8);
+    for (int i = 0; i < 8; ++i) {
+        auto& emptySpot = m_entityManager->createEntity("FoundationEmpty_" + std::to_string(i));
+        auto& sprite = emptySpot.addComponent<SpriteComponent>(
+            device, L"DX3D/Assets/Textures/CardSpriteSheet.png", CARD_WIDTH, CARD_HEIGHT
+        );
+
+        sprite.setupSpritesheet(13, 6);
+        sprite.setSpriteFrame(12, 4); // Empty spot frame
+
+        // Position at foundation base - USE FULL COLUMN SPACING
+        float x = TABLEAU_START_X + i * COLUMN_SPACING*0.8;  // Changed from COLUMN_SPACING * 0.6f
+        float y = FOUNDATION_Y;
+        float z = Z_DEPTH_FOUNDATION_BASE + 0.5f; // Slightly behind foundation cards
+
+        sprite.setPosition(Vec3(x, y, z));
+        sprite.setVisible(true); // Foundations start empty
+
+        m_foundationEmptySpots[i] = &emptySpot;
+    }
+
+    // Create empty spot for stock pile (shows when stock is completely empty)
+    auto& stockEmptySpot = m_entityManager->createEntity("StockEmpty");
+    auto& stockSprite = stockEmptySpot.addComponent<SpriteComponent>(
+        device, L"DX3D/Assets/Textures/CardSpriteSheet.png", CARD_WIDTH, CARD_HEIGHT
+    );
+
+    stockSprite.setupSpritesheet(13, 6);
+    stockSprite.setSpriteFrame(11, 4); // Empty spot frame
+
+    // Position at stock location
+    stockSprite.setPosition(Vec3(STOCK_X, STOCK_Y, Z_DEPTH_STOCK + 0.5f));
+    stockSprite.setVisible(true); // Hidden initially
+
+    m_stockEmptySpot = &stockEmptySpot;
+}
+
+void SpiderSolitaireScene::updateEmptySpotVisibility() {
+    // Update tableau empty spots
+    for (int i = 0; i < 10; ++i) {
+        if (auto* sprite = m_tableauEmptySpots[i]->getComponent<SpriteComponent>()) {
+            sprite->setVisible(m_tableau[i].isEmpty());
+        }
+    }
+
+    // Update foundation empty spots
+    for (int i = 0; i < 8; ++i) {
+        if (auto* sprite = m_foundationEmptySpots[i]->getComponent<SpriteComponent>()) {
+            sprite->setVisible(m_foundations[i].isEmpty());
+        }
+    }
+
+    // Update stock empty spot
+    if (auto* sprite = m_stockEmptySpot->getComponent<SpriteComponent>()) {
+        sprite->setVisible(m_stock.isEmpty() && m_stockIndicators.empty());
+    }
+}
+
+void SpiderSolitaireScene::createCards(GraphicsDevice& device) {
+    // Create 2 decks (104 cards total)
+    std::vector<Entity*> allCards;
+
+    for (int deck = 0; deck < 2; ++deck) {
+        for (int suit = 0; suit < 4; ++suit) {
+            for (int rank = 0; rank < 13; ++rank) {
+                std::string entityName = "Card_" + std::to_string(deck) + "_" +
+                    std::to_string(suit) + "_" + std::to_string(rank);
+                auto& cardEntity = m_entityManager->createEntity(entityName);
+
+                // Add sprite component
+                auto& cardSprite = cardEntity.addComponent<SpriteComponent>(
+                    device, L"DX3D/Assets/Textures/CardSpriteSheet.png", CARD_WIDTH, CARD_HEIGHT
+                );
+
+                cardSprite.setupSpritesheet(13, 6);
+
+                // Set appropriate suit based on difficulty
+                int actualSuit = suit;
+                if (m_difficulty == SpiderDifficulty::OneSuit) {
+                    actualSuit = 0; // All spades
+                }
+                else if (m_difficulty == SpiderDifficulty::TwoSuit) {
+                    actualSuit = (suit < 2) ? 0 : 1; // Spades and hearts only
+                }
+
+                cardSprite.setSpriteFrame(rank, actualSuit);
+
+                // Add card component
+                auto& cardComp = cardEntity.addComponent<CardComponent>(
+                    static_cast<Suit>(actualSuit),
+                    static_cast<Rank>(rank)
+                );
+                cardComp.setFaceUp(false);
+                // Show card back initially
+                cardSprite.setSpriteFrame(3, 4); // Card back frame
+                // Add collider and draggable
+                auto& collider = cardEntity.addComponent<ColliderComponent>(CARD_WIDTH, CARD_HEIGHT);
+                auto& draggable = cardEntity.addComponent<DraggableComponent>();
+
+                allCards.push_back(&cardEntity);
+            }
+        }
+    }
+
+    // Shuffle the deck
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::shuffle(allCards.begin(), allCards.end(), gen);
+
+    // Add all cards to stock initially
+    for (auto* card : allCards) {
+        m_stock.addCard(card, -1);
+    }
+}
+
+void SpiderSolitaireScene::setupTableau() {
+    // Set base Z depths for each stack
+    for (int col = 0; col < 10; ++col) {
+        m_tableau[col].baseZDepth = Z_DEPTH_TABLEAU_BASE;
+    }
+
+    for (int i = 0; i < 8; ++i) {
+        m_foundations[i].baseZDepth = Z_DEPTH_FOUNDATION_BASE;
+    }
+
+    // Stock gets a safe Z depth
+    m_stock.baseZDepth = -20.0f; // Safe distance from other elements
+
+    // Spider Solitaire initial deal:
+    for (int col = 0; col < 10; ++col) {
+        int cardCount = (col < 4) ? 6 : 5;
+
+        for (int i = 0; i < cardCount; ++i) {
+            if (!m_stock.isEmpty()) {
+                Entity* card = m_stock.removeTopCard(0.1f); // Smaller spacing for stock operations
+                m_tableau[col].addCard(card, Z_DEPTH_CARD_SPACING);
+
+                // Set face up/down status
+                if (auto* sprite = card->getComponent<SpriteComponent>()) {
+                    bool isFaceUp = (i == cardCount - 1);
+                    if (!isFaceUp) {
+                        sprite->setSpriteFrame(3, 4); // Card back
+                    }
+                    else {
+                        // Show actual card
+                        if (auto* cardComp = card->getComponent<CardComponent>()) {
+                            sprite->setSpriteFrame(
+                                static_cast<int>(cardComp->getRank()),
+                                static_cast<int>(cardComp->getSuit())
+                            );
+                        }
+                    }
+                    if (auto* cardComp = card->getComponent<CardComponent>()) {
+                        cardComp->setFaceUp(isFaceUp);
+                    }
+                }
+            }
+        }
+    }
+}
+
+void SpiderSolitaireScene::dealInitialCards() {
+    // Cards are already dealt in setupTableau
+    // This could be used for dealing new rows from stock
+}
+
+void SpiderSolitaireScene::createUI(GraphicsDevice& device) {
+    // Game title
+    auto& titleEntity = m_entityManager->createEntity("GameTitle");
+    auto& titleText = titleEntity.addComponent<TextComponent>(
+        device, TextSystem::getRenderer(), L"Spider Solitaire", 32.0f
+    );
+    titleText.setFontFamily(L"Arial");
+    titleText.setColor(Vec4(1.0f, 1.0f, 1.0f, 1.0f));
+    titleText.setScreenPosition(0.5f, 0.02f);
+
+    // Score display
+    auto& scoreEntity = m_entityManager->createEntity("ScoreText");
+    auto& scoreText = scoreEntity.addComponent<TextComponent>(
+        device, TextSystem::getRenderer(), L"Completed Suits: 0/8", 24.0f
+    );
+    scoreText.setFontFamily(L"Consolas");
+    scoreText.setColor(Vec4(0.0f, 1.0f, 0.0f, 1.0f));
+    scoreText.setScreenPosition(0.15f, 0.1f);
+
+    // Instructions - updated to include undo
+    auto& instructEntity = m_entityManager->createEntity("Instructions");
+    auto& instructText = instructEntity.addComponent<TextComponent>(
+        device, TextSystem::getRenderer(),
+        L"Build sequences K-A in same suit | Space: Deal new row | Z: Undo | WASD: Move camera", 18.0f
+    );
+    instructText.setFontFamily(L"Arial");
+    instructText.setColor(Vec4(0.8f, 0.8f, 0.8f, 1.0f));
+    instructText.setScreenPosition(0.3f, 0.95f);
+
+    // FPS counter
+    auto& fpsEntity = m_entityManager->createEntity("UI_FPS");
+    auto& fpsText = fpsEntity.addComponent<TextComponent>(
+        device, TextSystem::getRenderer(), L"FPS: 0", 20.0f
+    );
+    fpsText.setScreenPosition(0.95f, 0.02f);
+    fpsText.setColor(Vec4(1, 1, 0, 1));
+
+    // Stock pile indicator
+    auto& stockEntity = m_entityManager->createEntity("StockInfo");
+    auto& stockText = stockEntity.addComponent<TextComponent>(
+        device, TextSystem::getRenderer(), L"Stock: 50 cards", 20.0f
+    );
+    stockText.setFontFamily(L"Consolas");
+    stockText.setColor(Vec4(1.0f, 0.8f, 0.2f, 1.0f));
+    stockText.setScreenPosition(0.90f, 0.95f);
+}
+
+void SpiderSolitaireScene::update(float dt) {
+    updateCameraMovement(dt);
+    updateCardDragging();
+    updateCardHoverEffects();
+    updateGameLogic();
+    updateFPSCounter(dt);
+
+    auto& input = Input::getInstance();
+
+    // Handle space key for dealing new row
+    if (input.wasKeyJustPressed(Key::Space)) {
+        dealNewRow();
+    }
+
+    // Handle undo - Ctrl+Z or just Z
+    if (input.wasKeyJustPressed(Key::Z)) {
+        restoreGameState();
+    }
+}
+
+void SpiderSolitaireScene::updateCardDragging() {
+    auto& input = Input::getInstance();
+    Vec2 mousePos = input.getMousePositionNDC();
+    Vec2 worldMousePos = screenToWorldPosition(mousePos);
+
+    // Start dragging
+    if (input.wasMouseJustPressed(MouseClick::LeftMouse)) {
+        Entity* clickedCard = findCardUnderMouse(worldMousePos);
+        if (clickedCard) {
+            if (auto* cardComp = clickedCard->getComponent<CardComponent>()) {
+                if (cardComp->isFaceUp()) {
+                    m_draggedSequence = getCardSequence(clickedCard);
+                    if (!m_draggedSequence.empty()) {
+                        // SAVE STATE before starting drag (potential move)
+                        saveGameState();
+
+                        m_draggedCard = clickedCard;
+                        m_isDragging = true;
+
+                        if (auto* sprite = clickedCard->getComponent<SpriteComponent>()) {
+                            Vec3 spritePos = sprite->getPosition();
+                            m_dragOffset = Vec2(spritePos.x, spritePos.y) - worldMousePos;
+                        }
+
+                        // Bring dragged sequence to front
+                        for (size_t i = 0; i < m_draggedSequence.size(); ++i) {
+                            if (auto* sprite = m_draggedSequence[i]->getComponent<SpriteComponent>()) {
+                                Vec3 pos = sprite->getPosition();
+                                float dragZ = -100 + Z_DEPTH_DRAGGING_BASE - (static_cast<float>(i) * Z_DEPTH_CARD_SPACING);
+                                sprite->setPosition(pos.x, pos.y, dragZ);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Update dragging position
+    if (m_isDragging && !m_draggedSequence.empty()) {
+        Vec2 newPos = worldMousePos + m_dragOffset;
+        for (size_t i = 0; i < m_draggedSequence.size(); ++i) {
+            if (auto* sprite = m_draggedSequence[i]->getComponent<SpriteComponent>()) {
+                float dragZ = -100 - (static_cast<float>(i) * Z_DEPTH_CARD_SPACING);
+                sprite->setPosition(newPos.x, newPos.y - i * 25.0f, dragZ);
+            }
+        }
+    }
+
+    // Stop dragging and handle drop
+    if (input.wasMouseJustReleased(MouseClick::LeftMouse) && m_isDragging) {
+        bool validDrop = false;
+
+        // Find target stack
+        for (auto& stack : m_tableau) {
+            float distanceToStack = abs(worldMousePos.x - stack.position.x);
+            if (distanceToStack < COLUMN_SPACING * 0.4f) {
+                if (stack.canDropCard(m_draggedCard) || stack.isEmpty()) {
+                    CardStack* sourceStack = findStackContaining(m_draggedCard);
+                    if (sourceStack) {
+                        // Remove cards from source
+                        for (int i = 0; i < static_cast<int>(m_draggedSequence.size()); ++i) {
+                            sourceStack->removeTopCard(Z_DEPTH_CARD_SPACING);
+                        }
+                        // Add to target
+                        for (auto* card : m_draggedSequence) {
+                            stack.addCard(card, Z_DEPTH_CARD_SPACING);
+                        }
+
+                        // Flip top card in source stack if needed
+                        if (!sourceStack->isEmpty()) {
+                            Entity* topCard = sourceStack->getTopCard();
+                            if (auto* cardComp = topCard->getComponent<CardComponent>()) {
+                                if (!cardComp->isFaceUp()) {
+                                    cardComp->setFaceUp(true);
+                                    if (auto* sprite = topCard->getComponent<SpriteComponent>()) {
+                                        sprite->setSpriteFrame(
+                                            static_cast<int>(cardComp->getRank()),
+                                            static_cast<int>(cardComp->getSuit())
+                                        );
+                                    }
+                                }
+                            }
+                        }
+                        validDrop = true;
+                    }
+                }
+                break;
+            }
+        }
+
+        if (!validDrop) {
+            // Invalid drop - remove the saved state since no move occurred
+            if (!m_undoStack.empty()) {
+                m_undoStack.pop_back();
+            }
+
+            // Return cards to original position
+            CardStack* originalStack = findStackContaining(m_draggedCard);
+            if (originalStack) {
+                originalStack->updateCardPositions(Z_DEPTH_CARD_SPACING);
+            }
+        }
+
+        m_isDragging = false;
+        m_draggedCard = nullptr;
+        m_draggedSequence.clear();
+    }
+}
+
+void SpiderSolitaireScene::updateCardHoverEffects() {
+    auto& input = Input::getInstance();
+    Vec2 mousePos = input.getMousePositionNDC();
+    Vec2 worldMousePos = screenToWorldPosition(mousePos);
+
+    Entity* hoveredCard = findCardUnderMouse(worldMousePos);
+
+    // Reset all card tints
+    for (auto& stack : m_tableau) {
+        for (auto* card : stack.cards) {
+            if (auto* sprite = card->getComponent<SpriteComponent>()) {
+                if (!m_isDragging) {
+                    sprite->setTint(Vec4(1.0f, 1.0f, 1.0f, 0.0f));
+                }
+            }
+        }
+    }
+
+    // Highlight valid sequences
+    if (hoveredCard && !m_isDragging) {
+        auto sequence = getCardSequence(hoveredCard);
+        for (auto* card : sequence) {
+            if (auto* sprite = card->getComponent<SpriteComponent>()) {
+                sprite->setTint(Vec4(0.8f, 1.0f, 0.8f, 0.3f));
+            }
+        }
+    }
+}
+
+void SpiderSolitaireScene::updateGameLogic() {
+    // Check for completed sequences and remove them
+    for (auto& stack : m_tableau) {
+        if (isSequenceComplete(stack)) {
+            removeCompletedSequence(stack);
+            m_completedSuits++;
+        }
+    }
+
+    // Update score display
+    if (auto* scoreEntity = m_entityManager->findEntity("ScoreText")) {
+        if (auto* scoreText = scoreEntity->getComponent<TextComponent>()) {
+            scoreText->setText(L"Completed Suits: " + std::to_wstring(m_completedSuits) + L"/8");
+        }
+    }
+
+    // Update stock count
+    if (auto* stockEntity = m_entityManager->findEntity("StockInfo")) {
+        if (auto* stockText = stockEntity->getComponent<TextComponent>()) {
+            stockText->setText(L"Stock: " + std::to_wstring(m_stock.size()) + L" cards");
+        }
+    }
+
+    // Check win condition
+    if (isGameWon()) {
+        if (auto* titleEntity = m_entityManager->findEntity("GameTitle")) {
+            if (auto* titleText = titleEntity->getComponent<TextComponent>()) {
+                titleText->setText(L"Spider Solitaire - YOU WON!");
+                titleText->setColor(Vec4(0.0f, 1.0f, 0.0f, 1.0f));
+            }
+        }
+    }
+}
+
+bool SpiderSolitaireScene::isSequenceComplete(const CardStack& stack) const {
+    if (stack.size() < 13) return false;
+
+    // Check if top 13 cards form a complete suit K-A
+    for (int i = 0; i < 13; ++i) {
+        Entity* card = stack.cards[stack.size() - 13 + i];
+        auto* cardComp = card->getComponent<CardComponent>();
+        if (!cardComp || !cardComp->isFaceUp()) return false;
+
+        if (static_cast<int>(cardComp->getRank()) != 12 - i) return false; // K=12, Q=11, ..., A=0
+
+        // Check suit consistency
+        if (i > 0) {
+            Entity* prevCard = stack.cards[stack.size() - 13 + i - 1];
+            auto* prevCardComp = prevCard->getComponent<CardComponent>();
+            if (cardComp->getSuit() != prevCardComp->getSuit()) return false;
+        }
+    }
+
+    return true;
+}
+
+void SpiderSolitaireScene::removeCompletedSequence(CardStack& stack) {
+    // Save state before removing sequence
+    saveGameState();
+
+    // Remove top 13 cards and move to foundation
+    std::vector<Entity*> completedSequence;
+    for (int i = 0; i < 13; ++i) {
+        completedSequence.push_back(stack.removeTopCard(Z_DEPTH_CARD_SPACING));
+    }
+
+    // Reverse the sequence so King is at bottom, Ace at top
+    std::reverse(completedSequence.begin(), completedSequence.end());
+
+    // Add to foundation - FIND FIRST EMPTY FOUNDATION
+    for (auto& foundation : m_foundations) {
+        if (foundation.isEmpty()) {
+
+            for (size_t cardIdx = 0; cardIdx < completedSequence.size(); ++cardIdx) {
+                auto* card = completedSequence[cardIdx];
+
+                // CRITICAL FIX: Use proper Z-spacing, not the base depth
+                foundation.addCard(card, Z_DEPTH_CARD_SPACING); // Changed from Z_DEPTH_FOUNDATION_BASE
+
+                // Ensure card is face up and properly displayed
+                if (auto* cardComp = card->getComponent<CardComponent>()) {
+                    cardComp->setFaceUp(true);
+                    if (auto* sprite = card->getComponent<SpriteComponent>()) {
+                        sprite->setSpriteFrame(
+                            static_cast<int>(cardComp->getRank()),
+                            static_cast<int>(cardComp->getSuit())
+                        );
+                        sprite->setVisible(true);
+
+                        // Debug output
+                        Vec3 pos = sprite->getPosition();
+                        sprite->setPosition(pos.x, pos.y , Z_DEPTH_FOUNDATION_BASE);
+                    }
+                }
+            }
+
+            break;
+        }
+    }
+
+    // Flip top card in tableau stack if needed
+    if (!stack.isEmpty()) {
+        Entity* topCard = stack.getTopCard();
+        if (auto* cardComp = topCard->getComponent<CardComponent>()) {
+            if (!cardComp->isFaceUp()) {
+                cardComp->setFaceUp(true);
+                if (auto* sprite = topCard->getComponent<SpriteComponent>()) {
+                    sprite->setSpriteFrame(
+                        static_cast<int>(cardComp->getRank()),
+                        static_cast<int>(cardComp->getSuit())
+                    );
+                }
+            }
+        }
+    }
+
+}
+
+void SpiderSolitaireScene::dealNewRow() {
+    if (m_stock.size() < 10) return; // Need at least 10 cards
+
+    // Save state before dealing
+    saveGameState();
+
+    for (int i = 0; i < 10; ++i) {
+        if (!m_stock.isEmpty()) {
+            Entity* card = m_stock.removeTopCard(Z_DEPTH_CARD_SPACING);
+            if (auto* cardComp = card->getComponent<CardComponent>()) {
+                cardComp->setFaceUp(true);
+                if (auto* sprite = card->getComponent<SpriteComponent>()) {
+                    sprite->setSpriteFrame(
+                        static_cast<int>(cardComp->getRank()),
+                        static_cast<int>(cardComp->getSuit())
+                    );
+                }
+            }
+            m_tableau[i].addCard(card, Z_DEPTH_CARD_SPACING);
+        }
+    }
+
+    updateStockIndicators();
+}
+
+bool SpiderSolitaireScene::isGameWon() const {
+    return m_completedSuits >= 8;
+}
+
+std::vector<Entity*> SpiderSolitaireScene::getCardSequence(Entity* startCard) {
+    std::vector<Entity*> sequence;
+    CardStack* stack = findStackContaining(startCard);
+    if (!stack) return sequence;
+
+    // Find start card index
+    auto it = std::find(stack->cards.begin(), stack->cards.end(), startCard);
+    if (it == stack->cards.end()) return sequence;
+
+    size_t startIndex = std::distance(stack->cards.begin(), it);
+
+    // Get the starting card component
+    auto* startCardComp = startCard->getComponent<CardComponent>();
+    if (!startCardComp || !startCardComp->isFaceUp()) return sequence;
+
+    // First, validate that we can pick up from this position
+    // Check if the sequence from startCard to the end is valid
+    if (!isValidSequenceFromPosition(stack, startIndex)) {
+        return sequence; // Return empty sequence if invalid
+    }
+
+    // Build the valid sequence from start card to end
+    sequence.push_back(startCard);
+    Suit expectedSuit = startCardComp->getSuit();
+    int expectedRank = static_cast<int>(startCardComp->getRank());
+
+    for (size_t i = startIndex + 1; i < stack->cards.size(); ++i) {
+        auto* cardComp = stack->cards[i]->getComponent<CardComponent>();
+        if (!cardComp || !cardComp->isFaceUp()) break;
+
+        expectedRank--;
+        if (expectedRank < 0) break;
+
+        // Must be same suit and descending rank
+        if (static_cast<int>(cardComp->getRank()) != expectedRank ||
+            cardComp->getSuit() != expectedSuit) {
+            break;
+        }
+
+        sequence.push_back(stack->cards[i]);
+    }
+
+    return sequence;
+}
+
+// Add this new helper function to validate sequences
+bool SpiderSolitaireScene::isValidSequenceFromPosition(CardStack* stack, size_t startIndex) {
+    if (!stack || startIndex >= stack->cards.size()) return false;
+
+    // Get the starting card
+    auto* startCardComp = stack->cards[startIndex]->getComponent<CardComponent>();
+    if (!startCardComp || !startCardComp->isFaceUp()) return false;
+
+    Suit expectedSuit = startCardComp->getSuit();
+    int expectedRank = static_cast<int>(startCardComp->getRank());
+
+    // Check each subsequent card
+    for (size_t i = startIndex + 1; i < stack->cards.size(); ++i) {
+        auto* cardComp = stack->cards[i]->getComponent<CardComponent>();
+
+        // All cards in the sequence must be face up
+        if (!cardComp || !cardComp->isFaceUp()) return false;
+
+        expectedRank--;
+        if (expectedRank < 0) return false;
+
+        // Must be same suit and exactly one rank lower
+        if (static_cast<int>(cardComp->getRank()) != expectedRank ||
+            cardComp->getSuit() != expectedSuit) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+CardStack* SpiderSolitaireScene::findStackContaining(Entity* card) {
+    for (auto& stack : m_tableau) {
+        auto it = std::find(stack.cards.begin(), stack.cards.end(), card);
+        if (it != stack.cards.end()) {
+            return &stack;
+        }
+    }
+    return nullptr;
+}
+
+Entity* SpiderSolitaireScene::findCardUnderMouse(const Vec2& worldMousePos) {
+    Entity* topCard = nullptr;
+
+    // Check tableau stacks from last to first (rightmost to leftmost)
+    // Within each stack, check from top to bottom
+    for (int stackIdx = m_tableau.size() - 1; stackIdx >= 0; --stackIdx) {
+        auto& stack = m_tableau[stackIdx];
+        for (int cardIdx = stack.cards.size() - 1; cardIdx >= 0; --cardIdx) {
+            auto* card = stack.cards[cardIdx];
+            if (auto* collider = card->getComponent<ColliderComponent>()) {
+                if (auto* sprite = card->getComponent<SpriteComponent>()) {
+                    Vec3 spritePos = sprite->getPosition();
+                    if (collider->containsPoint(worldMousePos, spritePos)) {
+                        return card; // Return first (topmost) card found
+                    }
+                }
+            }
+        }
+    }
+
+    return nullptr;
+}
+
+Vec2 SpiderSolitaireScene::screenToWorldPosition(const Vec2& screenPos) {
+    if (auto* cameraEntity = m_entityManager->findEntity("MainCamera")) {
+        if (auto* camera = cameraEntity->getComponent<Camera2D>()) {
+            float screenWidth = GraphicsEngine::getWindowWidth();
+            float screenHeight = GraphicsEngine::getWindowHeight();
+
+            float pixelX = screenPos.x * screenWidth;
+            float pixelY = screenPos.y * screenHeight;
+
+            Vec2 cameraPos = camera->getPosition();
+            float zoom = camera->getZoom();
+
+            float worldX = (pixelX - screenWidth * 0.5f) / zoom + cameraPos.x;
+            float worldY = (pixelY - screenHeight * 0.5f) / zoom + cameraPos.y;
+
+            return Vec2(worldX, worldY);
+        }
+    }
+    return Vec2(0, 0);
+}
+
+void SpiderSolitaireScene::updateFPSCounter(float dt) {
+    static float timer = 0;
+    static int frames = 0;
+    timer += dt;
+    frames++;
+
+    if (timer >= 1.0f) {
+        if (auto* fpsEntity = m_entityManager->findEntity("UI_FPS")) {
+            if (auto* fpsText = fpsEntity->getComponent<TextComponent>()) {
+                fpsText->setText(L"FPS: " + std::to_wstring(frames));
+            }
+        }
+        frames = 0;
+        timer = 0;
+    }
+}
+
+void SpiderSolitaireScene::updateCameraMovement(float dt) {
+    auto* cameraEntity = m_entityManager->findEntity("MainCamera");
+    if (!cameraEntity) return;
+
+    auto* camera = cameraEntity->getComponent<Camera2D>();
+    if (!camera) return;
+
+    auto& input = Input::getInstance();
+
+    float baseSpeed = 300.0f;
+    float fastSpeed = 600.0f;
+    float zoomSpeed = 2.0f;
+
+    float currentSpeed = input.isKeyDown(Key::Shift) ? fastSpeed : baseSpeed;
+
+    Vec2 moveDelta(0.0f, 0.0f);
+    if (input.isKeyDown(Key::W)) moveDelta.y += currentSpeed * dt;
+    if (input.isKeyDown(Key::S)) moveDelta.y -= currentSpeed * dt;
+    if (input.isKeyDown(Key::A)) moveDelta.x -= currentSpeed * dt;
+    if (input.isKeyDown(Key::D)) moveDelta.x += currentSpeed * dt;
+
+    if (moveDelta.x != 0.0f || moveDelta.y != 0.0f) {
+        camera->move(moveDelta);
+    }
+
+    float zoomDelta = 0.0f;
+    if (input.isKeyDown(Key::Q)) zoomDelta -= zoomSpeed * dt;
+    if (input.isKeyDown(Key::E)) zoomDelta += zoomSpeed * dt;
+
+    if (zoomDelta != 0.0f) {
+        camera->zoom(zoomDelta);
+    }
+
+    if (input.isKeyDown(Key::R)) {
+        camera->setPosition(0.0f, 0.0f);
+        camera->setZoom(0.8f);
+    }
+}
+
+void SpiderSolitaireScene::render(GraphicsEngine& engine, SwapChain& swapChain) {
+    engine.beginFrame(swapChain);
+    auto& ctx = engine.getContext();
+
+    // Set up camera matrices
+    ctx.setGraphicsPipelineState(engine.getDefaultPipeline());
+    if (auto* cameraEntity = m_entityManager->findEntity("MainCamera")) {
+        if (auto* camera = cameraEntity->getComponent<Camera2D>()) {
+            ctx.setViewMatrix(camera->getViewMatrix());
+            ctx.setProjectionMatrix(camera->getProjectionMatrix());
+        }
+    }
+
+    // Collect all entities for Z-sorting
+    std::vector<Entity*> allSprites;
+
+    // Add empty spots first (they should render behind everything)
+    for (auto* emptySpot : m_tableauEmptySpots) {
+        allSprites.push_back(emptySpot);
+    }
+    for (auto* emptySpot : m_foundationEmptySpots) {
+        allSprites.push_back(emptySpot);
+    }
+    allSprites.push_back(m_stockEmptySpot);
+
+    // Add cards
+    for (auto& stack : m_tableau) {
+        for (auto* card : stack.cards) {
+            allSprites.push_back(card);
+        }
+    }
+
+    for (auto& foundation : m_foundations) {
+        for (auto* card : foundation.cards) {
+            allSprites.push_back(card);
+        }
+    }
+
+    if (!m_stock.isEmpty()) {
+        allSprites.push_back(m_stock.getTopCard());
+    }
+    for (auto* indicator : m_stockIndicators) {
+        allSprites.push_back(indicator);
+    }
+
+    // Sort by Z position (back to front for negative Z system)
+    // More negative Z values = further back, should render first
+    std::sort(allSprites.begin(), allSprites.end(), [](Entity* a, Entity* b) {
+        auto* spriteA = a->getComponent<SpriteComponent>();
+        auto* spriteB = b->getComponent<SpriteComponent>();
+        if (spriteA && spriteB) {
+            return spriteA->getPosition().z > spriteB->getPosition().z;
+        }
+        return false;
+        });
+
+    // Render sorted sprites
+    for (auto* entity : allSprites) {
+        if (auto* sprite = entity->getComponent<SpriteComponent>()) {
+            if (sprite->isVisible() && sprite->isValid()) {
+                sprite->draw(ctx);
+            }
+        }
+    }
+
+    // Render screen-space UI elements
+    for (auto* entity : m_entityManager->getEntitiesWithComponent<SpriteComponent>()) {
+        if (auto* sprite = entity->getComponent<SpriteComponent>()) {
+            if (sprite->isScreenSpace()) {
+                sprite->draw(ctx);
+            }
+        }
+    }
+
+    // Render text
+    for (auto* entity : m_entityManager->getEntitiesWithComponent<TextComponent>()) {
+        if (auto* text = entity->getComponent<TextComponent>()) {
+            if (text->isVisible()) {
+                text->draw(ctx);
+            }
+        }
+    }
+
+    engine.endFrame(swapChain);
+}
+
+void SpiderSolitaireScene::saveGameState() {
+    // Capture current state before any major move
+    GameState currentState = captureCurrentState();
+
+    // Add to undo stack
+    m_undoStack.push_back(currentState);
+
+    // Limit undo history to prevent memory issues
+    if (m_undoStack.size() > MAX_UNDO_STATES) {
+        m_undoStack.erase(m_undoStack.begin());
+    }
+}
+
+GameState SpiderSolitaireScene::captureCurrentState() {
+    GameState state;
+
+    // Capture tableau stacks
+    state.tableauStacks.resize(10);
+    for (int i = 0; i < 10; ++i) {
+        state.tableauStacks[i] = m_tableau[i].cards;
+
+        // Store face states for all cards in this stack
+        for (auto* card : m_tableau[i].cards) {
+            if (auto* cardComp = card->getComponent<CardComponent>()) {
+                state.cardFaceStates[card] = cardComp->isFaceUp();
+            }
+        }
+    }
+
+    // Capture foundation stacks
+    state.foundationStacks.resize(8);
+    for (int i = 0; i < 8; ++i) {
+        state.foundationStacks[i] = m_foundations[i].cards;
+
+        // Store face states
+        for (auto* card : m_foundations[i].cards) {
+            if (auto* cardComp = card->getComponent<CardComponent>()) {
+                state.cardFaceStates[card] = cardComp->isFaceUp();
+            }
+        }
+    }
+
+    // Capture stock
+    state.stockCards = m_stock.cards;
+    for (auto* card : m_stock.cards) {
+        if (auto* cardComp = card->getComponent<CardComponent>()) {
+            state.cardFaceStates[card] = cardComp->isFaceUp();
+        }
+    }
+
+    // Capture completed suits count
+    state.completedSuits = m_completedSuits;
+
+    return state;
+}
+
+void SpiderSolitaireScene::restoreGameState() {
+    if (m_undoStack.empty()) return;
+
+    // Get the last saved state
+    GameState lastState = m_undoStack.back();
+    m_undoStack.pop_back();
+
+    // Apply the state
+    applyGameState(lastState);
+}
+
+void SpiderSolitaireScene::applyGameState(const GameState& state) {
+    // Clear current stacks
+    for (auto& stack : m_tableau) {
+        stack.cards.clear();
+    }
+    for (auto& foundation : m_foundations) {
+        foundation.cards.clear();
+    }
+    m_stock.cards.clear();
+
+    // Restore tableau stacks
+    for (int i = 0; i < 10; ++i) {
+        m_tableau[i].cards = state.tableauStacks[i];
+        m_tableau[i].updateCardPositions(Z_DEPTH_CARD_SPACING);
+    }
+
+    // Restore foundation stacks
+    for (int i = 0; i < 8; ++i) {
+        m_foundations[i].cards = state.foundationStacks[i];
+        m_foundations[i].updateCardPositions(Z_DEPTH_FOUNDATION_BASE);
+    }
+
+    // Restore stock
+    m_stock.cards = state.stockCards;
+    m_stock.updateCardPositions(0.1f);
+
+    // Restore completed suits
+    m_completedSuits = state.completedSuits;
+
+    // Restore all card face states and update visuals
+    for (const auto& cardState : state.cardFaceStates) {
+        Entity* card = cardState.first;
+        bool isFaceUp = cardState.second;
+
+        if (auto* cardComp = card->getComponent<CardComponent>()) {
+            cardComp->setFaceUp(isFaceUp);
+
+            if (auto* sprite = card->getComponent<SpriteComponent>()) {
+                if (isFaceUp) {
+                    sprite->setSpriteFrame(
+                        static_cast<int>(cardComp->getRank()),
+                        static_cast<int>(cardComp->getSuit())
+                    );
+                }
+                else {
+                    sprite->setSpriteFrame(3, 4); // Card back
+                }
+            }
+        }
+    }
+
+    // Update stock indicators
+    updateStockIndicators();
+}
+void SpiderSolitaireScene::updateStockIndicators() {
+    // Clear existing indicators
+    for (auto* indicator : m_stockIndicators) {
+        m_entityManager->removeEntity(indicator->getName());
+    }
+    m_stockIndicators.clear();
+
+    // Recreate indicators based on current stock size
+    int numDeals = m_stock.size() / 10;
+
+    for (int i = 0; i < numDeals; ++i) {
+        auto& fakeStock = m_entityManager->createEntity("StockIndicator_" + std::to_string(i));
+        auto& sprite = fakeStock.addComponent<SpriteComponent>(
+            *m_graphicsDevice,
+            L"DX3D/Assets/Textures/CardSpriteSheet.png",
+            CARD_WIDTH, CARD_HEIGHT
+        );
+
+        sprite.setupSpritesheet(13, 6);
+        sprite.setSpriteFrame(3, 4); // card back
+
+        float x = STOCK_X;
+        float y = STOCK_Y + i * 5;
+        float z = Z_DEPTH_STOCK - (i * 0.1f);
+
+        sprite.setPosition(Vec3(x, y, z));
+        sprite.setVisible(true);
+
+        m_stockIndicators.push_back(&fakeStock);
+    }
+}

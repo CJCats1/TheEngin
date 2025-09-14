@@ -171,8 +171,8 @@ namespace dx3d {
         m_projectionMatrix = Mat4::orthographic(
             m_screenWidth,  // width
             m_screenHeight, // height
-            -100.0f,        // near plane
-            100.0f          // far plane
+            -1000.0f,        // near plane
+            1000.0f          // far plane
         );
     }
 

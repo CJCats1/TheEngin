@@ -43,7 +43,7 @@ void dx3d::DeviceContext::createDepthStates()
 	D3D11_DEPTH_STENCIL_DESC depthDesc = {};
 	depthDesc.DepthEnable = TRUE;
 	depthDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-	depthDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	depthDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
 	DX3DGraphicsLogThrowOnFail(m_device.CreateDepthStencilState(&depthDesc, m_defaultDepthState.GetAddressOf()),
 		"Failed to create default depth state");
 

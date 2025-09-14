@@ -59,9 +59,6 @@ bool Input::wasKeyJustPressed(int keyCode) const
     auto it = m_justPressed.find(keyCode);
     bool result = it != m_justPressed.end() && it->second;
 
-    if (keyCode == 90) { // Z key for example
-        std::cout << "Checking wasKeyJustPressed for Z: " << (result ? "TRUE" : "FALSE") << std::endl;
-    }
 
     return result;
 }

@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include <DX3D/Graphics/DirectWriteText.h>
 #include <DX3D/Game/Scenes/TestScene.h>
 #include <DX3D/Game/Scenes/BridgeScene.h>
+#include <DX3D/Game/Scenes/SpiderSolitaireScene.h>
 
 dx3d::Game::Game(const GameDesc& desc) :
     Base({ *std::make_unique<Logger>(desc.logLevel).release() }),
@@ -66,6 +67,11 @@ void dx3d::Game::onInternalUpdate()
     {
         setScene(std::make_unique<dx3d::BridgeScene>());
         m_currentSceneType = SceneType::BridgeScene;
+    }
+    if (input.isKeyDown(Key::Num3) && m_currentSceneType != SceneType::SpiderSolitaireScene)
+    {
+        setScene(std::make_unique<dx3d::SpiderSolitaireScene>());
+        m_currentSceneType = SceneType::SpiderSolitaireScene;
     }
     if (input.isKeyDown(Key::Escape))
     {
