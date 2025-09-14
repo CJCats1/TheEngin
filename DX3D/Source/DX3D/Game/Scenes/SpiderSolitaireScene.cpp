@@ -82,7 +82,8 @@ bool CardStack::canDropCard(Entity* card) const {
 // SpiderSolitaireScene implementation
 SpiderSolitaireScene::SpiderSolitaireScene(SpiderDifficulty difficulty)
     : m_difficulty(difficulty), m_completedSuits(0), m_draggedCard(nullptr),
-    m_isDragging(false), m_dragOffset(0, 0) {
+    m_isDragging(false), m_dragOffset(0, 0), m_celebrationActive(false),
+    m_celebrationTimer(0.0f), m_gravity(200.0f) {
 }
 
 void SpiderSolitaireScene::load(GraphicsEngine& engine) {
@@ -148,9 +149,27 @@ void SpiderSolitaireScene::load(GraphicsEngine& engine) {
 
         m_stockIndicators.push_back(&fakeStock);
     }
+    // Initialize stock click area
+    m_stockClickArea.position = Vec2(STOCK_X, STOCK_Y);
+    m_stockClickArea.width = CARD_WIDTH * 1.5f;  // Make it a bit larger than card
+    m_stockClickArea.height = CARD_HEIGHT * 1.5f;
 
-    // Update empty spot visibility after initial setup
-   // updateEmptySpotVisibility();
+	auto& undoButtonEntity = m_entityManager->createEntity("UndoButton");
+    auto& undoButton = undoButtonEntity.addComponent<ButtonComponent>(
+        device,
+        L"Undo",
+        22.0f
+    );
+    undoButton.setOnClickCallback([this]() {
+        if ( !m_celebrationActive) {
+            restoreGameState();
+        }
+		});
+    undoButton.enableScreenSpace(true);
+	undoButton.setScreenPosition(0.9f,0.8f);
+    undoButton.setNormalTint(Vec4(0.2f, 0.6f, 0.8f, 0.5f));
+    undoButton.setHoveredTint(Vec4(0.4f, 0.8f, 1.0f, 0.5f));
+    undoButton.setPressedTint(Vec4(0.1f, 0.4f, 0.6f, 0.5f));
 }
 
 void SpiderSolitaireScene::createEmptySpots(GraphicsDevice& device) {
@@ -388,25 +407,49 @@ void SpiderSolitaireScene::createUI(GraphicsDevice& device) {
     stockText.setFontFamily(L"Consolas");
     stockText.setColor(Vec4(1.0f, 0.8f, 0.2f, 1.0f));
     stockText.setScreenPosition(0.90f, 0.95f);
+
+
+
+
 }
 
 void SpiderSolitaireScene::update(float dt) {
-    updateCameraMovement(dt);
-    updateCardDragging();
-    updateCardHoverEffects();
+	updateCameraMovement(dt);
+
+    // Update celebration before normal card dragging
+    updateCelebration(dt);
+
+    // Only allow normal gameplay if celebration isn't active
+    if (!m_celebrationActive) {
+        updateCardDragging();
+        updateCardHoverEffects();
+    }
+
     updateGameLogic();
     updateFPSCounter(dt);
 
     auto& input = Input::getInstance();
 
-    // Handle space key for dealing new row
-    if (input.wasKeyJustPressed(Key::Space)) {
+    // Handle space key for dealing new row (only if not celebrating)
+    if (input.wasKeyJustPressed(Key::Space) && !m_celebrationActive) {
         dealNewRow();
     }
 
-    // Handle undo - Ctrl+Z or just Z
-    if (input.wasKeyJustPressed(Key::Z)) {
+    // Handle undo - Ctrl+Z or just Z (only if not celebrating)
+    if (input.wasKeyJustPressed(Key::Z) && !m_celebrationActive) {
         restoreGameState();
+    }
+
+    // Allow restarting celebration with R key
+    if (input.wasKeyJustPressed(Key::T) && isGameWon()) {
+        startCelebration();
+    }
+
+    auto buttonEntities = m_entityManager->getEntitiesWithComponent<ButtonComponent>();
+    for (auto* entity : buttonEntities) {
+        if (auto* button = entity->getComponent<ButtonComponent>()) {
+            button->update(dt);
+        }
     }
 }
 
@@ -417,6 +460,8 @@ void SpiderSolitaireScene::updateCardDragging() {
 
     // Start dragging
     if (input.wasMouseJustPressed(MouseClick::LeftMouse)) {
+        // First check if clicking on stock area
+        
         Entity* clickedCard = findCardUnderMouse(worldMousePos);
         if (clickedCard) {
             if (auto* cardComp = clickedCard->getComponent<CardComponent>()) {
@@ -460,63 +505,70 @@ void SpiderSolitaireScene::updateCardDragging() {
     }
 
     // Stop dragging and handle drop
-    if (input.wasMouseJustReleased(MouseClick::LeftMouse) && m_isDragging) {
-        bool validDrop = false;
+    if (input.wasMouseJustReleased(MouseClick::LeftMouse) ) {
+        if (m_stockClickArea.containsPoint(worldMousePos)) {
+            dealNewRow();
+            return; // Don't process card dragging if we clicked stock
+        }
+        if (m_isDragging)
+        {
+            bool validDrop = false;
 
-        // Find target stack
-        for (auto& stack : m_tableau) {
-            float distanceToStack = abs(worldMousePos.x - stack.position.x);
-            if (distanceToStack < COLUMN_SPACING * 0.4f) {
-                if (stack.canDropCard(m_draggedCard) || stack.isEmpty()) {
-                    CardStack* sourceStack = findStackContaining(m_draggedCard);
-                    if (sourceStack) {
-                        // Remove cards from source
-                        for (int i = 0; i < static_cast<int>(m_draggedSequence.size()); ++i) {
-                            sourceStack->removeTopCard(Z_DEPTH_CARD_SPACING);
-                        }
-                        // Add to target
-                        for (auto* card : m_draggedSequence) {
-                            stack.addCard(card, Z_DEPTH_CARD_SPACING);
-                        }
+            // Find target stack
+            for (auto& stack : m_tableau) {
+                float distanceToStack = abs(worldMousePos.x - stack.position.x);
+                if (distanceToStack < COLUMN_SPACING * 0.4f) {
+                    if (stack.canDropCard(m_draggedCard) || stack.isEmpty()) {
+                        CardStack* sourceStack = findStackContaining(m_draggedCard);
+                        if (sourceStack) {
+                            // Remove cards from source
+                            for (int i = 0; i < static_cast<int>(m_draggedSequence.size()); ++i) {
+                                sourceStack->removeTopCard(Z_DEPTH_CARD_SPACING);
+                            }
+                            // Add to target
+                            for (auto* card : m_draggedSequence) {
+                                stack.addCard(card, Z_DEPTH_CARD_SPACING);
+                            }
 
-                        // Flip top card in source stack if needed
-                        if (!sourceStack->isEmpty()) {
-                            Entity* topCard = sourceStack->getTopCard();
-                            if (auto* cardComp = topCard->getComponent<CardComponent>()) {
-                                if (!cardComp->isFaceUp()) {
-                                    cardComp->setFaceUp(true);
-                                    if (auto* sprite = topCard->getComponent<SpriteComponent>()) {
-                                        sprite->setSpriteFrame(
-                                            static_cast<int>(cardComp->getRank()),
-                                            static_cast<int>(cardComp->getSuit())
-                                        );
+                            // Flip top card in source stack if needed
+                            if (!sourceStack->isEmpty()) {
+                                Entity* topCard = sourceStack->getTopCard();
+                                if (auto* cardComp = topCard->getComponent<CardComponent>()) {
+                                    if (!cardComp->isFaceUp()) {
+                                        cardComp->setFaceUp(true);
+                                        if (auto* sprite = topCard->getComponent<SpriteComponent>()) {
+                                            sprite->setSpriteFrame(
+                                                static_cast<int>(cardComp->getRank()),
+                                                static_cast<int>(cardComp->getSuit())
+                                            );
+                                        }
                                     }
                                 }
                             }
+                            validDrop = true;
                         }
-                        validDrop = true;
                     }
+                    break;
                 }
-                break;
             }
+
+            if (!validDrop) {
+                // Invalid drop - remove the saved state since no move occurred
+                if (!m_undoStack.empty()) {
+                    m_undoStack.pop_back();
+                }
+
+                // Return cards to original position
+                CardStack* originalStack = findStackContaining(m_draggedCard);
+                if (originalStack) {
+                    originalStack->updateCardPositions(Z_DEPTH_CARD_SPACING);
+                }
+            }
+
+            m_isDragging = false;
+            m_draggedCard = nullptr;
+            m_draggedSequence.clear();
         }
-
-        if (!validDrop) {
-            // Invalid drop - remove the saved state since no move occurred
-            if (!m_undoStack.empty()) {
-                m_undoStack.pop_back();
-            }
-
-            // Return cards to original position
-            CardStack* originalStack = findStackContaining(m_draggedCard);
-            if (originalStack) {
-                originalStack->updateCardPositions(Z_DEPTH_CARD_SPACING);
-            }
-        }
-
-        m_isDragging = false;
-        m_draggedCard = nullptr;
-        m_draggedSequence.clear();
     }
 }
 
@@ -572,14 +624,17 @@ void SpiderSolitaireScene::updateGameLogic() {
         }
     }
 
-    // Check win condition
-    if (isGameWon()) {
+    // Check win condition and start celebration
+    if (isGameWon() && !m_celebrationActive) {
         if (auto* titleEntity = m_entityManager->findEntity("GameTitle")) {
             if (auto* titleText = titleEntity->getComponent<TextComponent>()) {
                 titleText->setText(L"Spider Solitaire - YOU WON!");
                 titleText->setColor(Vec4(0.0f, 1.0f, 0.0f, 1.0f));
             }
         }
+
+        // Start the celebration!
+        startCelebration();
     }
 }
 
@@ -964,7 +1019,13 @@ void SpiderSolitaireScene::render(GraphicsEngine& engine, SwapChain& swapChain) 
             }
         }
     }
-
+    for (auto* entity : m_entityManager->getEntitiesWithComponent<ButtonComponent>()) {
+        if (auto* text = entity->getComponent<ButtonComponent>()) {
+            if (text->isVisible()) {
+                text->draw(ctx); // Will respect m_useScreenSpace
+            }
+        }
+    }
     engine.endFrame(swapChain);
 }
 
@@ -1120,3 +1181,137 @@ void SpiderSolitaireScene::updateStockIndicators() {
         m_stockIndicators.push_back(&fakeStock);
     }
 }
+void SpiderSolitaireScene::startCelebration() {
+    if (m_celebrationActive) return;
+
+    m_celebrationActive = true;
+    m_celebrationTimer = 0.0f;
+    m_celebrationCards.clear();
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<float> velocityX(-400.0f, 400.0f);
+    std::uniform_real_distribution<float> velocityY(-800.0f, -400.0f); // Upward velocity
+    std::uniform_real_distribution<float> angularVel(-720.0f, 720.0f); // Degrees per second
+
+    // Add all foundation cards to celebration
+    for (const auto& foundation : m_foundations) {
+        for (auto* card : foundation.cards) {
+            CardPhysics physics;
+            physics.card = card;
+            physics.velocity = Vec2(velocityX(gen), velocityY(gen));
+            physics.angularVelocity = angularVel(gen);
+            physics.currentRotation = 0.0f;
+            physics.isActive = true;
+
+            m_celebrationCards.push_back(physics);
+        }
+    }
+
+    // Optionally add some tableau cards for extra effect
+    for (const auto& tableau : m_tableau) {
+        if (!tableau.cards.empty()) {
+            // Add top 2-3 cards from each non-empty tableau
+            int cardsToAdd = std::min(3, static_cast<int>(tableau.cards.size()));
+            for (int i = tableau.cards.size() - cardsToAdd; i < static_cast<int>(tableau.cards.size()); ++i) {
+                CardPhysics physics;
+                physics.card = tableau.cards[i];
+                physics.velocity = Vec2(velocityX(gen), velocityY(gen));
+                physics.angularVelocity = angularVel(gen);
+                physics.currentRotation = 0.0f;
+                physics.isActive = true;
+
+                m_celebrationCards.push_back(physics);
+            }
+        }
+    }
+}
+
+// Add this method to update celebration physics:
+void SpiderSolitaireScene::updateCelebration(float dt) {
+    if (!m_celebrationActive) return;
+
+    m_celebrationTimer += dt;
+
+    float screenWidth = GraphicsEngine::getWindowWidth();
+    float screenHeight = GraphicsEngine::getWindowHeight();
+
+    // Convert screen bounds to world coordinates
+    Vec2 worldTopLeft = screenToWorldPosition(Vec2(0.0f, 0.0f));
+    Vec2 worldBottomRight = screenToWorldPosition(Vec2(1.0f, 1.0f));
+
+    bool anyCardsActive = false;
+
+    for (auto& physics : m_celebrationCards) {
+        if (!physics.isActive) continue;
+
+        auto* sprite = physics.card->getComponent<SpriteComponent>();
+        if (!sprite) continue;
+
+        // Apply gravity to Y velocity
+        physics.velocity.y -= m_gravity * dt;
+
+        // Update position
+        Vec3 currentPos = sprite->getPosition();
+        Vec3 newPos = currentPos;
+        newPos.x += physics.velocity.x * dt;
+        newPos.y += physics.velocity.y * dt;
+        newPos.z = -150.0f; // Bring to front during celebration
+
+        // Update rotation
+        physics.currentRotation += physics.angularVelocity * dt;
+
+        // Apply position and rotation
+        sprite->setPosition(newPos);
+        // Note: You'll need to add rotation support to your SpriteComponent
+        // For now, we can simulate with slight position jitter or tint changes
+
+        // Add some sparkle effect with tint cycling
+        float sparkle = sin(m_celebrationTimer * 6.0f + physics.currentRotation * 0.01f) * 0.5f + 0.5f;
+        sprite->setTint(Vec4(1.0f, 1.0f - sparkle * 0.3f, 1.0f - sparkle * 0.5f, 0.0f));
+
+        // Check if card is still on screen
+        if (newPos.x > worldTopLeft.x - 100 && newPos.x < worldBottomRight.x + 100 &&
+            newPos.y > worldTopLeft.y - 100 && newPos.y < worldBottomRight.y + 200) {
+            anyCardsActive = true;
+        }
+        else {
+            physics.isActive = false;
+        }
+    }
+
+    // End celebration after all cards fall off screen or after max time
+    if (!anyCardsActive || m_celebrationTimer > 10.0f) {
+        m_celebrationActive = false;
+        resetCelebrationCards();
+    }
+}
+
+// Add this method to reset cards after celebration:
+void SpiderSolitaireScene::resetCelebrationCards() {
+    // Reset all cards to their original positions and states
+    for (int i = 0; i < static_cast<int>(m_foundations.size()); ++i) {
+        m_foundations[i].updateCardPositions(Z_DEPTH_CARD_SPACING);
+
+        // Reset tints
+        for (auto* card : m_foundations[i].cards) {
+            if (auto* sprite = card->getComponent<SpriteComponent>()) {
+                sprite->setTint(Vec4(1.0f, 1.0f, 1.0f, 0.0f));
+            }
+        }
+    }
+
+    for (int i = 0; i < static_cast<int>(m_tableau.size()); ++i) {
+        m_tableau[i].updateCardPositions(Z_DEPTH_CARD_SPACING);
+
+        // Reset tints
+        for (auto* card : m_tableau[i].cards) {
+            if (auto* sprite = card->getComponent<SpriteComponent>()) {
+                sprite->setTint(Vec4(1.0f, 1.0f, 1.0f, 0.0f));
+            }
+        }
+    }
+
+    m_celebrationCards.clear();
+}
+

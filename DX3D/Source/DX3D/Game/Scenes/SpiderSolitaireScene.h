@@ -24,6 +24,30 @@ namespace dx3d {
 
         GameState() : completedSuits(0) {}
     };
+    struct StockClickArea {
+        Vec2 position;
+        float width;
+        float height;
+
+        bool containsPoint(const Vec2& point) const {
+            return point.x >= position.x - width * 0.5f &&
+                point.x <= position.x + width * 0.5f &&
+                point.y >= position.y - height * 0.5f &&
+                point.y <= position.y + height * 0.5f;
+        }
+    };
+    struct CardPhysics {
+        Entity* card;
+        Vec2 velocity;
+        float angularVelocity;
+        float currentRotation;
+        bool isActive;
+
+        CardPhysics() : card(nullptr), velocity(0, 0), angularVelocity(0),
+            currentRotation(0), isActive(false) {
+        }
+    };
+
     struct HintMove {
         enum Type {
             MOVE_SEQUENCE,      // Move card sequence between tableau columns
@@ -116,6 +140,14 @@ namespace dx3d {
         bool m_isDragging;
         Vec2 m_dragOffset;
 
+        bool m_celebrationActive;
+        std::vector<CardPhysics> m_celebrationCards;
+        float m_celebrationTimer;
+        float m_gravity;
+
+
+
+        StockClickArea m_stockClickArea;
         // Constants
         static constexpr float CARD_WIDTH = 80.0f;
         static constexpr float CARD_HEIGHT = 120.0f;
@@ -149,6 +181,8 @@ namespace dx3d {
         void applyGameState(const GameState& state);
         void updateStockIndicators();
         GraphicsDevice* m_graphicsDevice = nullptr;
-
+        void startCelebration();
+        void updateCelebration(float dt);
+        void resetCelebrationCards();
     };
 }
