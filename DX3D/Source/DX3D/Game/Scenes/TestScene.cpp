@@ -1,5 +1,3 @@
-// Updated TestScene.cpp with card functionality
-
 #include <DX3D/Game/Scenes/TestScene.h>
 #include <DX3D/Graphics/SpriteComponent.h>
 #include <DX3D/Graphics/GraphicsEngine.h>
@@ -10,11 +8,8 @@
 #include <cmath>
 #include <DX3D/Graphics/DirectWriteText.h>
 #include <DX3D/Components/ButtonComponent.h>
-#include "DX3D/Components/DraggableComponent.h"
-#include "DX3D/Components/ColliderComponent.h" 
-#include "DX3D/Components/CardComponent.h"
 #include <iostream>
-#include <algorithm>
+
 using namespace dx3d;
 
 void TestScene::load(GraphicsEngine& engine) {
@@ -31,79 +26,165 @@ void TestScene::load(GraphicsEngine& engine) {
     camera.setPosition(0.0f, 0.0f);
     camera.setZoom(1.0f);
 
-    // CREATE ALL 52 PLAYING CARDS
-    createPlayingCards(device);
+    // Create sprite entities with different positions and sizes
+    auto& cat1Entity = m_entityManager->createEntity("Cat1");
+    auto& cat1Sprite = cat1Entity.addComponent<SpriteComponent>(
+        device, L"DX3D/Assets/Textures/cat.jpg", 200.0f * 0.85f, 200.0f
+    );
+    cat1Sprite.setPosition(0.0f, 0.0f, 0.0f);
 
-    // Keep your existing UI elements
-    createUIElements(device);
-}
+    // Add animation to cat1 (sine wave movement)
+    auto& cat1Animation = cat1Entity.addComponent<AnimationComponent>();
+    cat1Animation.setUpdateFunction([](Entity& entity, float dt) {
+        static float time = 0.0f;
+        time += dt;
+        float speed = 1.0f;
+        float amplitude = 100.0f;
+        float newX = amplitude * sin(time * speed);
 
-void TestScene::createPlayingCards(GraphicsDevice& device) {
-    const float cardWidth = 80.0f;
-    const float cardHeight = 120.0f;
-    const float cardSpacing = 15.0f;
-    const int cardsPerRow = 13; // 13 cards per suit
-
-    // Create cards in a grid layout
-    for (int suit = 0; suit < 4; suit++) {
-        for (int rank = 0; rank < 13; rank++) {
-            // Calculate position
-            float x = (rank - 6) * (cardWidth + cardSpacing); // Center the row
-            float y = (suit - 1.5f) * (cardHeight + cardSpacing * 2); // Center vertically
-
-            // Create entity name
-            std::string entityName = "Card_" + std::to_string(suit) + "_" + std::to_string(rank);
-            auto& cardEntity = m_entityManager->createEntity(entityName);
-
-            // Add sprite component
-            auto& cardSprite = cardEntity.addComponent<SpriteComponent>(
-                device, L"DX3D/Assets/Textures/CardSpriteSheet.png", cardWidth, cardHeight
-            );
-
-            // Setup spritesheet (13 ranks x 4 suits)
-            cardSprite.setupSpritesheet(13, 6);
-            cardSprite.setSpriteFrame(rank, suit);
-            cardSprite.setPosition(x, y, 0.0f);
-
-
-            // Add card component with suit and rank data
-            auto& cardComp = cardEntity.addComponent<CardComponent>(
-                static_cast<Suit>(suit),
-                static_cast<Rank>(rank)
-            );
-
-            // Add collider for mouse detection
-            auto& collider = cardEntity.addComponent<ColliderComponent>(cardWidth, cardHeight);
-
-            // Add draggable component
-            auto& draggable = cardEntity.addComponent<DraggableComponent>();
+        if (auto* sprite = entity.getComponent<SpriteComponent>()) {
+            Vec3 currentPos = sprite->getPosition();
+            sprite->setPosition(newX, currentPos.y, currentPos.z);
         }
-    }
-}
+        });
 
-void TestScene::createUIElements(GraphicsDevice& device) {
-    // Your existing UI code...
+    auto& cat2Entity = m_entityManager->createEntity("Cat2");
+    auto& cat2Sprite = cat2Entity.addComponent<SpriteComponent>(
+        device, L"DX3D/Assets/Textures/cat.jpg", 100.0f * 0.85f, 100.0f
+    );
+    cat2Sprite.setPosition(300.0f, -150.0f, 0.0f);
+
+    // Add movement and rotation to cat2
+    auto& cat2Movement = cat2Entity.addComponent<MovementComponent>(200.0f);
+    auto& cat2Animation = cat2Entity.addComponent<AnimationComponent>();
+    cat2Animation.setUpdateFunction([](Entity& entity, float dt) {
+        if (auto* sprite = entity.getComponent<SpriteComponent>()) {
+            float rotationSpeed = 1.0f; // radians per second
+            sprite->rotateZ(dt * rotationSpeed);
+        }
+        });
+
+    auto& cat3Entity = m_entityManager->createEntity("Cat3");
+    auto& cat3Sprite = cat3Entity.addComponent<SpriteComponent>(
+        device, L"DX3D/Assets/Textures/cat.jpg", 150.0f * 0.85f, 150.0f
+    );
+    cat3Sprite.setPosition(-250.0f, 200.0f, 0.0f);
+    cat3Sprite.setTint(Vec4(0.0f, 1.0f, 0.0f, 0.5f));
+
+    auto& cat4Entity = m_entityManager->createEntity("Cat4");
+    auto& cat4Sprite = cat4Entity.addComponent<SpriteComponent>(
+        device, L"DX3D/Assets/Textures/cat.jpg", 120.0f * 0.85f, 120.0f
+    );
+    cat4Sprite.setPosition(500.0f, 300.0f, 0.0f);
+    cat4Sprite.setTint(Vec4(1.0f, 0.5f, 0.5f, 0.5f));
+
+    auto& cat5Entity = m_entityManager->createEntity("Cat5");
+    auto& cat5Sprite = cat5Entity.addComponent<SpriteComponent>(
+        device, L"DX3D/Assets/Textures/cat.jpg", 160.0f * 0.85f, 160.0f
+    );
+    cat5Sprite.setPosition(-40.0f, -250.0f, 0.0f);
+    cat5Sprite.setTint(Vec4(0.5f, 0.5f, 1.0f, 0.5f));
+
+
+    // Add this inside TestScene::load(GraphicsEngine& engine), after the cat sprites
     auto& debugQuadEntity = m_entityManager->createEntity("DebugQuad");
     auto& debugQuad = debugQuadEntity.addComponent<SpriteComponent>(
-        device, L"DX3D/Assets/Textures/node.png", 25.0f, 25.0f
+        device,
+        L"DX3D/Assets/Textures/node.png", // You can also use a plain 1x1 white texture
+        25.0f, 25.0f // width and height in pixels
     );
     debugQuad.setPosition(0.0f, 0.0f, 0.0f);
     debugQuad.enableScreenSpace(true);
     debugQuad.setScreenPosition(0.5f, 0.5f);
 
-    // Add card info display
-    auto& cardInfoEntity = m_entityManager->createEntity("CardInfo");
-    auto& cardInfoText = cardInfoEntity.addComponent<TextComponent>(
-        device, TextSystem::getRenderer(), L"Hover over a card", 24.0f
-    );
-    cardInfoText.setFontFamily(L"Consolas");
-    cardInfoText.setColor(Vec4(1.0f, 1.0f, 0.0f, 1.0f));
-    cardInfoText.setScreenPosition(0.02f, 0.1f);
+    // Tint so it stands out (semi-transparent red)
+    debugQuad.setTint(Vec4(1.0f, 0.0f, 0.0f, 0.5f));
 
-    // Add FPS counter
+
+
+
+    auto& uiTest = m_entityManager->createEntity("UI_Text");
+    auto& textTest = uiTest.addComponent<TextComponent>(
+        device,
+        TextSystem::getRenderer(),
+        L"<--Test           Test-->",
+        24.0f
+    );
+
+    textTest.setFontFamily(L"Consolas");
+    textTest.setColor(Vec4(0.0f, 0.0f, 1.0f, 1.0f)); // yellow
+    textTest.setScreenPosition(0.16, 0.94);        // top-left of screen
+
+    Vec2 textSize = textTest.getTextSize();
+
+    auto& debugQuadTestEntity = m_entityManager->createEntity("DebugQuadTest");
+    float padding = 10.0f;
+    auto& debugQuadTest = debugQuadTestEntity.addComponent<SpriteComponent>(
+        device,
+        L"DX3D/Assets/Textures/beam.png", // You can also use a plain 1x1 white texture
+        textSize.x + padding, textSize.y + padding // width and height in pixels
+    );
+    debugQuadTest.setPosition(0.0f, 0.0f, 0.0f);
+    debugQuadTest.enableScreenSpace(true);
+    debugQuadTest.setScreenPosition(0.16, 0.94);
+
+
+
+
+
+
+
+    auto& testButtonE = m_entityManager->createEntity("UI_TextButton");
+
+    auto& testButton = testButtonE.addComponent<ButtonComponent>(
+        device,
+        L"Make Cat Big", // Button text
+        48.0f
+
+    );
+
+    // Position the button in screen space
+    testButton.setScreenPosition(0.8f, 0.1f); // Bottom right area
+
+    // Set button colors
+    testButton.setNormalTint(Vec4(0.2f, 0.6f, 1.0f, 0.5f));   // Blue
+    testButton.setHoveredTint(Vec4(0.4f, 0.8f, 1.0f, 0.5f));  // Light blue
+    testButton.setPressedTint(Vec4(0.1f, 0.4f, 0.8f, 0.5f));  // Dark blue
+
+    // Set button text properties
+    testButton.setTextColor(Vec4(1.0f, 1.0f, 1.0f, 1.0f)); // White text
+    testButton.setFontSize(18.0f);
+
+    // Set the callback function - this will be called when button is clicked
+    // Change this lambda in TestScene::load to capture 'this':
+    testButton.setOnClickCallback([this]() {
+        std::cout << "Test Button Clicked!" << std::endl;
+
+        if (auto* cat1 = m_entityManager->findEntity("Cat1")) {
+            if (auto* sprite = cat1->getComponent<SpriteComponent>()) {
+                Vec3 currentScale = sprite->getScale(); // assuming getScale() exists
+                float scaleFactor = 1.2f;              // increase by 20%
+                sprite->setScale(currentScale * scaleFactor);
+            }
+        }
+        });
+
+
+    // 1. A button that resets cat1 scale
+    auto& resetButtonE = m_entityManager->createEntity("UI_ResetButton");
+    auto& resetButton = resetButtonE.addComponent<ButtonComponent>(device, L"Reset Cat", 36.0f);
+    resetButton.setScreenPosition(0.8f, 0.2f);
+    resetButton.setNormalTint(Vec4(0.6f, 0.2f, 1, 0.5f));
+    resetButton.setOnClickCallback([this]() {
+        if (auto* cat1 = m_entityManager->findEntity("Cat1"))
+            if (auto* sprite = cat1->getComponent<SpriteComponent>())
+                sprite->setScale(Vec3(1, 1, 1));
+        });
+
+    // 2. Text that updates each frame (fps counter)
     auto& fpsTextE = m_entityManager->createEntity("UI_FPS");
     auto& fpsText = fpsTextE.addComponent<TextComponent>(device, TextSystem::getRenderer(), L"FPS: 0", 20.0f);
-    fpsText.setScreenPosition(0.05f, 0.02f);
+    fpsText.setScreenPosition(0.05, 0.02);
     fpsText.setColor(Vec4(1, 1, 0, 1));
 }
 
@@ -113,199 +194,93 @@ void TestScene::update(float dt) {
     // Update camera movement
     updateCameraMovement(dt);
 
-    // Handle card dragging
-    updateCardDragging();
+    // Handle cat2 movement with arrow keys
+    if (auto* cat2Entity = m_entityManager->findEntity("Cat2")) {
+        if (auto* movement = cat2Entity->getComponent<MovementComponent>()) {
+            Vec2 velocity(0.0f, 0.0f);
+            float speed = movement->getSpeed();
 
-    // Update card hover effects
-    updateCardHoverEffects();
+            if (input.isKeyDown(Key::Up))    velocity.y += speed;
+            if (input.isKeyDown(Key::Down))  velocity.y -= speed;
+            if (input.isKeyDown(Key::Left))  velocity.x -= speed;
+            if (input.isKeyDown(Key::Right)) velocity.x += speed;
 
-    // Update FPS counter
-    updateFPSCounter(dt);
+            movement->setVelocity(velocity);
+        }
+    }
+    if (auto* debugQuad = m_entityManager->findEntity("DebugQuad")) {
+        float speed = 0.005f; // normalized space movement per frame
+        auto debugQuadSprite = debugQuad->getComponent<SpriteComponent>();
+        Vec2 newPos = debugQuadSprite->getScreenPosition();
 
-    // Your existing movement/animation updates...
+        if (input.isKeyDown(Key::I)) {
+            newPos.y += speed;
+        }
+        if (input.isKeyDown(Key::K)) {
+            newPos.y -= speed;
+        }
+        if (input.isKeyDown(Key::J)) {
+            newPos.x -= speed;
+        }
+        if (input.isKeyDown(Key::L)) {
+            newPos.x += speed;
+        }
+
+        debugQuadSprite->setScreenPosition(newPos.x, newPos.y);
+    }
+
+    // Update all animation components
     auto animatedEntities = m_entityManager->getEntitiesWithComponent<AnimationComponent>();
     for (auto* entity : animatedEntities) {
         if (auto* animation = entity->getComponent<AnimationComponent>()) {
             animation->update(*entity, dt);
         }
     }
-}
 
-void TestScene::updateCardDragging() {
-    auto& input = Input::getInstance();
-    Vec2 mousePos = input.getMousePositionNDC();
-    // Convert mouse position to world coordinates
-    Vec2 worldMousePos = screenToWorldPosition(mousePos);
-
-    // Check for mouse click to start dragging
-    if (input.wasMouseJustPressed(MouseClick::LeftMouse)) {
-        // Find the topmost card under the mouse
-        Entity* topCard = findCardUnderMouse(worldMousePos);
-        if (topCard) {
-            if (auto* draggable = topCard->getComponent<DraggableComponent>()) {
-                if (auto* sprite = topCard->getComponent<SpriteComponent>()) {
-                    draggable->setDragging(true);
-                    draggable->setOriginalPosition(sprite->getPosition());
-
-                    // Calculate offset from mouse to sprite center
-                    Vec3 spritePos = sprite->getPosition();
-                    Vec2 offset = Vec2(spritePos.x, spritePos.y) - worldMousePos;
-                    draggable->setDragOffset(offset);
-
-                    // Bring card to front by adjusting Z position
-                    sprite->setPosition(spritePos.x, spritePos.y, 0.0f);
-                }
-            }
+    // Update all movement components
+    auto movingEntities = m_entityManager->getEntitiesWithComponent<MovementComponent>();
+    for (auto* entity : movingEntities) {
+        if (auto* movement = entity->getComponent<MovementComponent>()) {
+            movement->update(*entity, dt);
         }
     }
-
-    // Update dragging cards
-    if (input.isMouseDown(MouseClick::LeftMouse)) {
-        auto draggableEntities = m_entityManager->getEntitiesWithComponent<DraggableComponent>();
-        for (auto* entity : draggableEntities) {
-            if (auto* draggable = entity->getComponent<DraggableComponent>()) {
-                if (draggable->isDragging()) {
-                    if (auto* sprite = entity->getComponent<SpriteComponent>()) {
-                        Vec2 offset = draggable->getDragOffset();
-                        Vec2 newPos = worldMousePos + offset;
-                        sprite->setPosition(newPos.x, newPos.y, 0.0f); // Keep on top
-                    }
-                }
-            }
+    auto buttonEntities = m_entityManager->getEntitiesWithComponent<ButtonComponent>();
+    for (auto* entity : buttonEntities) {
+        if (auto* movement = entity->getComponent<ButtonComponent>()) {
+            movement->update(dt);
         }
     }
+    auto mouse = Input::getInstance().getMousePositionNDC();
+    if (auto* debugQuad = m_entityManager->findEntity("DebugQuad")) {
+        float speed = 0.005f; // normalized space movement per frame
+        auto debugQuadSprite = debugQuad->getComponent<SpriteComponent>();
+        Vec2 newPos = debugQuadSprite->getScreenPosition();
 
-    // Stop dragging on mouse release
-    if (input.wasMouseJustReleased(MouseClick::LeftMouse)) {
-        auto draggableEntities = m_entityManager->getEntitiesWithComponent<DraggableComponent>();
-        for (auto* entity : draggableEntities) {
-            if (auto* draggable = entity->getComponent<DraggableComponent>()) {
-                if (draggable->isDragging()) {
-                    draggable->setDragging(false);
-
-                    // Reset Z position
-                    if (auto* sprite = entity->getComponent<SpriteComponent>()) {
-                        Vec3 pos = sprite->getPosition();
-                        sprite->setPosition(pos.x, pos.y, 0.0f);
-                    }
-                }
-            }
+        if (input.isKeyDown(Key::I)) {
+            newPos.y += speed;
         }
+        if (input.isKeyDown(Key::K)) {
+            newPos.y -= speed;
+        }
+        if (input.isKeyDown(Key::J)) {
+            newPos.x -= speed;
+        }
+        if (input.isKeyDown(Key::L)) {
+            newPos.x += speed;
+        }
+
+        debugQuadSprite->setScreenPosition(mouse.x, mouse.y);
     }
-}
-
-void TestScene::updateCardHoverEffects() {
-    auto& input = Input::getInstance();
-    Vec2 mousePos = input.getMousePositionNDC();
-    Vec2 worldMousePos = screenToWorldPosition(mousePos);
-
-    Entity* hoveredCard = findCardUnderMouse(worldMousePos);
-
-    // Reset all card tints first
-    auto cardEntities = m_entityManager->getEntitiesWithComponent<CardComponent>();
-    for (auto* entity : cardEntities) {
-        if (auto* sprite = entity->getComponent<SpriteComponent>()) {
-            if (auto* draggable = entity->getComponent<DraggableComponent>()) {
-                if (!draggable->isDragging()) {
-                    sprite->setTint(Vec4(1.0f, 1.0f, 1.0f, 0.0f)); // Reset to normal
-                }
-            }
-        }
-    }
-
-    // Highlight hovered card
-    if (hoveredCard) {
-        if (auto* sprite = hoveredCard->getComponent<SpriteComponent>()) {
-            if (auto* draggable = hoveredCard->getComponent<DraggableComponent>()) {
-                if (!draggable->isDragging()) {
-                    sprite->setTint(Vec4(1.0f, 1.0f, 0.5f, 0.5f)); // Slight yellow tint
-                }
-            }
-        }
-
-        // Update card info text
-        if (auto* cardComp = hoveredCard->getComponent<CardComponent>()) {
-            if (auto* infoEntity = m_entityManager->findEntity("CardInfo")) {
-                if (auto* infoText = infoEntity->getComponent<TextComponent>()) {
-                    std::wstring cardName = cardComp->getCardName();
-                    infoText->setText(L"Card: " + cardName);
-                }
-            }
-        }
-    }
-    else {
-        // No card hovered, show default text
-        if (auto* infoEntity = m_entityManager->findEntity("CardInfo")) {
-            if (auto* infoText = infoEntity->getComponent<TextComponent>()) {
-                infoText->setText(L"Hover over a card");
-            }
-        }
-    }
-}
-
-Entity* TestScene::findCardUnderMouse(const Vec2& worldMousePos) {
-    Entity* topCard = nullptr;
-    float highestZ = -999.0f;
-
-    auto cardEntities = m_entityManager->getEntitiesWithComponent<CardComponent>();
-    for (auto* entity : cardEntities) {
-        if (auto* collider = entity->getComponent<ColliderComponent>()) {
-            if (auto* sprite = entity->getComponent<SpriteComponent>()) {
-                Vec3 spritePos = sprite->getPosition();
-
-                if (collider->containsPoint(worldMousePos, spritePos)) {
-                    if (spritePos.z > highestZ) {
-                        highestZ = spritePos.z;
-                        topCard = entity;
-                    }
-                }
-            }
-        }
-    }
-
-    return topCard;
-}
-
-Vec2 TestScene::screenToWorldPosition(const Vec2& screenPos) {
-    // Get camera for coordinate conversion
-    if (auto* cameraEntity = m_entityManager->findEntity("MainCamera")) {
-        if (auto* camera = cameraEntity->getComponent<Camera2D>()) {
-            float screenWidth = GraphicsEngine::getWindowWidth();
-            float screenHeight = GraphicsEngine::getWindowHeight();
-
-            // screenPos is already in [0,1] range, not NDC [-1,1]
-            // Convert directly to pixel coordinates
-            float pixelX = screenPos.x * screenWidth;
-            float pixelY = ( screenPos.y) * screenHeight; // Flip Y since screen coords have Y=0 at top
-
-            // Convert to world coordinates accounting for camera
-            Vec2 cameraPos = camera->getPosition();
-            float zoom = camera->getZoom();
-
-            float worldX = (pixelX - screenWidth * 0.5f) / zoom + cameraPos.x;
-            float worldY = (pixelY - screenHeight * 0.5f) / zoom + cameraPos.y;
-
-            return Vec2(worldX, worldY);
-        }
-    }
-
-    return Vec2(0, 0);
-}
-void TestScene::updateFPSCounter(float dt) {
-    static float timer = 0;
-    static int frames = 0;
-    timer += dt;
-    frames++;
-
+    static float timer = 0; static int frames = 0;
+    timer += dt; frames++;
     if (timer >= 1.0f) {
-        if (auto* fpsEntity = m_entityManager->findEntity("UI_FPS")) {
+        if (auto* fpsEntity = m_entityManager->findEntity("UI_FPS"))
             if (auto* fpsText = fpsEntity->getComponent<TextComponent>()) {
                 fpsText->setText(L"FPS: " + std::to_wstring(frames));
             }
-        }
-        frames = 0;
-        timer = 0;
+        frames = 0; timer = 0;
     }
+    printf("%f,%f\n", mouse.x, mouse.y);
 }
 
 void TestScene::updateCameraMovement(float dt) {
@@ -345,13 +320,18 @@ void TestScene::updateCameraMovement(float dt) {
         camera->setPosition(0.0f, 0.0f);
         camera->setZoom(1.0f);
     }
+
 }
 
 void TestScene::render(GraphicsEngine& engine, SwapChain& swapChain) {
     engine.beginFrame(swapChain);
     auto& ctx = engine.getContext();
-    // Set up camera matrices
+    float screenWidth = GraphicsEngine::getWindowWidth();
+    float screenHeight = GraphicsEngine::getWindowHeight();
+
+    // ---------- PASS 1: world-space sprites using default pipeline ----------
     ctx.setGraphicsPipelineState(engine.getDefaultPipeline());
+    // set camera matrices
     if (auto* cameraEntity = m_entityManager->findEntity("MainCamera")) {
         if (auto* camera = cameraEntity->getComponent<Camera2D>()) {
             ctx.setViewMatrix(camera->getViewMatrix());
@@ -359,21 +339,9 @@ void TestScene::render(GraphicsEngine& engine, SwapChain& swapChain) {
         }
     }
 
-    // Render all cards (sorted by Z position for proper layering)
-    auto cardEntities = m_entityManager->getEntitiesWithComponent<CardComponent>();
-
-    // Sort by Z position (back to front)
-    std::sort(cardEntities.begin(), cardEntities.end(), [](Entity* a, Entity* b) {
-        auto* spriteA = a->getComponent<SpriteComponent>();
-        auto* spriteB = b->getComponent<SpriteComponent>();
-        if (spriteA && spriteB) {
-            return spriteA->getPosition().z < spriteB->getPosition().z;
-        }
-        return false;
-        });
-
-    // Render sorted cards
-    for (auto* entity : cardEntities) {
+    auto spriteEntities = m_entityManager->getEntitiesWithComponent<SpriteComponent>();
+    for (auto* entity : spriteEntities) {
+        if (entity->getName() == "DebugQuad") continue; // skip debug quad in world pass
         if (auto* sprite = entity->getComponent<SpriteComponent>()) {
             if (sprite->isVisible() && sprite->isValid()) {
                 sprite->draw(ctx);
@@ -381,8 +349,12 @@ void TestScene::render(GraphicsEngine& engine, SwapChain& swapChain) {
         }
     }
 
-    // Render screen-space UI elements
-    for (auto* entity : m_entityManager->getEntitiesWithComponent<SpriteComponent>()) {
+    // ---------- PASS 2: screen-space sprites (UI/debug) using text/screen pipeline ----------
+    ctx.setGraphicsPipelineState(engine.getDefaultPipeline());
+
+    // identity view, pixel-orthographic projection (0,0 top-left)
+    // draw only screen-space sprites
+    for (auto* entity : spriteEntities) {
         if (auto* sprite = entity->getComponent<SpriteComponent>()) {
             if (sprite->isScreenSpace()) {
                 sprite->draw(ctx);
@@ -390,14 +362,21 @@ void TestScene::render(GraphicsEngine& engine, SwapChain& swapChain) {
         }
     }
 
-    // Render text
+
     for (auto* entity : m_entityManager->getEntitiesWithComponent<TextComponent>()) {
         if (auto* text = entity->getComponent<TextComponent>()) {
             if (text->isVisible()) {
-                text->draw(ctx);
+                text->draw(ctx); // Will respect m_useScreenSpace
             }
         }
     }
 
+    for (auto* entity : m_entityManager->getEntitiesWithComponent<ButtonComponent>()) {
+        if (auto* text = entity->getComponent<ButtonComponent>()) {
+            if (text->isVisible()) {
+                text->draw(ctx); // Will respect m_useScreenSpace
+            }
+        }
+    }
     engine.endFrame(swapChain);
 }

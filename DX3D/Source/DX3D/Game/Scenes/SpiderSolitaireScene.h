@@ -144,7 +144,7 @@ namespace dx3d {
         std::vector<CardPhysics> m_celebrationCards;
         float m_celebrationTimer;
         float m_gravity;
-
+        bool m_skipSequenceCheckThisFrame = false;
 
 
         StockClickArea m_stockClickArea;

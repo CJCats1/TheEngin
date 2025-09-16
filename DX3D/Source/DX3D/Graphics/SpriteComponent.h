@@ -1,4 +1,4 @@
-// SpriteComponent.h
+﻿// SpriteComponent.h
 #pragma once
 #include <DX3D/Graphics/GraphicsDevice.h>
 #include <DX3D/Graphics/Mesh.h>
@@ -17,6 +17,8 @@ namespace dx3d {
         // Alternative constructor for existing texture
         SpriteComponent(GraphicsDevice& device, std::shared_ptr<Texture2D> texture,
             float width = 1.0f, float height = 1.0f);
+        SpriteComponent(GraphicsDevice& device, std::shared_ptr<Mesh> mesh,
+            std::shared_ptr<Texture2D> texture = nullptr);
 
         ~SpriteComponent() = default;
 

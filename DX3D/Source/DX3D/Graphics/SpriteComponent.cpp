@@ -26,6 +26,17 @@ SpriteComponent::SpriteComponent(GraphicsDevice& device, std::shared_ptr<Texture
 	initialize(device, width, height);
 }
 
+SpriteComponent::SpriteComponent(GraphicsDevice& device, std::shared_ptr<Mesh> mesh,
+	std::shared_ptr<Texture2D> texture)
+	: m_device(device), m_mesh(std::move(mesh)), m_texture(std::move(texture)) {
+	if (!m_mesh) {
+		throw std::runtime_error("SpriteComponent: Mesh cannot be null");
+	}
+	m_width = m_mesh->getWidth();
+	m_height = m_mesh->getHeight();
+}
+
+
 void SpriteComponent::initialize(GraphicsDevice& device, float width, float height) {
 	// Create textured quad mesh
 	m_width = width;

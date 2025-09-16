@@ -1,0 +1,22 @@
+{
+    "version": 1,
+    "revision": 0,
+    "rules": [
+        {
+            "primary-output": "Intermediate\\x64\\Debug\\TetrisPhysicsComponent.h.obj",
+            "outputs": [
+                "D:\\TheEngine\\TheEngine\\Intermediate\\x64\\Debug\\vc143.pdb",
+                "Intermediate\\x64\\Debug\\",
+                "D:\\TheEngine\\TheEngine\\Intermediate\\x64\\Debug\\TetrisPhysicsComponent.h.ifc"
+            ],
+            "provides": [
+                {
+                    "logical-name": "DX3D\\Source\\DX3D\\Components\\TetrisPhysicsComponent.h",
+                    "source-path": "d:\\theengine\\theengine\\dx3d\\source\\dx3d\\components\\tetrisphysicscomponent.h",
+                    "lookup-method": "absolute"
+                }
+            ],
+            "requires": []
+        }
+    ]
+}

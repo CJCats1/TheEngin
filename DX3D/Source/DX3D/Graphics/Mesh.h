@@ -48,6 +48,14 @@ namespace dx3d
         float getCurrentUWidth() const { return m_currentUWidth; }
         float getCurrentVHeight() const { return m_currentVHeight; }
 
+		ui32 getVertexCount() const { return m_vertexCount; }
+		void setVertexCount(ui32 theVertexCount) { m_vertexCount = theVertexCount; }
+		void setIndexCount(ui32 theIndexCount) { m_indexCount = theIndexCount; }
+
+		ui32 getIndexCount() const { return m_indexCount; }
+		void setVB(std::shared_ptr<VertexBuffer> vb) { m_vb = vb; }
+		void setIB(std::shared_ptr<IndexBuffer> ib) { m_ib = ib; }
+		std::shared_ptr<Texture2D> getTexture() const { return m_texture; }
     private:
         std::shared_ptr<VertexBuffer> m_vb;
         std::shared_ptr<IndexBuffer>  m_ib;

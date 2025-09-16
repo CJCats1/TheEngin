@@ -461,7 +461,7 @@ void SpiderSolitaireScene::updateCardDragging() {
     // Start dragging
     if (input.wasMouseJustPressed(MouseClick::LeftMouse)) {
         // First check if clicking on stock area
-        
+
         Entity* clickedCard = findCardUnderMouse(worldMousePos);
         if (clickedCard) {
             if (auto* cardComp = clickedCard->getComponent<CardComponent>()) {
@@ -505,7 +505,7 @@ void SpiderSolitaireScene::updateCardDragging() {
     }
 
     // Stop dragging and handle drop
-    if (input.wasMouseJustReleased(MouseClick::LeftMouse) ) {
+    if (input.wasMouseJustReleased(MouseClick::LeftMouse)) {
         if (m_stockClickArea.containsPoint(worldMousePos)) {
             dealNewRow();
             return; // Don't process card dragging if we clicked stock
@@ -545,6 +545,22 @@ void SpiderSolitaireScene::updateCardDragging() {
                                     }
                                 }
                             }
+
+                            // CRITICAL FIX: Check if this move created any complete sequences
+                            // If so, save another state before they get auto-removed
+                            bool hasCompletedSequence = false;
+                            for (auto& checkStack : m_tableau) {
+                                if (isSequenceComplete(checkStack)) {
+                                    hasCompletedSequence = true;
+                                    break;
+                                }
+                            }
+
+                            if (hasCompletedSequence) {
+                                // Save state BEFORE sequences get automatically removed
+                                saveGameState();
+                            }
+
                             validDrop = true;
                         }
                     }
@@ -602,6 +618,36 @@ void SpiderSolitaireScene::updateCardHoverEffects() {
 }
 
 void SpiderSolitaireScene::updateGameLogic() {
+    // Skip sequence checking this frame if we just did an undo
+    if (m_skipSequenceCheckThisFrame) {
+        m_skipSequenceCheckThisFrame = false;
+
+        // Still update UI elements
+        if (auto* scoreEntity = m_entityManager->findEntity("ScoreText")) {
+            if (auto* scoreText = scoreEntity->getComponent<TextComponent>()) {
+                scoreText->setText(L"Completed Suits: " + std::to_wstring(m_completedSuits) + L"/8");
+            }
+        }
+
+        if (auto* stockEntity = m_entityManager->findEntity("StockInfo")) {
+            if (auto* stockText = stockEntity->getComponent<TextComponent>()) {
+                stockText->setText(L"Stock: " + std::to_wstring(m_stock.size()) + L" cards");
+            }
+        }
+
+        if (isGameWon() && !m_celebrationActive) {
+            if (auto* titleEntity = m_entityManager->findEntity("GameTitle")) {
+                if (auto* titleText = titleEntity->getComponent<TextComponent>()) {
+                    titleText->setText(L"Spider Solitaire - YOU WON!");
+                    titleText->setColor(Vec4(0.0f, 1.0f, 0.0f, 1.0f));
+                }
+            }
+            startCelebration();
+        }
+
+        return;
+    }
+
     // Check for completed sequences and remove them
     for (auto& stack : m_tableau) {
         if (isSequenceComplete(stack)) {
@@ -638,6 +684,7 @@ void SpiderSolitaireScene::updateGameLogic() {
     }
 }
 
+
 bool SpiderSolitaireScene::isSequenceComplete(const CardStack& stack) const {
     if (stack.size() < 13) return false;
 
@@ -661,8 +708,8 @@ bool SpiderSolitaireScene::isSequenceComplete(const CardStack& stack) const {
 }
 
 void SpiderSolitaireScene::removeCompletedSequence(CardStack& stack) {
-    // Save state before removing sequence
-    saveGameState();
+    // DON'T save state here anymore - it's now handled in updateCardDragging
+    // when the move that creates the complete sequence is made
 
     // Remove top 13 cards and move to foundation
     std::vector<Entity*> completedSequence;
@@ -695,7 +742,7 @@ void SpiderSolitaireScene::removeCompletedSequence(CardStack& stack) {
 
                         // Debug output
                         Vec3 pos = sprite->getPosition();
-                        sprite->setPosition(pos.x, pos.y , Z_DEPTH_FOUNDATION_BASE);
+                        sprite->setPosition(pos.x, pos.y, Z_DEPTH_FOUNDATION_BASE);
                     }
                 }
             }
@@ -719,7 +766,6 @@ void SpiderSolitaireScene::removeCompletedSequence(CardStack& stack) {
             }
         }
     }
-
 }
 
 void SpiderSolitaireScene::dealNewRow() {
@@ -742,6 +788,21 @@ void SpiderSolitaireScene::dealNewRow() {
             }
             m_tableau[i].addCard(card, Z_DEPTH_CARD_SPACING);
         }
+    }
+
+    // CRITICAL FIX: Check if dealing created any complete sequences
+    // If so, save another state before they get auto-removed
+    bool hasCompletedSequence = false;
+    for (auto& checkStack : m_tableau) {
+        if (isSequenceComplete(checkStack)) {
+            hasCompletedSequence = true;
+            break;
+        }
+    }
+
+    if (hasCompletedSequence) {
+        // Save state BEFORE sequences get automatically removed
+        saveGameState();
     }
 
     updateStockIndicators();
@@ -1094,6 +1155,11 @@ void SpiderSolitaireScene::restoreGameState() {
 
     // Apply the state
     applyGameState(lastState);
+
+    // CRITICAL: Skip sequence checking for one frame after undo
+    // This prevents the game from immediately re-detecting and removing
+    // sequences that were just restored
+    m_skipSequenceCheckThisFrame = true;
 }
 
 void SpiderSolitaireScene::applyGameState(const GameState& state) {
@@ -1115,7 +1181,7 @@ void SpiderSolitaireScene::applyGameState(const GameState& state) {
     // Restore foundation stacks
     for (int i = 0; i < 8; ++i) {
         m_foundations[i].cards = state.foundationStacks[i];
-        m_foundations[i].updateCardPositions(Z_DEPTH_FOUNDATION_BASE);
+        m_foundations[i].updateCardPositions(-Z_DEPTH_CARD_SPACING);
     }
 
     // Restore stock

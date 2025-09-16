@@ -44,10 +44,16 @@ namespace dx3d {
             if (scalar != 0.0f) return Vec2(x / scalar, y / scalar);
             return Vec2(0, 0);
         }
-
+        Vec2& operator/=(f32 scalar) {
+            if (scalar != 0.0f) { x /= scalar; y /= scalar; }
+            else { x = 0; y = 0; }
+            return *this;
+		}
         // Assignment operators
         Vec2& operator+=(const Vec2& other) { x += other.x; y += other.y; return *this; }
         Vec2& operator-=(const Vec2& other) { x -= other.x; y -= other.y; return *this; }
+        Vec2& operator-=(f32 scalar) { x -= scalar; y -= scalar; return *this; }
+
         Vec2& operator*=(f32 scalar) { x *= scalar; y *= scalar; return *this; }
 
         // Utility methods
@@ -140,6 +146,10 @@ namespace dx3d {
     {
     public:
         Vec4() = default;
+        Vec4 operator-(const Vec4& other) const { return Vec4(x - other.x, y - other.y, z - other.z,w-other.w); }
+        Vec4 operator+(const Vec4& other) const { return Vec4(x + other.x, y + other.y, z + other.z,w+other.z); }
+        Vec4 operator*(f32 scalar) const { return Vec4(x * scalar, y * scalar, z * scalar,w*scalar); }
+
         Vec4(f32 x, f32 y, f32 z, f32 w) : x(x), y(y), z(z), w(w) {}
         f32 x{}, y{}, z{}, w{};
     };

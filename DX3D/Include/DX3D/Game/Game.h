@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <chrono>
 namespace dx3d
 {
-	enum class SceneType { None, TestScene, BridgeScene, SpiderSolitaireScene
+	enum class SceneType { None, TestScene, BridgeScene, SpiderSolitaireScene, PhysicsTetrisScene
 	};
 	class Scene;
 	class TestScene; // Forward declaration
