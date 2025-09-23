@@ -42,8 +42,10 @@ namespace dx3d
 		TransformData getTransformData() { return m_currentTransforms; };
 		void setTint(const Vec4& tint);
 
-		void disableDepthTest();
-		void enableDepthTest();
+	void disableDepthTest();
+	void enableDepthTest();
+	
+	ID3D11SamplerState* getDefaultSampler() const { return m_defaultSampler.Get(); }
 
 	private:
 		Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_context{};

@@ -3,6 +3,8 @@
 #include <DX3D/Core/EntityManager.h>
 #include <DX3D/Graphics/GraphicsEngine.h>
 #include <DX3D/Components/CardComponent.h>
+#include <DX3D/Components/CardPhysicsComponent.h>
+#include <DX3D/Graphics/LineRenderer.h>
 #include <memory>
 #include <vector>
 #include <stack>
@@ -73,6 +75,8 @@ namespace dx3d {
         float cardOffset = 25.0f;   // Vertical offset between cards
         bool faceDown = false;      // Are cards face down by default
         float baseZDepth = -70.0f;  // Base Z depth for this stack
+        enum class StackType { Tableau, Foundation, Stock };
+        StackType type = StackType::Tableau;
 
         void addCard(Entity* card, float zSpacing = 0.01f);  // Add parameter with default
         Entity* removeTopCard(float zSpacing = 0.01f);       // Add parameter with default
@@ -103,6 +107,9 @@ namespace dx3d {
         void updateCardDragging();
         void updateCardHoverEffects();
         void updateGameLogic();
+        void updateCardPhysics(float dt);
+        void applySubtleCelebrationEffects(float dt);
+        void applyMagneticAttraction(float dt);
         bool isValidMove(Entity* card, CardStack& targetStack) const;
         bool isSequenceComplete(const CardStack& stack) const;
         void removeCompletedSequence(CardStack& stack);
@@ -139,7 +146,11 @@ namespace dx3d {
         std::vector<Entity*> m_draggedSequence;
         bool m_isDragging;
         Vec2 m_dragOffset;
-
+        
+        // Physics variables
+        Vec2 m_lastMousePosition;
+        Vec2 m_dragVelocity;
+        float m_dragVelocitySmoothing;
         bool m_celebrationActive;
         std::vector<CardPhysics> m_celebrationCards;
         float m_celebrationTimer;
@@ -158,14 +169,6 @@ namespace dx3d {
         static constexpr float STOCK_X = 450.0f;
         static constexpr float STOCK_Y = 300.0f;
 
-        // Z-Depth constants
-        static constexpr float Z_DEPTH_STOCK = -90.0f;
-        static constexpr float Z_DEPTH_FOUNDATION_BASE = -80.0f;
-        static constexpr float Z_DEPTH_TABLEAU_BASE = -70.0f;
-        static constexpr float Z_DEPTH_DRAGGING_BASE = -10.0f;
-        static constexpr float Z_DEPTH_CARD_SPACING = 0.01f;
-
-
         // Add these member variables:
         std::vector<GameState> m_undoStack;
         static const size_t MAX_UNDO_STATES = 50; // Limit undo history
@@ -181,8 +184,17 @@ namespace dx3d {
         void applyGameState(const GameState& state);
         void updateStockIndicators();
         GraphicsDevice* m_graphicsDevice = nullptr;
+        
+        // Debug visualization members
+        LineRenderer* m_lineRenderer = nullptr;
+        bool m_showFrameDebug = false;
         void startCelebration();
         void updateCelebration(float dt);
         void resetCelebrationCards();
+        
+        // Debug visualization
+        void createDebugToggleButton();
+        void updateFrameDebugVisualization();
+        void renderFrameDebug(DeviceContext& ctx);
     };
 }

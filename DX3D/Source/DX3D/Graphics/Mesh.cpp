@@ -81,8 +81,10 @@ void Mesh::draw(DeviceContext& ctx) const
     // Bind the texture if the mesh is textured
     if (m_texture) {
         ctx.setPSShaderResource(0, m_texture->getSRV());
-        ctx.setPSSampler(0, nullptr); // Uses default sampler
     }
+    
+    // Always bind default sampler to prevent D3D11 warnings
+    ctx.setPSSampler(0, ctx.getDefaultSampler());
 
     // Draw
     if (m_ib)

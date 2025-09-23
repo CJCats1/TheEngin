@@ -10,9 +10,12 @@
 #include <DX3D/Components/DraggableComponent.h>
 #include <DX3D/Components/ColliderComponent.h>
 #include <DX3D/Components/CardComponent.h>
+#include <DX3D/Components/CardFrameComponent.h>
+#include <DX3D/Graphics/LineRenderer.h>
 #include <iostream>
 #include <algorithm>
 #include <random>
+#include <cmath>
 
 using namespace dx3d;
 
@@ -38,28 +41,34 @@ void CardStack::updateCardPositions(float zSpacing) {
     for (size_t i = 0; i < cards.size(); ++i) {
         if (auto* sprite = cards[i]->getComponent<SpriteComponent>()) {
             float yOffset = faceDown ? cardOffset * 0.3f : cardOffset;
-            float Z_DEPTH_STOCK = -90.0f;
+            Vec2 targetPos;
+            float zDepth;
+            
             if (cardOffset < 5.0f) { // Stock pile
-                float stockZSpacing = 0.02f;  // small Z increment
-                float zDepth = 1;
-
-                sprite->setPosition(
-                    position.x,  // small X shift
-                    position.y - (i * 0.3f),  // small Y shift
-                    zDepth
-                );
+                zDepth = -50 + (static_cast<float>(i) * 0.1f);
+                targetPos = Vec2(position.x, position.y - (i * 0.3f));
+                
             }
             else {
-                // Normal tableau/foundation positioning
-                float zDepth = baseZDepth - (static_cast<float>(i) * zSpacing);
-                zDepth = std::max(-99.0f, std::min(0.0f, zDepth));
-
-                sprite->setPosition(
-                    position.x,
-                    position.y - (i * yOffset),
-                    zDepth
-                );
+                zDepth = -50 + (static_cast<float>(i) * 0.5f);
+                targetPos = Vec2(position.x, position.y - (i * yOffset));
             }
+
+            // Move the frame to the target position
+            if (auto* frame = cards[i]->getComponent<CardFrameComponent>()) {
+                frame->setPosition(targetPos);
+            }
+            
+            // Update physics target if card has physics component
+            if (auto* physics = cards[i]->getComponent<CardPhysicsComponent>()) {
+                physics->setTargetPosition(targetPos);
+                physics->setRestPosition(targetPos);
+                
+            }
+
+            // Ensure sprite Z matches stack layering while preserving current X/Y
+            Vec3 currentPos = sprite->getPosition();
+            sprite->setPosition(currentPos.x, currentPos.y, zDepth);
         }
     }
 }
@@ -83,7 +92,8 @@ bool CardStack::canDropCard(Entity* card) const {
 SpiderSolitaireScene::SpiderSolitaireScene(SpiderDifficulty difficulty)
     : m_difficulty(difficulty), m_completedSuits(0), m_draggedCard(nullptr),
     m_isDragging(false), m_dragOffset(0, 0), m_celebrationActive(false),
-    m_celebrationTimer(0.0f), m_gravity(200.0f) {
+    m_celebrationTimer(0.0f), m_gravity(200.0f), m_lastMousePosition(0, 0),
+    m_dragVelocity(0, 0), m_dragVelocitySmoothing(0.8f) {
 }
 
 void SpiderSolitaireScene::load(GraphicsEngine& engine) {
@@ -91,6 +101,13 @@ void SpiderSolitaireScene::load(GraphicsEngine& engine) {
     m_graphicsDevice = &device;
     // Initialize Entity manager
     m_entityManager = std::make_unique<EntityManager>();
+
+    // Create line renderer for debug visualization
+    auto& lineRendererEntity = m_entityManager->createEntity("LineRenderer");
+    m_lineRenderer = &lineRendererEntity.addComponent<LineRenderer>(device);
+    m_lineRenderer->setVisible(true);
+    m_lineRenderer->setPosition(0.0f, 0.0f);
+    
 
     // Create camera
     auto& cameraEntity = m_entityManager->createEntity("MainCamera");
@@ -142,7 +159,7 @@ void SpiderSolitaireScene::load(GraphicsEngine& engine) {
         // Position each indicator with proper Z-depth
         float x = STOCK_X;
         float y = STOCK_Y + i * 5;
-        float z = Z_DEPTH_STOCK - (i * 0.1f); // Each indicator slightly in front
+        float z = -(i+20) * 0.1f; // Each indicator slightly in front
 
         sprite.setPosition(Vec3(x, y, z));
         sprite.setVisible(true); // Ensure visibility
@@ -170,6 +187,18 @@ void SpiderSolitaireScene::load(GraphicsEngine& engine) {
     undoButton.setNormalTint(Vec4(0.2f, 0.6f, 0.8f, 0.5f));
     undoButton.setHoveredTint(Vec4(0.4f, 0.8f, 1.0f, 0.5f));
     undoButton.setPressedTint(Vec4(0.1f, 0.4f, 0.6f, 0.5f));
+    
+    // Create debug toggle button
+    createDebugToggleButton();
+    
+    // Create transparent sprite at world origin LAST to ensure LineRenderer works
+    auto& transparentSpriteEntity = m_entityManager->createEntity("TransparentSprite");
+    auto& transparentSprite = transparentSpriteEntity.addComponent<SpriteComponent>(
+        device, L"DX3D/Assets/Textures/CardSpriteSheet.png", 1.0f, 1.0f
+    );
+    transparentSprite.setPosition(Vec3(0.0f, 0.0f, 0.0f)); 
+    transparentSprite.setTint(Vec4(1.0f, 1.0f, 1.0f, 0.0f)); // Completely transparent
+    transparentSprite.setVisible(true);
 }
 
 void SpiderSolitaireScene::createEmptySpots(GraphicsDevice& device) {
@@ -182,15 +211,15 @@ void SpiderSolitaireScene::createEmptySpots(GraphicsDevice& device) {
         );
 
         sprite.setupSpritesheet(13, 6);
-        sprite.setSpriteFrame(12, 4); // Empty spot frame
+        sprite.setSpriteFrame(12, 4); 
 
         // Position at tableau base with appropriate Z-depth
         float x = TABLEAU_START_X + i * COLUMN_SPACING;
         float y = TABLEAU_Y;
-        float z = Z_DEPTH_TABLEAU_BASE + 0.5f; // Slightly behind cards but in front of background
+        float z = -100;
 
         sprite.setPosition(Vec3(x, y, z));
-        sprite.setVisible(true); // Initially hidden, will show when column is empty
+        sprite.setVisible(true); 
 
         m_tableauEmptySpots[i] = &emptySpot;
     }
@@ -209,7 +238,7 @@ void SpiderSolitaireScene::createEmptySpots(GraphicsDevice& device) {
         // Position at foundation base - USE FULL COLUMN SPACING
         float x = TABLEAU_START_X + i * COLUMN_SPACING*0.8;  // Changed from COLUMN_SPACING * 0.6f
         float y = FOUNDATION_Y;
-        float z = Z_DEPTH_FOUNDATION_BASE + 0.5f; // Slightly behind foundation cards
+        float z = -100; // Empty spots behind cards
 
         sprite.setPosition(Vec3(x, y, z));
         sprite.setVisible(true); // Foundations start empty
@@ -227,7 +256,7 @@ void SpiderSolitaireScene::createEmptySpots(GraphicsDevice& device) {
     stockSprite.setSpriteFrame(11, 4); // Empty spot frame
 
     // Position at stock location
-    stockSprite.setPosition(Vec3(STOCK_X, STOCK_Y, Z_DEPTH_STOCK + 0.5f));
+    stockSprite.setPosition(Vec3(STOCK_X, STOCK_Y, -100));
     stockSprite.setVisible(true); // Hidden initially
 
     m_stockEmptySpot = &stockEmptySpot;
@@ -291,6 +320,19 @@ void SpiderSolitaireScene::createCards(GraphicsDevice& device) {
                 cardComp.setFaceUp(false);
                 // Show card back initially
                 cardSprite.setSpriteFrame(3, 4); // Card back frame
+                
+                // Add frame component for rigid frame reference
+                auto& frame = cardEntity.addComponent<CardFrameComponent>();
+                
+                // Add physics component for springy behavior
+                auto& physics = cardEntity.addComponent<CardPhysicsComponent>();
+                
+                // Connect physics to frame
+                physics.setFrame(&frame);
+                
+                // Add some initial random jitter to make physics more noticeable
+                physics.addRandomJitter(10.0f);
+                
                 // Add collider and draggable
                 auto& collider = cardEntity.addComponent<ColliderComponent>(CARD_WIDTH, CARD_HEIGHT);
                 auto& draggable = cardEntity.addComponent<DraggableComponent>();
@@ -314,15 +356,15 @@ void SpiderSolitaireScene::createCards(GraphicsDevice& device) {
 void SpiderSolitaireScene::setupTableau() {
     // Set base Z depths for each stack
     for (int col = 0; col < 10; ++col) {
-        m_tableau[col].baseZDepth = Z_DEPTH_TABLEAU_BASE;
+        m_tableau[col].baseZDepth = 0;
     }
 
     for (int i = 0; i < 8; ++i) {
-        m_foundations[i].baseZDepth = Z_DEPTH_FOUNDATION_BASE;
+        m_foundations[i].baseZDepth = 0;
     }
 
-    // Stock gets a safe Z depth
-    m_stock.baseZDepth = -20.0f; // Safe distance from other elements
+   
+    m_stock.baseZDepth = 0; 
 
     // Spider Solitaire initial deal:
     for (int col = 0; col < 10; ++col) {
@@ -331,7 +373,22 @@ void SpiderSolitaireScene::setupTableau() {
         for (int i = 0; i < cardCount; ++i) {
             if (!m_stock.isEmpty()) {
                 Entity* card = m_stock.removeTopCard(0.1f); // Smaller spacing for stock operations
-                m_tableau[col].addCard(card, Z_DEPTH_CARD_SPACING);
+                m_tableau[col].addCard(card, 0);
+
+                // Add some initial physics to make cards settle into position
+                if (auto* physics = card->getComponent<CardPhysicsComponent>()) {
+                    // Add a gentle downward velocity as if cards were just dealt
+                    physics->addVelocity(Vec2(0.0f, -30.0f));
+                    // Add tiny random jitter for natural settling
+                    physics->addRandomJitter(5.0f);
+                    
+                    // Make sure target position is set correctly
+                    if (auto* sprite = card->getComponent<SpriteComponent>()) {
+                        Vec3 spritePos = sprite->getPosition();
+                        physics->setTargetPosition(Vec2(spritePos.x, spritePos.y));
+                        physics->setRestPosition(Vec2(spritePos.x, spritePos.y));
+                    }
+                }
 
                 // Set face up/down status
                 if (auto* sprite = card->getComponent<SpriteComponent>()) {
@@ -381,11 +438,11 @@ void SpiderSolitaireScene::createUI(GraphicsDevice& device) {
     scoreText.setColor(Vec4(0.0f, 1.0f, 0.0f, 1.0f));
     scoreText.setScreenPosition(0.15f, 0.1f);
 
-    // Instructions - updated to include undo
+    // Instructions - updated to include undo and physics debug
     auto& instructEntity = m_entityManager->createEntity("Instructions");
     auto& instructText = instructEntity.addComponent<TextComponent>(
         device, TextSystem::getRenderer(),
-        L"Build sequences K-A in same suit | Space: Deal new row | Z: Undo | WASD: Move camera", 18.0f
+        L"Build sequences K-A in same suit | Space: Deal new row | Z: Undo | P: Physics test | WASD: Move camera", 18.0f
     );
     instructText.setFontFamily(L"Arial");
     instructText.setColor(Vec4(0.8f, 0.8f, 0.8f, 1.0f));
@@ -418,12 +475,19 @@ void SpiderSolitaireScene::update(float dt) {
 
     // Update celebration before normal card dragging
     updateCelebration(dt);
+    applySubtleCelebrationEffects(dt);
 
     // Only allow normal gameplay if celebration isn't active
     if (!m_celebrationActive) {
         updateCardDragging();
         updateCardHoverEffects();
     }
+
+    // Update physics for all cards
+    updateCardPhysics(dt);
+
+    // Apply magnetic attraction for cards near valid drop zones
+    applyMagneticAttraction(dt);
 
     updateGameLogic();
     updateFPSCounter(dt);
@@ -445,18 +509,52 @@ void SpiderSolitaireScene::update(float dt) {
         startCelebration();
     }
 
+    // Debug: Press P to add random physics to all cards (for testing)
+    if (input.wasKeyJustPressed(Key::P)) {
+        auto cardEntities = m_entityManager->getEntitiesWithComponent<CardPhysicsComponent>();
+        std::cout << "Physics Debug: P key pressed! Found " << cardEntities.size() << " cards to jitter" << std::endl;
+        
+        int jitteredCount = 0;
+        for (auto* cardEntity : cardEntities) {
+            if (auto* physics = cardEntity->getComponent<CardPhysicsComponent>()) {
+                // Make sure the target position is set correctly before jittering
+                auto* sprite = cardEntity->getComponent<SpriteComponent>();
+                if (sprite) {
+                    Vec3 currentPos = sprite->getPosition();
+                    physics->setTargetPosition(Vec2(currentPos.x, currentPos.y));
+                    physics->setRestPosition(Vec2(currentPos.x, currentPos.y));
+                }
+                
+                physics->addRandomJitter(200.0f); // Extremely strong jitter for dramatic effect
+                
+                // DEBUG: Check velocity immediately after jitter
+                Vec2 immediateVel = physics->getVelocity();
+                
+                jitteredCount++;
+            }
+        }
+    }
+
     auto buttonEntities = m_entityManager->getEntitiesWithComponent<ButtonComponent>();
     for (auto* entity : buttonEntities) {
         if (auto* button = entity->getComponent<ButtonComponent>()) {
             button->update(dt);
         }
     }
+    
+    // Update frame debug visualization
+    updateFrameDebugVisualization();
 }
 
 void SpiderSolitaireScene::updateCardDragging() {
     auto& input = Input::getInstance();
     Vec2 mousePos = input.getMousePositionNDC();
     Vec2 worldMousePos = screenToWorldPosition(mousePos);
+    
+    // Calculate drag velocity for physics
+    Vec2 mouseDelta = worldMousePos - m_lastMousePosition;
+    m_dragVelocity = m_dragVelocity * m_dragVelocitySmoothing + mouseDelta * (1.0f - m_dragVelocitySmoothing);
+    m_lastMousePosition = worldMousePos;
 
     // Start dragging
     if (input.wasMouseJustPressed(MouseClick::LeftMouse)) {
@@ -479,12 +577,26 @@ void SpiderSolitaireScene::updateCardDragging() {
                             m_dragOffset = Vec2(spritePos.x, spritePos.y) - worldMousePos;
                         }
 
-                        // Bring dragged sequence to front
                         for (size_t i = 0; i < m_draggedSequence.size(); ++i) {
                             if (auto* sprite = m_draggedSequence[i]->getComponent<SpriteComponent>()) {
                                 Vec3 pos = sprite->getPosition();
-                                float dragZ = -100 + Z_DEPTH_DRAGGING_BASE - (static_cast<float>(i) * Z_DEPTH_CARD_SPACING);
-                                sprite->setPosition(pos.x, pos.y, dragZ);
+                                // Bring dragged cards to the front, keep sequence order on top
+                                float frontZ = -1.0f - static_cast<float>(i) * 0.01f;
+                                sprite->setPosition(pos.x, pos.y, frontZ);
+                            }
+                            
+                            if (auto* physics = m_draggedSequence[i]->getComponent<CardPhysicsComponent>()) {
+                                physics->reset();
+                                physics->setDragMode();
+                                physics->setDragging(true); // Set dragging state
+                            }
+                            
+                            // Move the frame to the current position for dragging
+                            if (auto* frame = m_draggedSequence[i]->getComponent<CardFrameComponent>()) {
+                                if (auto* sprite = m_draggedSequence[i]->getComponent<SpriteComponent>()) {
+                                    Vec3 pos = sprite->getPosition();
+                                    frame->setPosition(Vec2(pos.x, pos.y));
+                                }
                             }
                         }
                     }
@@ -493,13 +605,22 @@ void SpiderSolitaireScene::updateCardDragging() {
         }
     }
 
-    // Update dragging position
-    if (m_isDragging && !m_draggedSequence.empty()) {
+       // Update dragging position
+       if (m_isDragging && !m_draggedSequence.empty()) {
         Vec2 newPos = worldMousePos + m_dragOffset;
         for (size_t i = 0; i < m_draggedSequence.size(); ++i) {
             if (auto* sprite = m_draggedSequence[i]->getComponent<SpriteComponent>()) {
-                float dragZ = -100 - (static_cast<float>(i) * Z_DEPTH_CARD_SPACING);
-                sprite->setPosition(newPos.x, newPos.y - i * 25.0f, dragZ);
+                Vec2 cardPos = Vec2(newPos.x, newPos.y - i * 25.0f);
+
+                // Move the frame to the new position
+                if (auto* frame = m_draggedSequence[i]->getComponent<CardFrameComponent>()) {
+                    frame->setPosition(cardPos);
+                }
+
+                if (auto* physics = m_draggedSequence[i]->getComponent<CardPhysicsComponent>()) {
+                    physics->setDragMode();
+                    physics->setTargetPosition(cardPos);
+                }
             }
         }
     }
@@ -523,11 +644,32 @@ void SpiderSolitaireScene::updateCardDragging() {
                         if (sourceStack) {
                             // Remove cards from source
                             for (int i = 0; i < static_cast<int>(m_draggedSequence.size()); ++i) {
-                                sourceStack->removeTopCard(Z_DEPTH_CARD_SPACING);
+                                sourceStack->removeTopCard(0);
                             }
-                            // Add to target
-                            for (auto* card : m_draggedSequence) {
-                                stack.addCard(card, Z_DEPTH_CARD_SPACING);
+                            // Add to target and set physics target positions
+                            for (size_t cardIdx = 0; cardIdx < m_draggedSequence.size(); ++cardIdx) {
+                                auto* card = m_draggedSequence[cardIdx];
+                                stack.addCard(card, 0);
+
+                                if (auto* physics = card->getComponent<CardPhysicsComponent>()) {
+                                    // Ensure physics is properly reset and activated
+                                    physics->setDragging(false);
+                                    physics->setSettling(true);
+                                    physics->setNormalMode();
+                                    
+                                    // Use frame position which was set by addCard/updateCardPositions
+                                    if (auto* frame = card->getComponent<CardFrameComponent>()) {
+                                        Vec2 framePos = frame->getPosition();
+                                        physics->setTargetPosition(framePos);
+                                        physics->setRestPosition(framePos);
+
+                                        // Add a small upward velocity for gentle settling bounce
+                                        physics->addVelocity(Vec2(0.0f, 50.0f)); // Gentle upward bounce
+                                        
+                                        // Debug output to verify physics is being set up
+                                        std::cout << "Valid drop: Setting physics target to (" << framePos.x << "," << framePos.y << ")" << std::endl;
+                                    }
+                                }
                             }
 
                             // Flip top card in source stack if needed
@@ -574,10 +716,37 @@ void SpiderSolitaireScene::updateCardDragging() {
                     m_undoStack.pop_back();
                 }
 
-                // Return cards to original position
+                // Return cards to original position with bouncy physics
                 CardStack* originalStack = findStackContaining(m_draggedCard);
                 if (originalStack) {
-                    originalStack->updateCardPositions(Z_DEPTH_CARD_SPACING);
+                    originalStack->updateCardPositions(0);
+                    
+                    // Add bounce effect to all dragged cards
+                    for (auto* card : m_draggedSequence) {
+                        if (auto* physics = card->getComponent<CardPhysicsComponent>()) {
+                            // Ensure physics is properly reset and activated
+                            physics->setDragging(false);
+                            physics->setSettling(true);
+                            physics->setNormalMode();
+                            
+                            // Set target to original position - use the frame position which was set by updateCardPositions
+                            if (auto* frame = card->getComponent<CardFrameComponent>()) {
+                                Vec2 framePos = frame->getPosition();
+                                physics->setTargetPosition(framePos);
+                                physics->setRestPosition(framePos);
+                                
+                                // Add bounce away from mouse
+                                Vec2 bounceDirection = (framePos - worldMousePos).normalized();
+                                physics->applyBounce(bounceDirection);
+                                
+                                // Add subtle random jitter for more dynamic feel
+                                physics->addRandomJitter(15.0f);
+                                
+                                // Debug output to verify physics is being set up
+                                std::cout << "Invalid drop: Setting physics target to (" << framePos.x << "," << framePos.y << ")" << std::endl;
+                            }
+                        }
+                    }
                 }
             }
 
@@ -714,7 +883,13 @@ void SpiderSolitaireScene::removeCompletedSequence(CardStack& stack) {
     // Remove top 13 cards and move to foundation
     std::vector<Entity*> completedSequence;
     for (int i = 0; i < 13; ++i) {
-        completedSequence.push_back(stack.removeTopCard(Z_DEPTH_CARD_SPACING));
+        auto* card = stack.removeTopCard(0);
+        completedSequence.push_back(card);
+        
+        // Reset physics for completed cards to avoid conflicts with celebration
+        if (auto* physics = card->getComponent<CardPhysicsComponent>()) {
+            physics->reset(); // Clear any existing physics state
+        }
     }
 
     // Reverse the sequence so King is at bottom, Ace at top
@@ -727,8 +902,7 @@ void SpiderSolitaireScene::removeCompletedSequence(CardStack& stack) {
             for (size_t cardIdx = 0; cardIdx < completedSequence.size(); ++cardIdx) {
                 auto* card = completedSequence[cardIdx];
 
-                // CRITICAL FIX: Use proper Z-spacing, not the base depth
-                foundation.addCard(card, Z_DEPTH_CARD_SPACING); // Changed from Z_DEPTH_FOUNDATION_BASE
+                foundation.addCard(card, 0); 
 
                 // Ensure card is face up and properly displayed
                 if (auto* cardComp = card->getComponent<CardComponent>()) {
@@ -742,7 +916,7 @@ void SpiderSolitaireScene::removeCompletedSequence(CardStack& stack) {
 
                         // Debug output
                         Vec3 pos = sprite->getPosition();
-                        sprite->setPosition(pos.x, pos.y, Z_DEPTH_FOUNDATION_BASE);
+                        sprite->setPosition(pos.x, pos.y, -5);
                     }
                 }
             }
@@ -776,7 +950,7 @@ void SpiderSolitaireScene::dealNewRow() {
 
     for (int i = 0; i < 10; ++i) {
         if (!m_stock.isEmpty()) {
-            Entity* card = m_stock.removeTopCard(Z_DEPTH_CARD_SPACING);
+            Entity* card = m_stock.removeTopCard(0);
             if (auto* cardComp = card->getComponent<CardComponent>()) {
                 cardComp->setFaceUp(true);
                 if (auto* sprite = card->getComponent<SpriteComponent>()) {
@@ -786,7 +960,23 @@ void SpiderSolitaireScene::dealNewRow() {
                     );
                 }
             }
-            m_tableau[i].addCard(card, Z_DEPTH_CARD_SPACING);
+            m_tableau[i].addCard(card, 0);
+            
+            // Add subtle dealing physics effect
+            if (auto* physics = card->getComponent<CardPhysicsComponent>()) {
+                // Add gentle velocity as if the card was "dealt" from the stock
+                Vec2 dealDirection = m_tableau[i].position - m_stock.position;
+                dealDirection = dealDirection.normalized();
+                physics->addVelocity(dealDirection * 60.0f + Vec2(0, -20.0f)); // Gentler arc
+                physics->addRandomJitter(3.0f); // Minimal randomness
+
+                // Set target position for smooth settling
+                if (auto* sprite = card->getComponent<SpriteComponent>()) {
+                    Vec3 finalPos = sprite->getPosition();
+                    physics->setTargetPosition(Vec2(finalPos.x, finalPos.y));
+                    physics->setRestPosition(Vec2(finalPos.x, finalPos.y));
+                }
+            }
         }
     }
 
@@ -806,6 +996,192 @@ void SpiderSolitaireScene::dealNewRow() {
     }
 
     updateStockIndicators();
+}
+
+bool SpiderSolitaireScene::isValidMove(Entity* card, CardStack& targetStack) const {
+    if (!card) return false;
+
+    auto* cardComp = card->getComponent<CardComponent>();
+    if (!cardComp) return false;
+
+    // Can always place on empty stack
+    if (targetStack.isEmpty()) {
+        return true;
+    }
+
+    // Get the top card of the target stack
+    Entity* topCard = targetStack.getTopCard();
+    if (!topCard) return false;
+
+    auto* topCardComp = topCard->getComponent<CardComponent>();
+    if (!topCardComp) return false;
+
+    // In Spider Solitaire, cards must be placed in descending rank order
+    // Suit doesn't matter for initial placement, but matters for moving sequences
+    int cardRank = static_cast<int>(cardComp->getRank());
+    int topRank = static_cast<int>(topCardComp->getRank());
+
+    return cardRank == topRank - 1;
+}
+
+// Undo/Redo system implementation
+void SpiderSolitaireScene::saveGameState() {
+    // Capture current state before any major move
+    GameState currentState = captureCurrentState();
+
+    // Add to undo stack
+    m_undoStack.push_back(currentState);
+
+    // Limit undo history to prevent memory issues
+    if (m_undoStack.size() > MAX_UNDO_STATES) {
+        m_undoStack.erase(m_undoStack.begin());
+    }
+}
+
+void SpiderSolitaireScene::restoreGameState() {
+    if (m_undoStack.empty()) return;
+
+    // Get the last saved state
+    GameState lastState = m_undoStack.back();
+    m_undoStack.pop_back();
+
+    // Apply the state
+    applyGameState(lastState);
+
+    // CRITICAL: Skip sequence checking for one frame after undo
+    // This prevents the game from immediately re-detecting and removing
+    // sequences that were just restored
+    m_skipSequenceCheckThisFrame = true;
+}
+
+GameState SpiderSolitaireScene::captureCurrentState() {
+    GameState state;
+
+    // Capture tableau stacks
+    state.tableauStacks.resize(10);
+    for (int i = 0; i < 10; ++i) {
+        state.tableauStacks[i] = m_tableau[i].cards;
+
+        // Store face states for all cards in this stack
+        for (auto* card : m_tableau[i].cards) {
+            if (auto* cardComp = card->getComponent<CardComponent>()) {
+                state.cardFaceStates[card] = cardComp->isFaceUp();
+            }
+        }
+    }
+
+    // Capture foundation stacks
+    state.foundationStacks.resize(8);
+    for (int i = 0; i < 8; ++i) {
+        state.foundationStacks[i] = m_foundations[i].cards;
+
+        // Store face states
+        for (auto* card : m_foundations[i].cards) {
+            if (auto* cardComp = card->getComponent<CardComponent>()) {
+                state.cardFaceStates[card] = cardComp->isFaceUp();
+            }
+        }
+    }
+
+    // Capture stock
+    state.stockCards = m_stock.cards;
+    for (auto* card : m_stock.cards) {
+        if (auto* cardComp = card->getComponent<CardComponent>()) {
+            state.cardFaceStates[card] = cardComp->isFaceUp();
+        }
+    }
+
+    // Capture completed suits count
+    state.completedSuits = m_completedSuits;
+
+    return state;
+}
+
+void SpiderSolitaireScene::applyGameState(const GameState& state) {
+    // Clear current stacks
+    for (auto& stack : m_tableau) {
+        stack.cards.clear();
+    }
+    for (auto& foundation : m_foundations) {
+        foundation.cards.clear();
+    }
+    m_stock.cards.clear();
+
+    // Restore tableau stacks
+    for (int i = 0; i < 10; ++i) {
+        m_tableau[i].cards = state.tableauStacks[i];
+        m_tableau[i].updateCardPositions(0);
+    }
+
+    // Restore foundation stacks
+    for (int i = 0; i < 8; ++i) {
+        m_foundations[i].cards = state.foundationStacks[i];
+        m_foundations[i].updateCardPositions(0);
+    }
+
+    // Restore stock
+    m_stock.cards = state.stockCards;
+    m_stock.updateCardPositions(0.1f);
+
+    // Restore completed suits
+    m_completedSuits = state.completedSuits;
+
+    // Restore all card face states and update visuals
+    for (const auto& cardState : state.cardFaceStates) {
+        Entity* card = cardState.first;
+        bool isFaceUp = cardState.second;
+
+        if (auto* cardComp = card->getComponent<CardComponent>()) {
+            cardComp->setFaceUp(isFaceUp);
+
+            if (auto* sprite = card->getComponent<SpriteComponent>()) {
+                if (isFaceUp) {
+                    sprite->setSpriteFrame(
+                        static_cast<int>(cardComp->getRank()),
+                        static_cast<int>(cardComp->getSuit())
+                    );
+                }
+                else {
+                    sprite->setSpriteFrame(3, 4); // Card back
+                }
+            }
+        }
+    }
+
+    // Update stock indicators
+    updateStockIndicators();
+}
+
+void SpiderSolitaireScene::updateStockIndicators() {
+    // Clear existing indicators
+    for (auto* indicator : m_stockIndicators) {
+        m_entityManager->removeEntity(indicator->getName());
+    }
+    m_stockIndicators.clear();
+
+    // Recreate indicators based on current stock size
+    int numDeals = m_stock.size() / 10;
+
+    for (int i = 0; i < numDeals; ++i) {
+        auto& fakeStock = m_entityManager->createEntity("StockIndicator_" + std::to_string(i));
+        auto& sprite = fakeStock.addComponent<SpriteComponent>(
+            *m_graphicsDevice,
+            L"DX3D/Assets/Textures/CardSpriteSheet.png",
+            CARD_WIDTH, CARD_HEIGHT
+        );
+
+        sprite.setupSpritesheet(13, 6);
+        sprite.setSpriteFrame(3, 4); // card back
+
+        float x = STOCK_X;
+        float y = STOCK_Y + i * 5;
+        float z = ((i-20 )* 0.1f);
+
+        sprite.setPosition(Vec3(x, y, z));
+        sprite.setVisible(true);
+
+        m_stockIndicators.push_back(&fakeStock);
+    }
 }
 
 bool SpiderSolitaireScene::isGameWon() const {
@@ -1042,17 +1418,21 @@ void SpiderSolitaireScene::render(GraphicsEngine& engine, SwapChain& swapChain) 
     for (auto* indicator : m_stockIndicators) {
         allSprites.push_back(indicator);
     }
+    
+    // Add transparent sprite last to ensure LineRenderer works
+    if (auto* transparentEntity = m_entityManager->findEntity("TransparentSprite")) {
+        allSprites.push_back(transparentEntity);
+    }
 
-    // Sort by Z position (back to front for negative Z system)
-    // More negative Z values = further back, should render first
+
+    // Sort by Z so painter's order matches depth (back to front)
     std::sort(allSprites.begin(), allSprites.end(), [](Entity* a, Entity* b) {
-        auto* spriteA = a->getComponent<SpriteComponent>();
-        auto* spriteB = b->getComponent<SpriteComponent>();
-        if (spriteA && spriteB) {
-            return spriteA->getPosition().z > spriteB->getPosition().z;
-        }
-        return false;
-        });
+        auto* sa = a ? a->getComponent<SpriteComponent>() : nullptr;
+        auto* sb = b ? b->getComponent<SpriteComponent>() : nullptr;
+        float za = sa ? sa->getPosition().z : -100.0f;
+        float zb = sb ? sb->getPosition().z : -100.0f;
+        return za < zb; // lower Z (further back) first
+    });
 
     // Render sorted sprites
     for (auto* entity : allSprites) {
@@ -1061,6 +1441,11 @@ void SpiderSolitaireScene::render(GraphicsEngine& engine, SwapChain& swapChain) 
                 sprite->draw(ctx);
             }
         }
+    }
+    
+    // Render frame debug visualization in world space
+    if (m_showFrameDebug) {
+        renderFrameDebug(ctx);
     }
 
     // Render screen-space UI elements
@@ -1087,166 +1472,103 @@ void SpiderSolitaireScene::render(GraphicsEngine& engine, SwapChain& swapChain) 
             }
         }
     }
+    
     engine.endFrame(swapChain);
 }
 
-void SpiderSolitaireScene::saveGameState() {
-    // Capture current state before any major move
-    GameState currentState = captureCurrentState();
+// Physics functions
+void SpiderSolitaireScene::applySubtleCelebrationEffects(float dt) {
+    if (!m_celebrationActive) return;
 
-    // Add to undo stack
-    m_undoStack.push_back(currentState);
+    // Get all entities with physics components
+    auto cardEntities = m_entityManager->getEntitiesWithComponent<CardPhysicsComponent>();
 
-    // Limit undo history to prevent memory issues
-    if (m_undoStack.size() > MAX_UNDO_STATES) {
-        m_undoStack.erase(m_undoStack.begin());
-    }
-}
+    for (auto* cardEntity : cardEntities) {
+        auto* physics = cardEntity->getComponent<CardPhysicsComponent>();
+        auto* sprite = cardEntity->getComponent<SpriteComponent>();
 
-GameState SpiderSolitaireScene::captureCurrentState() {
-    GameState state;
+        if (!physics || !sprite) continue;
 
-    // Capture tableau stacks
-    state.tableauStacks.resize(10);
-    for (int i = 0; i < 10; ++i) {
-        state.tableauStacks[i] = m_tableau[i].cards;
-
-        // Store face states for all cards in this stack
-        for (auto* card : m_tableau[i].cards) {
-            if (auto* cardComp = card->getComponent<CardComponent>()) {
-                state.cardFaceStates[card] = cardComp->isFaceUp();
+        // Skip cards that are already in celebration
+        bool isInCelebration = false;
+        for (const auto& celebCard : m_celebrationCards) {
+            if (celebCard.card == cardEntity) {
+                isInCelebration = true;
+                break;
             }
         }
-    }
 
-    // Capture foundation stacks
-    state.foundationStacks.resize(8);
-    for (int i = 0; i < 8; ++i) {
-        state.foundationStacks[i] = m_foundations[i].cards;
+        if (isInCelebration) continue;
 
-        // Store face states
-        for (auto* card : m_foundations[i].cards) {
-            if (auto* cardComp = card->getComponent<CardComponent>()) {
-                state.cardFaceStates[card] = cardComp->isFaceUp();
-            }
+        // Apply subtle celebration mode to other cards
+        physics->setPhysicsMode(PhysicsMode::CELEBRATION);
+
+        // Add very gentle jitter
+        if (rand() % 100 < 5) { // 5% chance per frame
+            physics->addRandomJitter(3.0f); // Very subtle
         }
     }
-
-    // Capture stock
-    state.stockCards = m_stock.cards;
-    for (auto* card : m_stock.cards) {
-        if (auto* cardComp = card->getComponent<CardComponent>()) {
-            state.cardFaceStates[card] = cardComp->isFaceUp();
-        }
-    }
-
-    // Capture completed suits count
-    state.completedSuits = m_completedSuits;
-
-    return state;
 }
 
-void SpiderSolitaireScene::restoreGameState() {
-    if (m_undoStack.empty()) return;
+// Magnetic attraction for cards near valid drop zones
+void SpiderSolitaireScene::applyMagneticAttraction(float dt) {
+    if (m_draggedSequence.empty()) return; // Only apply when dragging cards
 
-    // Get the last saved state
-    GameState lastState = m_undoStack.back();
-    m_undoStack.pop_back();
+    // Get the dragged card (first card in sequence)
+    Entity* draggedCard = m_draggedSequence[0];
+    if (!draggedCard) return;
 
-    // Apply the state
-    applyGameState(lastState);
+    auto* draggedSprite = draggedCard->getComponent<SpriteComponent>();
+    if (!draggedSprite) return;
 
-    // CRITICAL: Skip sequence checking for one frame after undo
-    // This prevents the game from immediately re-detecting and removing
-    // sequences that were just restored
-    m_skipSequenceCheckThisFrame = true;
-}
+    Vec3 draggedPos = draggedSprite->getPosition();
+    Vec2 draggedCardPos(draggedPos.x, draggedPos.y);
 
-void SpiderSolitaireScene::applyGameState(const GameState& state) {
-    // Clear current stacks
-    for (auto& stack : m_tableau) {
-        stack.cards.clear();
-    }
-    for (auto& foundation : m_foundations) {
-        foundation.cards.clear();
-    }
-    m_stock.cards.clear();
+    // Check each tableau column for magnetic attraction
+    for (int col = 0; col < 10; ++col) {
+        auto& stack = m_tableau[col];
 
-    // Restore tableau stacks
-    for (int i = 0; i < 10; ++i) {
-        m_tableau[i].cards = state.tableauStacks[i];
-        m_tableau[i].updateCardPositions(Z_DEPTH_CARD_SPACING);
-    }
+        // Skip if stack is empty - cards can always drop on empty stacks
+        if (stack.isEmpty()) continue;
 
-    // Restore foundation stacks
-    for (int i = 0; i < 8; ++i) {
-        m_foundations[i].cards = state.foundationStacks[i];
-        m_foundations[i].updateCardPositions(-Z_DEPTH_CARD_SPACING);
-    }
+        auto* topCard = stack.getTopCard();
+        if (!topCard) continue;
 
-    // Restore stock
-    m_stock.cards = state.stockCards;
-    m_stock.updateCardPositions(0.1f);
+        auto* topCardSprite = topCard->getComponent<SpriteComponent>();
+        if (!topCardSprite) continue;
 
-    // Restore completed suits
-    m_completedSuits = state.completedSuits;
+        Vec3 topCardPos = topCardSprite->getPosition();
+        Vec2 topCardPos2D(topCardPos.x, topCardPos.y);
 
-    // Restore all card face states and update visuals
-    for (const auto& cardState : state.cardFaceStates) {
-        Entity* card = cardState.first;
-        bool isFaceUp = cardState.second;
+        // Calculate distance between dragged card and top card
+        float distance = (draggedCardPos - topCardPos2D).length();
 
-        if (auto* cardComp = card->getComponent<CardComponent>()) {
-            cardComp->setFaceUp(isFaceUp);
+        // Magnetic range - only attract if close enough
+        const float MAGNETIC_RANGE = 150.0f;
+        if (distance > MAGNETIC_RANGE) continue;
 
-            if (auto* sprite = card->getComponent<SpriteComponent>()) {
-                if (isFaceUp) {
-                    sprite->setSpriteFrame(
-                        static_cast<int>(cardComp->getRank()),
-                        static_cast<int>(cardComp->getSuit())
-                    );
-                }
-                else {
-                    sprite->setSpriteFrame(3, 4); // Card back
+        // Check if this is a valid move (Spider Solitaire rules)
+        bool isValid = isValidMove(draggedCard, stack);
+
+        if (isValid) {
+            // Apply gentle magnetic attraction
+            Vec2 direction = (topCardPos2D - draggedCardPos).normalized();
+
+            // Strength decreases with distance (inverse square)
+            float strength = 1.0f / (distance * 0.01f + 1.0f);
+            strength = std::min(strength, 2.0f); // Cap the strength
+
+            // Apply magnetic force to the dragged card
+            for (auto* card : m_draggedSequence) {
+                if (auto* physics = card->getComponent<CardPhysicsComponent>()) {
+                    physics->setPhysicsMode(PhysicsMode::MAGNETIC);
+                    physics->setTargetPosition(draggedCardPos + direction * strength * 20.0f * dt);
                 }
             }
         }
     }
-
-    // Update stock indicators
-    updateStockIndicators();
 }
-void SpiderSolitaireScene::updateStockIndicators() {
-    // Clear existing indicators
-    for (auto* indicator : m_stockIndicators) {
-        m_entityManager->removeEntity(indicator->getName());
-    }
-    m_stockIndicators.clear();
 
-    // Recreate indicators based on current stock size
-    int numDeals = m_stock.size() / 10;
-
-    for (int i = 0; i < numDeals; ++i) {
-        auto& fakeStock = m_entityManager->createEntity("StockIndicator_" + std::to_string(i));
-        auto& sprite = fakeStock.addComponent<SpriteComponent>(
-            *m_graphicsDevice,
-            L"DX3D/Assets/Textures/CardSpriteSheet.png",
-            CARD_WIDTH, CARD_HEIGHT
-        );
-
-        sprite.setupSpritesheet(13, 6);
-        sprite.setSpriteFrame(3, 4); // card back
-
-        float x = STOCK_X;
-        float y = STOCK_Y + i * 5;
-        float z = Z_DEPTH_STOCK - (i * 0.1f);
-
-        sprite.setPosition(Vec3(x, y, z));
-        sprite.setVisible(true);
-
-        m_stockIndicators.push_back(&fakeStock);
-    }
-}
 void SpiderSolitaireScene::startCelebration() {
     if (m_celebrationActive) return;
 
@@ -1322,15 +1644,12 @@ void SpiderSolitaireScene::updateCelebration(float dt) {
         Vec3 newPos = currentPos;
         newPos.x += physics.velocity.x * dt;
         newPos.y += physics.velocity.y * dt;
-        newPos.z = -150.0f; // Bring to front during celebration
 
         // Update rotation
         physics.currentRotation += physics.angularVelocity * dt;
 
         // Apply position and rotation
         sprite->setPosition(newPos);
-        // Note: You'll need to add rotation support to your SpriteComponent
-        // For now, we can simulate with slight position jitter or tint changes
 
         // Add some sparkle effect with tint cycling
         float sparkle = sin(m_celebrationTimer * 6.0f + physics.currentRotation * 0.01f) * 0.5f + 0.5f;
@@ -1357,7 +1676,7 @@ void SpiderSolitaireScene::updateCelebration(float dt) {
 void SpiderSolitaireScene::resetCelebrationCards() {
     // Reset all cards to their original positions and states
     for (int i = 0; i < static_cast<int>(m_foundations.size()); ++i) {
-        m_foundations[i].updateCardPositions(Z_DEPTH_CARD_SPACING);
+        m_foundations[i].updateCardPositions(0);
 
         // Reset tints
         for (auto* card : m_foundations[i].cards) {
@@ -1368,7 +1687,7 @@ void SpiderSolitaireScene::resetCelebrationCards() {
     }
 
     for (int i = 0; i < static_cast<int>(m_tableau.size()); ++i) {
-        m_tableau[i].updateCardPositions(Z_DEPTH_CARD_SPACING);
+        m_tableau[i].updateCardPositions(0);
 
         // Reset tints
         for (auto* card : m_tableau[i].cards) {
@@ -1379,5 +1698,190 @@ void SpiderSolitaireScene::resetCelebrationCards() {
     }
 
     m_celebrationCards.clear();
+}
+
+void SpiderSolitaireScene::createDebugToggleButton() {
+    auto& debugButtonEntity = m_entityManager->createEntity("DebugToggleButton");
+    
+    // Create button with screen space positioning
+    auto& debugButton = debugButtonEntity.addComponent<ButtonComponent>(
+        *m_graphicsDevice,
+        L"Toggle Debug",
+        18.0f,
+        8.0f,
+        4.0f
+    );
+    
+    // Position in top-left corner of screen
+    debugButton.enableScreenSpace(true);
+    debugButton.setScreenPosition(0.05f, 0.05f);
+    
+    // Set button styling
+    debugButton.setNormalTint(Vec4(0.2f, 0.2f, 0.2f, 0.8f));   // Dark background
+    debugButton.setHoveredTint(Vec4(0.3f, 0.3f, 0.3f, 0.9f));  // Lighter on hover
+    debugButton.setPressedTint(Vec4(0.1f, 0.1f, 0.1f, 0.9f));  // Darker when pressed
+    debugButton.setTextColor(Vec4(1.0f, 1.0f, 1.0f, 1.0f));    // White text
+    
+    // Set callback to toggle debug rendering
+    debugButton.setOnClickCallback([this]() {
+        m_showFrameDebug = !m_showFrameDebug;
+        
+        // Update button text to reflect current state
+        auto* buttonEntity = m_entityManager->findEntity("DebugToggleButton");
+        if (buttonEntity) {
+            auto* button = buttonEntity->getComponent<ButtonComponent>();
+            if (button) {
+                button->setText(m_showFrameDebug ? L"Debug: ON" : L"Debug: OFF");
+            }
+        }
+    });
+    
+    // Set initial text based on current debug state
+    debugButton.setText(m_showFrameDebug ? L"Debug: ON" : L"Debug: OFF");
+}
+
+void SpiderSolitaireScene::updateFrameDebugVisualization() {
+    if (!m_lineRenderer) return;
+
+    m_lineRenderer->enableScreenSpace(false); // Use world space coordinates
+    m_lineRenderer->clear();
+    
+    // Get all card entities with frame components
+    auto cardEntities = m_entityManager->getEntitiesWithComponent<CardFrameComponent>();
+    
+    for (auto* cardEntity : cardEntities) {
+        auto* frame = cardEntity->getComponent<CardFrameComponent>();
+        auto* sprite = cardEntity->getComponent<SpriteComponent>();
+        auto* physics = cardEntity->getComponent<CardPhysicsComponent>();
+        
+        if (!frame || !sprite) continue;
+        
+        Vec2 framePos = frame->getPosition();
+        Vec3 spritePos = sprite->getPosition();
+        Vec2 cardPos(spritePos.x, spritePos.y);
+        
+        // Determine colors based on card state
+        Vec4 frameColor = Vec4(0.0f, 1.0f, 0.0f, 1.0f); // Green for frame position
+        Vec4 cardColor = Vec4(1.0f, 0.0f, 0.0f, 1.0f);  // Red for actual card position
+        
+        // Check if card is being dragged
+        bool isBeingDragged = false;
+        for (auto* draggedCard : m_draggedSequence) {
+            if (draggedCard == cardEntity) {
+                isBeingDragged = true;
+                break;
+            }
+        }
+        
+        if (isBeingDragged) {
+            frameColor = Vec4(0.0f, 1.0f, 1.0f, 1.0f); // Cyan for dragged frame
+            cardColor = Vec4(1.0f, 1.0f, 0.0f, 1.0f);  // Yellow for dragged card
+        }
+        
+        // 1. Render frame position as cross
+        float crossSize = 15.0f;
+        m_lineRenderer->addLine(
+            Vec2(framePos.x - crossSize, framePos.y),
+            Vec2(framePos.x + crossSize, framePos.y),
+            frameColor, 2.0f
+        );
+        m_lineRenderer->addLine(
+            Vec2(framePos.x, framePos.y - crossSize),
+            Vec2(framePos.x, framePos.y + crossSize),
+            frameColor, 2.0f
+        );
+        
+        // 2. Render actual card position as X
+        float cardSize = 10.0f;
+        m_lineRenderer->addLine(
+            Vec2(cardPos.x - cardSize, cardPos.y - cardSize),
+            Vec2(cardPos.x + cardSize, cardPos.y + cardSize),
+            cardColor, 2.0f
+        );
+        m_lineRenderer->addLine(
+            Vec2(cardPos.x - cardSize, cardPos.y + cardSize),
+            Vec2(cardPos.x + cardSize, cardPos.y - cardSize),
+            cardColor, 2.0f
+        );
+        
+        // 3. Draw line connecting frame position to actual card position
+        m_lineRenderer->addLine(framePos, cardPos, Vec4(0.5f, 0.5f, 0.5f, 0.6f), 1.0f);
+        
+        // 4. Show velocity if physics component exists
+        if (physics) {
+            Vec2 velocity = physics->getVelocity();
+            if (velocity.length() > 0.1f) {
+                Vec2 velocityEnd = cardPos + velocity * 0.1f; // Scale down for visibility
+                m_lineRenderer->addLine(cardPos, velocityEnd, Vec4(1.0f, 1.0f, 1.0f, 0.8f), 1.5f);
+            }
+        }
+    }
+}
+
+void SpiderSolitaireScene::renderFrameDebug(DeviceContext& ctx) {
+    if (!m_lineRenderer) return;
+    
+    m_lineRenderer->updateBuffer();
+    m_lineRenderer->draw(ctx);
+}
+
+void SpiderSolitaireScene::updateCardPhysics(float dt) {
+    // Get all entities with physics components
+    auto cardEntities = m_entityManager->getEntitiesWithComponent<CardPhysicsComponent>();
+
+    int physicsActiveCount = 0;
+    int positionUpdates = 0;
+
+    for (auto* cardEntity : cardEntities) {
+        auto* physics = cardEntity->getComponent<CardPhysicsComponent>();
+        auto* sprite = cardEntity->getComponent<SpriteComponent>();
+
+        if (!physics || !sprite) continue;
+
+        // Skip physics for currently dragged cards UNLESS they're in DRAG mode
+        bool isBeingDragged = false;
+        for (auto* draggedCard : m_draggedSequence) {
+            if (draggedCard == cardEntity) {
+                isBeingDragged = true;
+                break;
+            }
+        }
+
+        // Allow DRAG mode to work even when being dragged
+        if (isBeingDragged && physics->getPhysicsMode() != PhysicsMode::DRAG) {
+            continue;
+        }
+
+        Vec3 currentSpritePos = sprite->getPosition();
+        Vec2 currentPos(currentSpritePos.x, currentSpritePos.y);
+
+        // Apply spring forces - allow DRAG mode to work even when dragging
+        if (!physics->isDragging() || physics->getPhysicsMode() == PhysicsMode::DRAG) {
+            physicsActiveCount++;
+            
+            
+            // Add continuous jitter to non-dragged cards
+            physics->addContinuousJitter(dt);
+            
+            Vec2 velocity = physics->getVelocity();
+            
+            // Apply physics if the card has any velocity or is far from target
+            Vec2 targetPos = physics->getTargetPosition();
+            float distanceToTarget = (targetPos - currentPos).length();
+            
+            
+            if (velocity.length() > 0.1f || distanceToTarget > 2.0f) {
+                physics->applySpringForce(currentPos, dt);
+
+                // Update position based on velocity
+                Vec2 newPos = physics->updatePosition(currentPos, dt);
+
+                // Update sprite position
+                sprite->setPosition(newPos.x, newPos.y, currentSpritePos.z);
+                positionUpdates++;
+                
+            }
+        }
+    }
 }
 

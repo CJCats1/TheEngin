@@ -34,6 +34,8 @@ SOFTWARE.*/
 #include <DX3D/Game/Scenes/BridgeScene.h>
 #include <DX3D/Game/Scenes/SpiderSolitaireScene.h>
 #include <DX3D/Game/Scenes/PhysicsTetrisScene.h>
+#include <DX3D/Game/Scenes/PartitionScene.h>
+
 
 dx3d::Game::Game(const GameDesc& desc) :
     Base({ *std::make_unique<Logger>(desc.logLevel).release() }),
@@ -78,6 +80,12 @@ void dx3d::Game::onInternalUpdate()
     {
         setScene(std::make_unique<dx3d::PhysicsTetrisScene>());
         m_currentSceneType = SceneType::PhysicsTetrisScene;
+    }
+    
+    if (input.isKeyDown(Key::Num5) && m_currentSceneType != SceneType::PartitionScene)
+    {
+        setScene(std::make_unique<dx3d::PartitionScene>());
+        m_currentSceneType = SceneType::PartitionScene;
     }
     if (input.isKeyDown(Key::Escape))
     {

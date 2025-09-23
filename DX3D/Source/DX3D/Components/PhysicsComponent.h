@@ -93,7 +93,8 @@ namespace dx3d {
         static constexpr float STIFFNESS = 2500.0f;
         static constexpr float FORCE_BEAM_MAX = 2500.0f;
         static constexpr float GRAVITY = -9.81f * 10.0f; // Scale for your world units
-
+		Entity* getNode1() const { return m_node1Entity; }
+		Entity* getNode2() const { return m_node2Entity; }
     private:
         Entity* m_node1Entity;
         Entity* m_node2Entity;

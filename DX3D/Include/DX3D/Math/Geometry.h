@@ -39,6 +39,7 @@ namespace dx3d {
         // Basic operators
         Vec2 operator+(const Vec2& other) const { return Vec2(x + other.x, y + other.y); }
         Vec2 operator-(const Vec2& other) const { return Vec2(x - other.x, y - other.y); }
+        Vec2 operator-() const { return Vec2(-x, -y); }  // Unary minus
         Vec2 operator*(f32 scalar) const { return Vec2(x * scalar, y * scalar); }
         Vec2 operator/(f32 scalar) const {
             if (scalar != 0.0f) return Vec2(x / scalar, y / scalar);
