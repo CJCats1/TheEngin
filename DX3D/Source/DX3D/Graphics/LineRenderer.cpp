@@ -114,6 +114,7 @@ void LineRenderer::draw(DeviceContext& ctx) {
             ctx.setViewMatrix(m_camera->getViewMatrix());
             ctx.setProjectionMatrix(m_camera->getProjectionMatrix());
         }
+        // If no camera assigned, use whatever matrices the scene has already set
 
         ctx.setVertexBuffer(*m_vertexBuffer);
         
@@ -139,8 +140,10 @@ void LineRenderer::generateLineVertices(const Line& line) {
     Vec2 perpendicular = Vec2(-normalized.y, normalized.x) * (line.thickness * 0.5f);
     
     // Create a quad for the line
-    Vec2 start = line.start + m_position;
-    Vec2 end = line.end + m_position;
+    // Apply local position offset only if local positioning is enabled
+    // This prevents world coordinates from being corrupted by local sprite positioning
+    Vec2 start = m_useLocalPositioning ? line.start + m_position : line.start;
+    Vec2 end = m_useLocalPositioning ? line.end + m_position : line.end;
     
     // Convert to screen space if needed
     if (m_useScreenSpace) {

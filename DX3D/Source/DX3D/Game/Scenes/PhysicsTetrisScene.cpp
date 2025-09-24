@@ -1598,6 +1598,100 @@ void PhysicsTetrisScene::renderLineScanDebug() {
             lineColor, 1.0f
         );
     }
+    
+    // Render line progress bars
+    renderLineProgressBars();
+}
+
+float PhysicsTetrisScene::calculateLineProgress(float y, float tolerance) {
+    auto nodeEntities = m_entityManager->getEntitiesWithComponent<NodeComponent>();
+    int nodeCount = 0;
+    
+    // Count nodes that are close to this Y level and within the play field
+    for (auto* nodeEntity : nodeEntities) {
+        auto* node = nodeEntity->getComponent<NodeComponent>();
+        if (!node || node->isPositionFixed()) continue;
+        
+        // Skip wall nodes
+        std::string nodeName = nodeEntity->getName();
+        if (nodeName.find("Wall") != std::string::npos) continue;
+        
+        Vec2 pos = node->getPosition();
+        
+        // Check if node is at this Y level (within tolerance) and within play field X bounds
+        if (abs(pos.y - y) <= tolerance && 
+            pos.x >= -PLAY_FIELD_WIDTH / 2 && 
+            pos.x <= PLAY_FIELD_WIDTH / 2) {
+            nodeCount++;
+        }
+    }
+    
+    // Return progress as a percentage (0.0 to 1.0)
+    return std::min(1.0f, static_cast<float>(nodeCount) / static_cast<float>(LINE_CLEAR_NODE_THRESHOLD));
+}
+
+void PhysicsTetrisScene::renderLineProgressBars() {
+    if (!m_lineRenderer) return;
+    
+    float playFieldBottom = -PLAY_FIELD_HEIGHT / 2;
+    float playFieldTop = PLAY_FIELD_HEIGHT / 2;
+    float lineSpacing = 20.0f;
+    
+    float playFieldLeft = -PLAY_FIELD_WIDTH / 2;
+    float playFieldRight = PLAY_FIELD_WIDTH / 2;
+    
+    // Position progress bars to the right of the play field
+    float progressBarX = playFieldRight + 50.0f; // 50 pixels to the right of play field
+    float progressBarWidth = 20.0f; // Width of progress bars
+    float progressBarHeight = 15.0f; // Height of each progress bar
+    
+    for (float y = playFieldBottom; y <= playFieldTop; y += lineSpacing) {
+        float progress = calculateLineProgress(y);
+        
+        // Determine color based on progress
+        Vec4 progressColor;
+        if (progress >= 1.0f) {
+            progressColor = Vec4(1.0f, 0.0f, 0.0f, 0.8f); // Red for complete lines
+        } else if (progress >= 0.7f) {
+            progressColor = Vec4(1.0f, 1.0f, 0.0f, 0.8f); // Yellow for nearly complete
+        } else if (progress >= 0.3f) {
+            progressColor = Vec4(0.0f, 1.0f, 0.0f, 0.6f); // Green for partially filled
+        } else {
+            progressColor = Vec4(0.5f, 0.5f, 0.5f, 0.4f); // Gray for mostly empty
+        }
+        
+        // Calculate the filled portion of the progress bar
+        float filledWidth = progressBarWidth * progress;
+        
+        // Draw background (empty portion)
+        if (progress < 1.0f) {
+            Vec2 bgStart(progressBarX + filledWidth, y - progressBarHeight / 2);
+            Vec2 bgEnd(progressBarX + progressBarWidth, y + progressBarHeight / 2);
+            m_lineRenderer->addRect(
+                Vec2((bgStart.x + bgEnd.x) / 2, (bgStart.y + bgEnd.y) / 2),
+                Vec2(progressBarWidth - filledWidth, progressBarHeight),
+                Vec4(0.2f, 0.2f, 0.2f, 0.3f), 1.0f
+            );
+        }
+        
+        // Draw filled portion
+        if (filledWidth > 0.0f) {
+            Vec2 fillStart(progressBarX, y - progressBarHeight / 2);
+            Vec2 fillEnd(progressBarX + filledWidth, y + progressBarHeight / 2);
+            m_lineRenderer->addRect(
+                Vec2((fillStart.x + fillEnd.x) / 2, (fillStart.y + fillEnd.y) / 2),
+                Vec2(filledWidth, progressBarHeight),
+                progressColor, 1.0f
+            );
+        }
+        
+        // Draw border around the progress bar
+        m_lineRenderer->addRect(
+            Vec2(progressBarX + progressBarWidth / 2, y),
+            Vec2(progressBarWidth, progressBarHeight),
+            Vec4(1.0f, 1.0f, 1.0f, 0.5f), 1.0f
+        );
+    }
 }
 
 void PhysicsTetrisScene::applyGravityToOrphanedNodes(const std::set<std::string>& affectedTetriminos, const std::vector<std::string>& removedFrames) {

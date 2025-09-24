@@ -76,7 +76,7 @@ namespace dx3d
         Vec2 calculateCenterOfMass(const TetriminoData& data);
     private:
         LineRenderer* m_lineRenderer = nullptr;
-        bool m_showFrameDebug = true;
+        bool m_showFrameDebug = false;
 
         bool isNodePartOfBeam(Entity* nodeEntity, Entity* beamEntity);
         bool checkNodeBeamCollision(Entity* nodeEntity, Entity* beamEntity);
@@ -115,6 +115,8 @@ namespace dx3d
         bool isLineComplete(float y, float tolerance = 10.0f);
         void clearLine(float y, float tolerance = 10.0f);
         void renderLineScanDebug();
+        void renderLineProgressBars();
+        float calculateLineProgress(float y, float tolerance = 10.0f);
         void applyGravityToOrphanedNodes(const std::set<std::string>& affectedTetriminos, const std::vector<std::string>& removedFrames);
         bool isNodeOrphaned(const std::string& nodeName);
         void applyGravityToAllOrphanedNodes();

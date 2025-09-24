@@ -14,8 +14,10 @@ namespace dx3d {
 	void NodeComponent::update(float dt) {
 		if (!m_positionFixed && m_totalMass > 0.0f) {
 			// F = ma, so a = F/m
+			// Include external forces (like from car interaction)
+			Vec2 totalForce = m_totalForce + m_externalForce;
 
-			Vec2 acceleration = Vec2(m_totalForce.x / m_totalMass, m_totalForce.y / m_totalMass);
+			Vec2 acceleration = Vec2(totalForce.x / m_totalMass, totalForce.y / m_totalMass);
 			m_velocity += acceleration * dt;
 			m_position += m_velocity * dt;
 		}
@@ -37,7 +39,16 @@ namespace dx3d {
 	void NodeComponent::resetTotalMass() {
 		m_totalMass = 0.0f;
 		m_totalForce = Vec2(0.0f, 0.0f);
+		m_externalForce = Vec2(0.0f, 0.0f);
 		m_velocity = Vec2(0.0f, 0.0f);
+	}
+
+	void NodeComponent::addExternalForce(const Vec2& force) {
+		m_externalForce += force;
+	}
+
+	void NodeComponent::clearExternalForces() {
+		m_externalForce = Vec2(0.0f, 0.0f);
 	}
 
 	bool NodeComponent::mouseInside(const Vec2& mouseWorldPos, float nodeSize) const {
@@ -180,9 +191,10 @@ namespace dx3d {
 		auto nodeEntities = entityManager.getEntitiesWithComponent<NodeComponent>();
 		auto beamEntities = entityManager.getEntitiesWithComponent<BeamComponent>();
 
-		// First, calculate forces for all nodes
+		// First, clear external forces and calculate forces for all nodes
 		for (auto* nodeEntity : nodeEntities) {
 			if (auto* node = nodeEntity->getComponent<NodeComponent>()) {
+				node->clearExternalForces(); // Clear external forces from previous frame
 				node->calculateForces(beamEntities);
 
 				// Update sprite position if it exists

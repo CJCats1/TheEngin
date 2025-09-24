@@ -75,8 +75,6 @@ namespace dx3d {
         float cardOffset = 25.0f;   // Vertical offset between cards
         bool faceDown = false;      // Are cards face down by default
         float baseZDepth = -70.0f;  // Base Z depth for this stack
-        enum class StackType { Tableau, Foundation, Stock };
-        StackType type = StackType::Tableau;
 
         void addCard(Entity* card, float zSpacing = 0.01f);  // Add parameter with default
         Entity* removeTopCard(float zSpacing = 0.01f);       // Add parameter with default
@@ -119,6 +117,7 @@ namespace dx3d {
         // Utility functions
         Entity* findCardUnderMouse(const Vec2& worldMousePos);
         Vec2 screenToWorldPosition(const Vec2& screenPos);
+        Vec2 worldToScreenPosition(const Vec2& worldPos);
         void updateCameraMovement(float dt);
         void updateFPSCounter(float dt);
         CardStack* findStackContaining(Entity* card);
@@ -168,6 +167,15 @@ namespace dx3d {
         static constexpr float FOUNDATION_Y = 300.0f;
         static constexpr float STOCK_X = 450.0f;
         static constexpr float STOCK_Y = 300.0f;
+
+        // Z-Depth constants within camera range [-1000, 1000].
+        // More positive renders in front.
+        static constexpr float Z_DEPTH_EMPTY_SPOTS = 10.0f;     // Furthest back
+        static constexpr float Z_DEPTH_STOCK = 20.0f;           // Behind stacks
+        static constexpr float Z_DEPTH_TABLEAU_BASE = 30.0f;    // Tableau piles
+        static constexpr float Z_DEPTH_FOUNDATION_BASE = 40.0f; // Foundation piles
+        static constexpr float Z_DEPTH_DRAGGING_BASE = 100.0f;    // Dragged cards (front)
+        static constexpr float Z_DEPTH_CARD_SPACING = 0.1f;      // Spacing between cards in a stack
 
         // Add these member variables:
         std::vector<GameState> m_undoStack;

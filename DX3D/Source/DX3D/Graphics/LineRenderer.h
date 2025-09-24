@@ -41,6 +41,7 @@ namespace dx3d {
 
         // Camera integration - make this public so the scene can call it
         void setCamera(const Camera2D* camera);
+        void clearCamera() { m_camera = nullptr; } // Disable camera usage
 
         // Properties
         bool isVisible() const { return m_visible; }
@@ -54,6 +55,10 @@ namespace dx3d {
         // Screen space rendering
         void enableScreenSpace(bool enable = true) { m_useScreenSpace = enable; }
         bool isScreenSpace() const { return m_useScreenSpace; }
+
+        // Local positioning (for UI elements that need local transforms)
+        void enableLocalPositioning(bool enable = true) { m_useLocalPositioning = enable; }
+        bool isLocalPositioning() const { return m_useLocalPositioning; }
 
         // Get device reference
         GraphicsDevice& getDevice() { return m_device; }
@@ -69,6 +74,7 @@ namespace dx3d {
 
         bool m_visible = true;
         bool m_useScreenSpace = false;
+        bool m_useLocalPositioning = false;  // Default to world-space positioning
         Vec2 m_position = { 0.0f, 0.0f };
         bool m_bufferDirty = true;
         Mat4 m_viewMatrix;

@@ -169,6 +169,14 @@ namespace dx3d {
             for (int i = 0; i < 16; ++i) m[i] = values[i];
         }
 
+        // 2D array access operators (row, column)
+        f32& operator()(int row, int col) { return m[row * 4 + col]; }
+        const f32& operator()(int row, int col) const { return m[row * 4 + col]; }
+        
+        // 1D array access for backward compatibility
+        f32& operator[](int index) { return m[index]; }
+        const f32& operator[](int index) const { return m[index]; }
+
         // Static factory methods
         static Mat4 identity() {
             return Mat4();
@@ -221,13 +229,29 @@ namespace dx3d {
             return result;
         }
         static Mat4 orthographic(f32 width, f32 height, f32 nearZ, f32 farZ) {
-            Mat4 result;
-            result.m[0] = 2.0f / width;                    // X scale
-            result.m[5] = 2.0f / height;                   // Y scale  
-            result.m[10] = -2.0f / (farZ - nearZ);         // Z scale (note the negative!)
-            result.m[14] = -(farZ + nearZ) / (farZ - nearZ); // Z offset (different formula)
-            result.m[15] = 1.0f;                           // W component
-            return result;
+            Mat4 result = {};
+    
+    // DirectX uses left-handed coordinate system
+    // Orthographic projection matrix for DirectX 11
+    
+    f32 left = -width * 0.5f;
+    f32 right = width * 0.5f;
+    f32 bottom = -height * 0.5f;
+    f32 top = height * 0.5f;
+    
+    // Standard orthographic projection matrix
+    // Maps to NDC space [-1, 1] for X and Y, [0, 1] for Z (DirectX)
+    
+    result(0, 0) = 2.0f / (right - left);           // 2.0f / width
+    result(1, 1) = 2.0f / (top - bottom);          // 2.0f / height
+    result(2, 2) = 1.0f / (farZ - nearZ);          // DirectX Z mapping [0,1]
+    result(3, 3) = 1.0f;
+    
+    result(3, 0) = -(right + left) / (right - left);   // 0.0f (centered)
+    result(3, 1) = -(top + bottom) / (top - bottom);   // 0.0f (centered)
+    result(3, 2) = -nearZ / (farZ - nearZ);            // Z offset
+    
+    return result;
         }
         static Mat4 orthographicPixelSpace(f32 width, f32 height, f32 nearZ = 0.1f, f32 farZ = 100.0f) {
             Mat4 result;

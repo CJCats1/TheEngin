@@ -38,6 +38,10 @@ namespace dx3d {
 
         // Fixed node check (needed for delete mode)
         bool isFixed() const { return m_positionFixed; }
+        
+        // External force application (for car interaction)
+        void addExternalForce(const Vec2& force);
+        void clearExternalForces();
 
         Vec2 startingPos;
         bool isTextureSet = false;
@@ -46,6 +50,7 @@ namespace dx3d {
         Vec2 m_position;
         Vec2 m_velocity{ 0.0f, 0.0f };
         Vec2 m_totalForce{ 0.0f, 0.0f };
+        Vec2 m_externalForce{ 0.0f, 0.0f };
         float m_totalMass = 0.0f;
         bool m_positionFixed;
         bool m_isStressed = false;

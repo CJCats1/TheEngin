@@ -45,12 +45,12 @@ void CardStack::updateCardPositions(float zSpacing) {
             float zDepth;
             
             if (cardOffset < 5.0f) { // Stock pile
-                zDepth = -50 + (static_cast<float>(i) * 0.1f);
+                zDepth = baseZDepth + (static_cast<float>(i) * 0.1f);
                 targetPos = Vec2(position.x, position.y - (i * 0.3f));
                 
             }
             else {
-                zDepth = -50 + (static_cast<float>(i) * 0.5f);
+                zDepth = baseZDepth + (static_cast<float>(i) * 0.1f);
                 targetPos = Vec2(position.x, position.y - (i * yOffset));
             }
 
@@ -107,8 +107,9 @@ void SpiderSolitaireScene::load(GraphicsEngine& engine) {
     m_lineRenderer = &lineRendererEntity.addComponent<LineRenderer>(device);
     m_lineRenderer->setVisible(true);
     m_lineRenderer->setPosition(0.0f, 0.0f);
-    
-
+    m_lineRenderer->enableLocalPositioning(false); // Use world coordinates directly
+    m_lineRenderer->enableScreenSpace(false); // Use world space, not screen space
+	m_lineRenderer->enableLocalPositioning(false); // World space positioning
     // Create camera
     auto& cameraEntity = m_entityManager->createEntity("MainCamera");
     float screenWidth = GraphicsEngine::getWindowWidth();
@@ -170,6 +171,18 @@ void SpiderSolitaireScene::load(GraphicsEngine& engine) {
     m_stockClickArea.position = Vec2(STOCK_X, STOCK_Y);
     m_stockClickArea.width = CARD_WIDTH * 1.5f;  // Make it a bit larger than card
     m_stockClickArea.height = CARD_HEIGHT * 1.5f;
+    // Create invisible sprite at world origin to "anchor" the coordinate system
+    auto& anchorEntity = m_entityManager->createEntity("WorldOriginAnchor");
+    auto& anchorSprite = anchorEntity.addComponent<SpriteComponent>(
+        *m_graphicsDevice,
+        L"DX3D/Assets/Textures/node.png",
+        1.0f, 1.0f  // Tiny size
+    );
+    anchorSprite.setPosition(0.0f, 0.0f, 100.0f); // World origin
+    anchorSprite.setTint(Vec4(1.0f, 1.0f, 1.0f, 0.0f)); // Completely transparent
+
+
+
 
 	auto& undoButtonEntity = m_entityManager->createEntity("UndoButton");
     auto& undoButton = undoButtonEntity.addComponent<ButtonComponent>(
@@ -190,15 +203,7 @@ void SpiderSolitaireScene::load(GraphicsEngine& engine) {
     
     // Create debug toggle button
     createDebugToggleButton();
-    
-    // Create transparent sprite at world origin LAST to ensure LineRenderer works
-    auto& transparentSpriteEntity = m_entityManager->createEntity("TransparentSprite");
-    auto& transparentSprite = transparentSpriteEntity.addComponent<SpriteComponent>(
-        device, L"DX3D/Assets/Textures/CardSpriteSheet.png", 1.0f, 1.0f
-    );
-    transparentSprite.setPosition(Vec3(0.0f, 0.0f, 0.0f)); 
-    transparentSprite.setTint(Vec4(1.0f, 1.0f, 1.0f, 0.0f)); // Completely transparent
-    transparentSprite.setVisible(true);
+
 }
 
 void SpiderSolitaireScene::createEmptySpots(GraphicsDevice& device) {
@@ -216,7 +221,7 @@ void SpiderSolitaireScene::createEmptySpots(GraphicsDevice& device) {
         // Position at tableau base with appropriate Z-depth
         float x = TABLEAU_START_X + i * COLUMN_SPACING;
         float y = TABLEAU_Y;
-        float z = -100;
+        float z = Z_DEPTH_EMPTY_SPOTS;
 
         sprite.setPosition(Vec3(x, y, z));
         sprite.setVisible(true); 
@@ -238,7 +243,7 @@ void SpiderSolitaireScene::createEmptySpots(GraphicsDevice& device) {
         // Position at foundation base - USE FULL COLUMN SPACING
         float x = TABLEAU_START_X + i * COLUMN_SPACING*0.8;  // Changed from COLUMN_SPACING * 0.6f
         float y = FOUNDATION_Y;
-        float z = -100; // Empty spots behind cards
+        float z = Z_DEPTH_EMPTY_SPOTS; // Empty spots behind cards
 
         sprite.setPosition(Vec3(x, y, z));
         sprite.setVisible(true); // Foundations start empty
@@ -354,17 +359,17 @@ void SpiderSolitaireScene::createCards(GraphicsDevice& device) {
 }
 
 void SpiderSolitaireScene::setupTableau() {
-    // Set base Z depths for each stack
+    // Set base Z depths for each stack using proper constants
     for (int col = 0; col < 10; ++col) {
-        m_tableau[col].baseZDepth = 0;
+        m_tableau[col].baseZDepth = Z_DEPTH_TABLEAU_BASE;
     }
 
     for (int i = 0; i < 8; ++i) {
-        m_foundations[i].baseZDepth = 0;
+        m_foundations[i].baseZDepth = Z_DEPTH_FOUNDATION_BASE;
     }
 
    
-    m_stock.baseZDepth = 0; 
+    m_stock.baseZDepth = Z_DEPTH_STOCK; 
 
     // Spider Solitaire initial deal:
     for (int col = 0; col < 10; ++col) {
@@ -581,8 +586,9 @@ void SpiderSolitaireScene::updateCardDragging() {
                             if (auto* sprite = m_draggedSequence[i]->getComponent<SpriteComponent>()) {
                                 Vec3 pos = sprite->getPosition();
                                 // Bring dragged cards to the front, keep sequence order on top
-                                float frontZ = -1.0f - static_cast<float>(i) * 0.01f;
-                                sprite->setPosition(pos.x, pos.y, frontZ);
+                                // Use high positive Z values to render on top of all other cards
+                                float z = Z_DEPTH_DRAGGING_BASE + static_cast<float>(i) * 0.1f;
+                                sprite->setPosition(pos.x, pos.y, z);
                             }
                             
                             if (auto* physics = m_draggedSequence[i]->getComponent<CardPhysicsComponent>()) {
@@ -916,7 +922,7 @@ void SpiderSolitaireScene::removeCompletedSequence(CardStack& stack) {
 
                         // Debug output
                         Vec3 pos = sprite->getPosition();
-                        sprite->setPosition(pos.x, pos.y, -5);
+                        sprite->setPosition(pos.x, pos.y, 5);
                     }
                 }
             }
@@ -1175,7 +1181,7 @@ void SpiderSolitaireScene::updateStockIndicators() {
 
         float x = STOCK_X;
         float y = STOCK_Y + i * 5;
-        float z = ((i-20 )* 0.1f);
+        float z = Z_DEPTH_STOCK + static_cast<float>(i) * 0.1f;
 
         sprite.setPosition(Vec3(x, y, z));
         sprite.setVisible(true);
@@ -1303,16 +1309,16 @@ Vec2 SpiderSolitaireScene::screenToWorldPosition(const Vec2& screenPos) {
             float screenWidth = GraphicsEngine::getWindowWidth();
             float screenHeight = GraphicsEngine::getWindowHeight();
 
+            // Convert normalized screen coordinates to pixel coordinates
             float pixelX = screenPos.x * screenWidth;
             float pixelY = screenPos.y * screenHeight;
 
-            Vec2 cameraPos = camera->getPosition();
-            float zoom = camera->getZoom();
-
-            float worldX = (pixelX - screenWidth * 0.5f) / zoom + cameraPos.x;
-            float worldY = (pixelY - screenHeight * 0.5f) / zoom + cameraPos.y;
-
-            return Vec2(worldX, worldY);
+            // Use the camera's built-in screenToWorld method
+            Vec2 worldPos = camera->screenToWorld(Vec2(pixelX, pixelY));
+            
+            // The camera's screenToWorld flips Y, so we need to flip it back
+            // to get the correct world coordinates for our game
+            return Vec2(worldPos.x, -worldPos.y);
         }
     }
     return Vec2(0, 0);
@@ -1377,13 +1383,23 @@ void SpiderSolitaireScene::updateCameraMovement(float dt) {
 void SpiderSolitaireScene::render(GraphicsEngine& engine, SwapChain& swapChain) {
     engine.beginFrame(swapChain);
     auto& ctx = engine.getContext();
+    float screenWidth = GraphicsEngine::getWindowWidth();
+    float screenHeight = GraphicsEngine::getWindowHeight();
 
     // Set up camera matrices
     ctx.setGraphicsPipelineState(engine.getDefaultPipeline());
+    ctx.enableDepthTest();
+    ctx.enableAlphaBlending();
+    
+    Mat4 cameraViewMatrix = Mat4::identity();
+    Mat4 cameraProjectionMatrix = Mat4::identity();
+    
     if (auto* cameraEntity = m_entityManager->findEntity("MainCamera")) {
         if (auto* camera = cameraEntity->getComponent<Camera2D>()) {
-            ctx.setViewMatrix(camera->getViewMatrix());
-            ctx.setProjectionMatrix(camera->getProjectionMatrix());
+            cameraViewMatrix = camera->getViewMatrix();
+            cameraProjectionMatrix = camera->getProjectionMatrix();
+            ctx.setViewMatrix(cameraViewMatrix);
+            ctx.setProjectionMatrix(cameraProjectionMatrix);
         }
     }
 
@@ -1418,11 +1434,12 @@ void SpiderSolitaireScene::render(GraphicsEngine& engine, SwapChain& swapChain) 
     for (auto* indicator : m_stockIndicators) {
         allSprites.push_back(indicator);
     }
-    
-    // Add transparent sprite last to ensure LineRenderer works
-    if (auto* transparentEntity = m_entityManager->findEntity("TransparentSprite")) {
-        allSprites.push_back(transparentEntity);
+
+    // Add world anchor sprite last (at origin, should render on top for debugging)
+    if (auto* anchorEntity = m_entityManager->findEntity("WorldOriginAnchor")) {
+        allSprites.push_back(anchorEntity);
     }
+    
 
 
     // Sort by Z so painter's order matches depth (back to front)
@@ -1437,16 +1454,18 @@ void SpiderSolitaireScene::render(GraphicsEngine& engine, SwapChain& swapChain) 
     // Render sorted sprites
     for (auto* entity : allSprites) {
         if (auto* sprite = entity->getComponent<SpriteComponent>()) {
-            if (sprite->isVisible() && sprite->isValid()) {
+            if (sprite->isVisible() && sprite->isValid() && !sprite->m_useScreenSpace) {
                 sprite->draw(ctx);
             }
         }
     }
     
-    // Render frame debug visualization in world space
-    if (m_showFrameDebug) {
-        renderFrameDebug(ctx);
-    }
+    // Render LineRenderer independently (not as part of sprite system)
+    // This ensures it uses pure world coordinates without sprite interference
+    renderFrameDebug(ctx);
+
+    // Set up screen space matrices for UI elements
+    ctx.setScreenSpaceMatrices(screenWidth, screenHeight);
 
     // Render screen-space UI elements
     for (auto* entity : m_entityManager->getEntitiesWithComponent<SpriteComponent>()) {
@@ -1743,8 +1762,13 @@ void SpiderSolitaireScene::createDebugToggleButton() {
 void SpiderSolitaireScene::updateFrameDebugVisualization() {
     if (!m_lineRenderer) return;
 
+    // Ensure LineRenderer uses world coordinates and is not affected by local positioning
     m_lineRenderer->enableScreenSpace(false); // Use world space coordinates
+    m_lineRenderer->enableLocalPositioning(false); // Don't apply position offset
     m_lineRenderer->clear();
+    
+    // Only add debug lines if debug mode is enabled
+    if (!m_showFrameDebug) return;
     
     // Get all card entities with frame components
     auto cardEntities = m_entityManager->getEntitiesWithComponent<CardFrameComponent>();
