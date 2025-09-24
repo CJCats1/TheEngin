@@ -142,6 +142,39 @@ void dx3d::DeviceContext::createConstantBuffers()
 		m_device.CreateSamplerState(&samplerDesc, m_defaultSampler.GetAddressOf()),
 		"Failed to create default sampler state"
 	);
+
+	// Light buffer (PS b2)
+	D3D11_BUFFER_DESC lightDesc{};
+	lightDesc.Usage = D3D11_USAGE_DYNAMIC;
+	lightDesc.ByteWidth = 16 + (32 * 4); // 16-byte header + 4 lights (each 32 bytes)
+	lightDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	lightDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	DX3DGraphicsLogThrowOnFail(
+		m_device.CreateBuffer(&lightDesc, nullptr, m_lightBuffer.GetAddressOf()),
+		"Failed to create light constant buffer"
+	);
+
+	// Material buffer (PS b3)
+	D3D11_BUFFER_DESC matDesc{};
+	matDesc.Usage = D3D11_USAGE_DYNAMIC;
+	matDesc.ByteWidth = 32; // specularColor(12)+shininess(4)+ambient(4)+pad(12)
+	matDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	matDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	DX3DGraphicsLogThrowOnFail(
+		m_device.CreateBuffer(&matDesc, nullptr, m_materialBuffer.GetAddressOf()),
+		"Failed to create material constant buffer"
+	);
+
+	// Camera buffer (PS b4)
+	D3D11_BUFFER_DESC camDesc{};
+	camDesc.Usage = D3D11_USAGE_DYNAMIC;
+	camDesc.ByteWidth = 16; // float3 + pad
+	camDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	camDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	DX3DGraphicsLogThrowOnFail(
+		m_device.CreateBuffer(&camDesc, nullptr, m_cameraBuffer.GetAddressOf()),
+		"Failed to create camera constant buffer"
+	);
 	// Initialize with identity matrices
 	m_currentTransforms.worldMatrix = Mat4::identity();
 	m_currentTransforms.viewMatrix = Mat4::identity();
@@ -186,17 +219,74 @@ void dx3d::DeviceContext::setPSSampler(ui32 slot, ID3D11SamplerState* sampler)
 {
 	m_context->PSSetSamplers(slot, 1, &sampler);
 }
+
+void dx3d::DeviceContext::setDirectionalLight(const Vec3& direction, const Vec3& color, float intensity, float ambient)
+{
+	struct Header { ui32 count; float pad[3]; };
+	struct PackedLight { Vec3 dir; float intensity; Vec3 color; float pad0; };
+	struct Buffer { Header h; PackedLight l[4]; };
+	Buffer buf{}; buf.h.count = 1;
+	buf.l[0] = { direction,intensity,color,0.0f };
+
+	D3D11_MAPPED_SUBRESOURCE mapped{};
+	HRESULT hr = m_context->Map(m_lightBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+	if (SUCCEEDED(hr)) { memcpy(mapped.pData, &buf, sizeof(Buffer)); m_context->Unmap(m_lightBuffer.Get(), 0); }
+	m_context->PSSetConstantBuffers(2, 1, m_lightBuffer.GetAddressOf());
+}
+
+void dx3d::DeviceContext::setLights(const std::vector<Vec3>& dirs, const std::vector<Vec3>& colors, const std::vector<float>& intensities)
+{
+	struct Header { ui32 count; float pad[3]; };
+	struct PackedLight { Vec3 dir; float intensity; Vec3 color; float pad0; };
+	struct Buffer { Header h; PackedLight l[4]; };
+	Buffer buf{}; buf.h.count = (ui32)std::min<size_t>(4, std::min(dirs.size(), std::min(colors.size(), intensities.size())));
+	for (ui32 i = 0; i < buf.h.count; ++i) buf.l[i] = { dirs[i], intensities[i], colors[i], 0.0f };
+
+	D3D11_MAPPED_SUBRESOURCE mapped{};
+	HRESULT hr = m_context->Map(m_lightBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+	if (SUCCEEDED(hr)) { memcpy(mapped.pData, &buf, sizeof(Buffer)); m_context->Unmap(m_lightBuffer.Get(), 0); }
+	m_context->PSSetConstantBuffers(2, 1, m_lightBuffer.GetAddressOf());
+}
+
+void dx3d::DeviceContext::setMaterial(const Vec3& specColor, float shininess, float ambient)
+{
+	struct Mat { Vec3 spec; float shininess; float ambient; float pad[3]; };
+	Mat m{ specColor, shininess, ambient };
+	D3D11_MAPPED_SUBRESOURCE mapped{};
+	HRESULT hr = m_context->Map(m_materialBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+	if (SUCCEEDED(hr)) { memcpy(mapped.pData, &m, sizeof(Mat)); m_context->Unmap(m_materialBuffer.Get(), 0); }
+	m_context->PSSetConstantBuffers(3, 1, m_materialBuffer.GetAddressOf());
+}
+
+void dx3d::DeviceContext::setCameraPosition(const Vec3& pos)
+{
+	struct Cam { Vec3 pos; float pad; };
+	Cam c{ pos };
+	D3D11_MAPPED_SUBRESOURCE mapped{};
+	HRESULT hr = m_context->Map(m_cameraBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+	if (SUCCEEDED(hr)) { memcpy(mapped.pData, &c, sizeof(Cam)); m_context->Unmap(m_cameraBuffer.Get(), 0); }
+	m_context->PSSetConstantBuffers(4, 1, m_cameraBuffer.GetAddressOf());
+}
 void dx3d::DeviceContext::clearAndSetBackBuffer(const SwapChain& swapChain, const Vec4& color)
 {
 	f32 fColor[] = {color.x,color.y,color.z,color.w};
 	auto rtv = swapChain.m_rtv.Get();
 	m_context->ClearRenderTargetView(rtv,fColor);
-	m_context->OMSetRenderTargets(1,&rtv,nullptr);
+	if (swapChain.m_dsv)
+	{
+		m_context->ClearDepthStencilView(swapChain.m_dsv.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+		m_context->OMSetRenderTargets(1,&rtv, swapChain.m_dsv.Get());
+	}
+	else
+	{
+		m_context->OMSetRenderTargets(1,&rtv,nullptr);
+	}
 }
 
 void dx3d::DeviceContext::setGraphicsPipelineState(const GraphicsPipelineState& pipeline)
 {
-	m_context->IASetInputLayout(pipeline.m_layout.Get());
+    // Allow null input layout for shaders that use SV_VertexID
+    m_context->IASetInputLayout(pipeline.m_layout.Get());
 	m_context->VSSetShader(pipeline.m_vs.Get(), nullptr, 0);
 	m_context->PSSetShader(pipeline.m_ps.Get(), nullptr, 0);
 }
@@ -269,6 +359,37 @@ void dx3d::DeviceContext::drawIndexedLineList(ui32 indexCount, ui32 startIndex)
 void dx3d::DeviceContext::setPSShaderResource(ui32 slot, ID3D11ShaderResourceView* srv)
 {
 	m_context->PSSetShaderResources(slot, 1, &srv);
+}
+
+void dx3d::DeviceContext::setPSConstants0(const void* data, ui32 byteSize)
+{
+    // Create or resize a small dynamic buffer on demand and bind to PS b0
+    static Microsoft::WRL::ComPtr<ID3D11Buffer> s_psB0;
+    static ui32 s_capacity = 0;
+    if (byteSize == 0) {
+        ID3D11Buffer* buf = s_psB0.Get();
+        m_context->PSSetConstantBuffers(0, 1, &buf);
+        return;
+    }
+    ui32 aligned = (byteSize + 15u) & ~15u;
+    if (!s_psB0 || aligned > s_capacity) {
+        D3D11_BUFFER_DESC bd{};
+        bd.Usage = D3D11_USAGE_DYNAMIC;
+        bd.ByteWidth = aligned;
+        bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+        bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+        s_psB0.Reset();
+        DX3DGraphicsLogThrowOnFail(m_device.CreateBuffer(&bd, nullptr, s_psB0.GetAddressOf()),
+            "Failed to create PS constant buffer b0");
+        s_capacity = aligned;
+    }
+    D3D11_MAPPED_SUBRESOURCE mapped{};
+    if (SUCCEEDED(m_context->Map(s_psB0.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped))) {
+        memcpy(mapped.pData, data, byteSize);
+        m_context->Unmap(s_psB0.Get(), 0);
+    }
+    ID3D11Buffer* buf = s_psB0.Get();
+    m_context->PSSetConstantBuffers(0, 1, &buf);
 }
 
 void dx3d::DeviceContext::updateTransformBuffer()

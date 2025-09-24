@@ -42,4 +42,28 @@ void dx3d::SwapChain::reloadBuffers()
 		"GetBuffer failed.");
 	DX3DGraphicsLogThrowOnFail(m_device.CreateRenderTargetView(buffer.Get(), nullptr, &m_rtv),
 		"CreateRenderTargetView failed.");
+
+	// Create (or recreate) depth-stencil buffer and view matching backbuffer size
+	D3D11_TEXTURE2D_DESC depthDesc = {};
+	depthDesc.Width = std::max(1, m_size.width);
+	depthDesc.Height = std::max(1, m_size.height);
+	depthDesc.MipLevels = 1;
+	depthDesc.ArraySize = 1;
+	depthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	depthDesc.SampleDesc.Count = 1;
+	depthDesc.SampleDesc.Quality = 0;
+	depthDesc.Usage = D3D11_USAGE_DEFAULT;
+	depthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+
+	m_depthBuffer.Reset();
+	m_dsv.Reset();
+
+	DX3DGraphicsLogThrowOnFail(
+		m_device.CreateTexture2D(&depthDesc, nullptr, m_depthBuffer.GetAddressOf()),
+		"CreateTexture2D for depth buffer failed."
+	);
+	DX3DGraphicsLogThrowOnFail(
+		m_device.CreateDepthStencilView(m_depthBuffer.Get(), nullptr, m_dsv.GetAddressOf()),
+		"CreateDepthStencilView failed."
+	);
 }

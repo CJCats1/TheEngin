@@ -3,6 +3,49 @@
 #include <DX3D/Core/TransformComponent.h>
 
 namespace dx3d {
+    class Camera3D {
+    public:
+        Camera3D(float fovYRadians, float aspect, float nearZ = 0.1f, float farZ = 1000.0f)
+            : m_fovY(fovYRadians), m_aspect(aspect), m_nearZ(nearZ), m_farZ(farZ) {
+            m_position = Vec3(0.0f, 0.0f, -5.0f);
+            m_target = Vec3(0.0f, 0.0f, 0.0f);
+            m_up = Vec3(0.0f, 1.0f, 0.0f);
+        }
+
+        // Setters
+        void setPerspective(float fovYRadians, float aspect, float nearZ, float farZ) {
+            m_fovY = fovYRadians; m_aspect = aspect; m_nearZ = nearZ; m_farZ = farZ;
+        }
+        void setPosition(const Vec3& p) { m_position = p; }
+        void setTarget(const Vec3& t) { m_target = t; }
+        void setUp(const Vec3& u) { m_up = u; }
+
+        // Getters
+        const Vec3& getPosition() const { return m_position; }
+        const Vec3& getTarget() const { return m_target; }
+        const Vec3& getUp() const { return m_up; }
+        float getFovY() const { return m_fovY; }
+        float getAspect() const { return m_aspect; }
+        float getNearZ() const { return m_nearZ; }
+        float getFarZ() const { return m_farZ; }
+
+        // Matrices
+        Mat4 getViewMatrix() const { return Mat4::lookAt(m_position, m_target, m_up); }
+        Mat4 getProjectionMatrix() const { return Mat4::perspective(m_fovY, m_aspect, m_nearZ, m_farZ); }
+        Mat4 getViewProjectionMatrix() const { return getProjectionMatrix() * getViewMatrix(); }
+
+        // Controls helpers
+        void move(const Vec3& delta) { m_position = m_position + delta; m_target = m_target + delta; }
+
+    private:
+        Vec3 m_position;
+        Vec3 m_target;
+        Vec3 m_up;
+        float m_fovY;
+        float m_aspect;
+        float m_nearZ;
+        float m_farZ;
+    };
     class Camera2D {
     public:
         Camera2D(float screenWidth, float screenHeight);

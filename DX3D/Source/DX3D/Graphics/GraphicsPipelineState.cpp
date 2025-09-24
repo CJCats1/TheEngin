@@ -10,18 +10,23 @@ dx3d::GraphicsPipelineState::GraphicsPipelineState(const GraphicsPipelineStateDe
 	auto ps = desc.ps.getData();
 	auto vsInputElements = desc.vs.getInputElementsData();
 
-	DX3DGraphicsLogThrowOnFail
-	(
-		m_device.CreateInputLayout
-		(
-			static_cast<const D3D11_INPUT_ELEMENT_DESC*>(vsInputElements.data),
-			static_cast<ui32>(vsInputElements.dataSize),
-			vs.data,
-			vs.dataSize,
-			&m_layout
-		),
-		"CreateInputLayout failed."
-	);
+    // Some shaders (e.g., full-screen tri using SV_VertexID) have no inputs.
+    // In that case, skip creating an input layout and bind nullptr at draw time.
+    if (vsInputElements.dataSize > 0)
+    {
+        DX3DGraphicsLogThrowOnFail
+        (
+            m_device.CreateInputLayout
+            (
+                static_cast<const D3D11_INPUT_ELEMENT_DESC*>(vsInputElements.data),
+                static_cast<ui32>(vsInputElements.dataSize),
+                vs.data,
+                vs.dataSize,
+                &m_layout
+            ),
+            "CreateInputLayout failed."
+        );
+    }
 	DX3DGraphicsLogThrowOnFail(
 	m_device.CreateVertexShader(vs.data,vs.dataSize,nullptr, &m_vs),
 		"CreateVertexShader failed."

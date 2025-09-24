@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include <DX3D/Game/Scenes/SpiderSolitaireScene.h>
 #include <DX3D/Game/Scenes/PhysicsTetrisScene.h>
 #include <DX3D/Game/Scenes/PartitionScene.h>
+#include <DX3D/Game/Scenes/ThreeDTestScene.h>
 
 
 dx3d::Game::Game(const GameDesc& desc) :
@@ -86,6 +87,11 @@ void dx3d::Game::onInternalUpdate()
     {
         setScene(std::make_unique<dx3d::PartitionScene>());
         m_currentSceneType = SceneType::PartitionScene;
+    }
+    if (input.isKeyDown(Key::Num6) && m_currentSceneType != SceneType::ThreeDTestScene)
+    {
+        setScene(std::make_unique<dx3d::ThreeDTestScene>());
+        m_currentSceneType = SceneType::ThreeDTestScene;
     }
     if (input.isKeyDown(Key::Escape))
     {

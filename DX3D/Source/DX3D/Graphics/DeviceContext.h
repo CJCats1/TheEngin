@@ -42,8 +42,17 @@ namespace dx3d
 		TransformData getTransformData() { return m_currentTransforms; };
 		void setTint(const Vec4& tint);
 
+		// Lighting (PS b2)
+		void setDirectionalLight(const Vec3& direction, const Vec3& color, float intensity, float ambient);
+		void setLights(const std::vector<Vec3>& dirs, const std::vector<Vec3>& colors, const std::vector<float>& intensities);
+		void setMaterial(const Vec3& specColor, float shininess, float ambient);
+		void setCameraPosition(const Vec3& pos);
+
 	void disableDepthTest();
 	void enableDepthTest();
+
+	// Utility: set a small PS constant buffer at slot 0
+	void setPSConstants0(const void* data, ui32 byteSize);
 	
 	ID3D11SamplerState* getDefaultSampler() const { return m_defaultSampler.Get(); }
 
@@ -58,6 +67,9 @@ namespace dx3d
 
 		TransformData m_currentTransforms;
 		Microsoft::WRL::ComPtr<ID3D11Buffer> m_tintBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> m_lightBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> m_materialBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> m_cameraBuffer;
 		friend class GraphicsDevice;
 		void createConstantBuffers();
 		void createBlendStates();

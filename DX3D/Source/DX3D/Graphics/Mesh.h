@@ -30,6 +30,8 @@ namespace dx3d
         static std::shared_ptr<Mesh> CreateQuadColored(GraphicsDevice& device, float w, float h);
         static std::shared_ptr<Mesh> CreateQuadSolidColored(GraphicsDevice& device, float w, float h, Vec4 color);
         static std::shared_ptr<Mesh> CreateQuadTextured(GraphicsDevice& device, float w, float h);
+        static std::shared_ptr<Mesh> CreateCube(GraphicsDevice& device, float size);
+        static std::shared_ptr<Mesh> CreateFromOBJ(GraphicsDevice& device, const std::string& path);
 
         // Spritesheet support
         void setSpriteFrame(int frameX, int frameY, int totalFramesX, int totalFramesY);
