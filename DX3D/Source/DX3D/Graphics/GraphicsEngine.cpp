@@ -85,6 +85,25 @@ dx3d::GraphicsEngine::GraphicsEngine(const GraphicsEngineDesc& desc) : Base(desc
             m_backgroundDotsPipeline.reset();
         }
     }
+
+    // ---- Toon/world-space pipeline (ToonSprite.hlsl) ----
+    {
+        constexpr char shaderFilePath[] = "DX3D/Assets/Shaders/ToonSprite.hlsl";
+        std::ifstream shaderStream(shaderFilePath);
+        if (shaderStream) {
+            std::string shaderFileData{ std::istreambuf_iterator<char>(shaderStream), std::istreambuf_iterator<char>() };
+            auto* src = shaderFileData.c_str();
+            auto   len = shaderFileData.length();
+
+            auto vs = device.compileShader({ shaderFilePath, src, len, "VSMain", ShaderType::VertexShader });
+            auto ps = device.compileShader({ shaderFilePath, src, len, "PSMain", ShaderType::PixelShader });
+            auto vsSig = device.createVertexShaderSignature({ vs });
+            m_toonPipeline = device.createGraphicsPipelineState({ *vsSig, *ps });
+        }
+        else {
+            m_toonPipeline.reset();
+        }
+    }
 }
 
 

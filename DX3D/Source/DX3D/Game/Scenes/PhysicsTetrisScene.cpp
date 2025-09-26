@@ -708,9 +708,70 @@ void PhysicsTetrisScene::render(GraphicsEngine& engine, SwapChain& swapChain) {
         }
     }
 
-    ctx.setGraphicsPipelineState(engine.getDefaultPipeline());
+    if (auto* toon = engine.getToonPipeline())
+        ctx.setGraphicsPipelineState(*toon);
+    else
+        ctx.setGraphicsPipelineState(engine.getDefaultPipeline());
     ctx.enableDepthTest();
     ctx.enableAlphaBlending();
+
+    // Outline pre-pass: draw expanded silhouettes for nodes and beams
+    {
+        // Use default pipeline for solid tinted outlines (works with current tint buffer)
+        ctx.setGraphicsPipelineState(engine.getDefaultPipeline());
+        ctx.enableAlphaBlending();
+        ctx.enableTransparentDepth();
+
+        const float outlineThickness = 2.0f; // pixels in world space
+        const Vec2 offsets[] = {
+            Vec2(-outlineThickness,  0.0f), Vec2( outlineThickness,  0.0f),
+            Vec2( 0.0f, -outlineThickness), Vec2( 0.0f,  outlineThickness),
+            Vec2(-outlineThickness, -outlineThickness), Vec2(-outlineThickness,  outlineThickness),
+            Vec2( outlineThickness, -outlineThickness), Vec2( outlineThickness,  outlineThickness)
+        };
+
+        // Helper lambda to draw outline for a sprite component without mutating its transform
+        auto drawOutlineForSprite = [&](Entity* entity, SpriteComponent* sprite)
+        {
+            if (!sprite || !sprite->isVisible() || !sprite->isValid()) return;
+
+            // Use the component's 2D world matrix as base
+            Mat4 baseWorld = sprite->getWorldMatrix();
+            ctx.setTint(Vec4(0.0f, 0.0f, 0.0f, 1.0f));
+
+            // Draw mesh at several offset positions to create a thick outline
+            auto mesh = sprite->getMesh();
+            if (!mesh) return;
+
+            for (const Vec2& o : offsets)
+            {
+                Mat4 world = baseWorld * Mat4::translation(Vec3(o.x, o.y, 0.0f));
+                ctx.setWorldMatrix(world);
+                mesh->draw(ctx);
+            }
+        };
+
+        // Beams
+        for (auto* entity : m_entityManager->getEntitiesWithComponent<BeamComponent>())
+        {
+            if (auto* sprite = entity->getComponent<SpriteComponent>())
+            {
+                drawOutlineForSprite(entity, sprite);
+            }
+        }
+
+        // Nodes
+        for (auto* entity : m_entityManager->getEntitiesWithComponent<NodeComponent>())
+        {
+            if (auto* sprite = entity->getComponent<SpriteComponent>())
+            {
+                drawOutlineForSprite(entity, sprite);
+            }
+        }
+
+        ctx.disableAlphaBlending();
+        ctx.enableDefaultDepth();
+    }
 
     // Render beams first (behind nodes)
     for (auto* entity : m_entityManager->getEntitiesWithComponent<BeamComponent>()) {

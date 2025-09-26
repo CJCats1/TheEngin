@@ -108,6 +108,8 @@ void LineRenderer::draw(DeviceContext& ctx) {
     updateBuffer();
 
     if (m_vertexBuffer && !m_vertices.empty()) {
+        // Ensure tint is neutral so per-vertex colors are not darkened
+        ctx.setTint(Vec4(1.0f, 1.0f, 1.0f, 1.0f));
         // Only set camera matrices if we have a camera assigned
         // Otherwise, use the matrices already set by the scene
         if (m_camera) {

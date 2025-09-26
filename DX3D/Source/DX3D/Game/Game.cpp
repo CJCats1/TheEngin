@@ -36,6 +36,7 @@ SOFTWARE.*/
 #include <DX3D/Game/Scenes/PhysicsTetrisScene.h>
 #include <DX3D/Game/Scenes/PartitionScene.h>
 #include <DX3D/Game/Scenes/ThreeDTestScene.h>
+#include <DX3D/Game/Scenes/ThreeDBridgeGameScene.h>
 
 
 dx3d::Game::Game(const GameDesc& desc) :
@@ -92,6 +93,11 @@ void dx3d::Game::onInternalUpdate()
     {
         setScene(std::make_unique<dx3d::ThreeDTestScene>());
         m_currentSceneType = SceneType::ThreeDTestScene;
+    }
+    if (input.isKeyDown(Key::Num7) && m_currentSceneType != SceneType::ThreeDBridgeGameScene)
+    {
+        setScene(std::make_unique<dx3d::ThreeDBridgeGameScene>());
+        m_currentSceneType = SceneType::ThreeDBridgeGameScene;
     }
     if (input.isKeyDown(Key::Escape))
     {

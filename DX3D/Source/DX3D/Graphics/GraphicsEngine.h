@@ -28,6 +28,7 @@ namespace dx3d
         GraphicsPipelineState& getTextPipeline() noexcept { return *m_textPipeline; }
         GraphicsPipelineState& getDefaultPipeline() noexcept { return *m_pipeline; }
         GraphicsPipelineState& get3DPipeline() noexcept { return *m_pipeline3D; }
+        GraphicsPipelineState* getToonPipeline() noexcept { return m_toonPipeline.get(); }
 
     private:
 
@@ -37,6 +38,7 @@ namespace dx3d
         std::shared_ptr<GraphicsPipelineState> m_textPipeline;
         std::shared_ptr<GraphicsPipelineState> m_pipeline3D;
         std::shared_ptr<GraphicsPipelineState> m_backgroundDotsPipeline;
+        std::shared_ptr<GraphicsPipelineState> m_toonPipeline;
         std::shared_ptr<Mesh> m_fullscreenQuad;
     };
 

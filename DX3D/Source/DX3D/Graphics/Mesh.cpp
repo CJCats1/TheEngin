@@ -254,6 +254,128 @@ std::shared_ptr<Mesh> Mesh::CreateCube(GraphicsDevice& device, float size)
     return m;
 }
 
+std::shared_ptr<Mesh> Mesh::CreateSphere(GraphicsDevice& device, float radius, int segments)
+{
+    std::vector<Vertex> vertices;
+    std::vector<ui32> indices;
+
+    // Generate sphere vertices
+    for (int i = 0; i <= segments; ++i) {
+        float lat = 3.14159f * i / segments; // latitude angle
+        for (int j = 0; j <= segments; ++j) {
+            float lon = 2.0f * 3.14159f * j / segments; // longitude angle
+            
+            float x = radius * std::sin(lat) * std::cos(lon);
+            float y = radius * std::cos(lat);
+            float z = radius * std::sin(lat) * std::sin(lon);
+            
+            Vec3 position(x, y, z);
+            Vec3 normal = position.normalized();
+            Vec2 uv(j / (float)segments, i / (float)segments);
+            
+            vertices.push_back({ position, normal, uv, Color::WHITE });
+        }
+    }
+
+    // Generate sphere indices
+    for (int i = 0; i < segments; ++i) {
+        for (int j = 0; j < segments; ++j) {
+            int current = i * (segments + 1) + j;
+            int next = current + segments + 1;
+
+            // First triangle
+            indices.push_back(current);
+            indices.push_back(next);
+            indices.push_back(current + 1);
+
+            // Second triangle
+            indices.push_back(current + 1);
+            indices.push_back(next);
+            indices.push_back(next + 1);
+        }
+    }
+
+    auto m = std::make_shared<Mesh>();
+    m->m_vertexCount = (ui32)vertices.size();
+    m->m_indexCount = (ui32)indices.size();
+    m->m_vb = device.createVertexBuffer({ vertices.data(), m->m_vertexCount, sizeof(Vertex) });
+    m->m_ib = device.createIndexBuffer({ indices.data(), m->m_indexCount, sizeof(ui32) });
+    auto whiteTexture = dx3d::Texture2D::CreateDebugTexture(device.getD3DDevice());
+    m->setTexture(whiteTexture);
+    m->m_width = radius * 2.0f; m->m_height = radius * 2.0f;
+    return m;
+}
+
+std::shared_ptr<Mesh> Mesh::CreateCylinder(GraphicsDevice& device, float radius, float height, int segments)
+{
+    std::vector<Vertex> vertices;
+    std::vector<ui32> indices;
+
+    float halfHeight = height * 0.5f;
+
+    // Generate cylinder vertices
+    // Top and bottom centers
+    vertices.push_back({ { 0, halfHeight, 0 }, { 0, 1, 0 }, { 0.5f, 0.5f }, Color::WHITE }); // Top center
+    vertices.push_back({ { 0, -halfHeight, 0 }, { 0, -1, 0 }, { 0.5f, 0.5f }, Color::WHITE }); // Bottom center
+
+    // Side vertices
+    for (int i = 0; i <= segments; ++i) {
+        float angle = 2.0f * 3.14159f * i / segments;
+        float x = radius * std::cos(angle);
+        float z = radius * std::sin(angle);
+        
+        Vec3 normal(x / radius, 0, z / radius);
+        
+        // Top ring
+        vertices.push_back({ { x, halfHeight, z }, normal, { i / (float)segments, 0 }, Color::WHITE });
+        // Bottom ring
+        vertices.push_back({ { x, -halfHeight, z }, normal, { i / (float)segments, 1 }, Color::WHITE });
+    }
+
+    // Generate cylinder indices
+    // Top cap
+    for (int i = 0; i < segments; ++i) {
+        indices.push_back(0); // Top center
+        indices.push_back(2 + i * 2); // Top ring vertex
+        indices.push_back(2 + ((i + 1) % segments) * 2); // Next top ring vertex
+    }
+
+    // Bottom cap
+    for (int i = 0; i < segments; ++i) {
+        indices.push_back(1); // Bottom center
+        indices.push_back(2 + ((i + 1) % segments) * 2 + 1); // Next bottom ring vertex
+        indices.push_back(2 + i * 2 + 1); // Bottom ring vertex
+    }
+
+    // Side faces
+    for (int i = 0; i < segments; ++i) {
+        int top1 = 2 + i * 2;
+        int top2 = 2 + ((i + 1) % segments) * 2;
+        int bottom1 = 2 + i * 2 + 1;
+        int bottom2 = 2 + ((i + 1) % segments) * 2 + 1;
+
+        // First triangle
+        indices.push_back(top1);
+        indices.push_back(bottom1);
+        indices.push_back(top2);
+
+        // Second triangle
+        indices.push_back(top2);
+        indices.push_back(bottom1);
+        indices.push_back(bottom2);
+    }
+
+    auto m = std::make_shared<Mesh>();
+    m->m_vertexCount = (ui32)vertices.size();
+    m->m_indexCount = (ui32)indices.size();
+    m->m_vb = device.createVertexBuffer({ vertices.data(), m->m_vertexCount, sizeof(Vertex) });
+    m->m_ib = device.createIndexBuffer({ indices.data(), m->m_indexCount, sizeof(ui32) });
+    auto whiteTexture = dx3d::Texture2D::CreateDebugTexture(device.getD3DDevice());
+    m->setTexture(whiteTexture);
+    m->m_width = radius * 2.0f; m->m_height = height;
+    return m;
+}
+
 void Mesh::draw(DeviceContext& ctx) const
 {
     ctx.setVertexBuffer(*m_vb);
