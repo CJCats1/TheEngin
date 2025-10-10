@@ -7,6 +7,7 @@ namespace dx3d
 	public:
 		SwapChain(const SwapChainDesc& desc, const GraphicsResourceDesc& gDesc);
 		Rect getSize() const noexcept;
+		IDXGISwapChain* getD3DSwapChain() const noexcept { return m_swapChain.Get(); }
 
 		void present(bool vsync = false);
 	private:

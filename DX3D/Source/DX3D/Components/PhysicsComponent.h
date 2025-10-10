@@ -72,6 +72,7 @@ namespace dx3d {
         bool isConnectedToNode(const NodeComponent& node) const;
         bool isConnectedToNode(const Entity* nodeEntity) const; // Overload for Entity*
         float getStressFactor() const { return m_colorForceFactor; }
+        float getRestLength() const { return m_length0; }
 
         // Visual properties
         Vec2 getCenterPosition() const;

@@ -15,6 +15,8 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <unordered_map>
+#include <map>
 #include <DX3D/Graphics/LineRenderer.h>
 namespace dx3d
 {
@@ -32,13 +34,21 @@ namespace dx3d
     class FrameComponent {
     public:
         FrameComponent(Vec2 position = Vec2(0.0f, 0.0f), float rotation = 0.0f)
-            : m_position(position), m_rotation(rotation), m_startPosition(position), m_startRotation(rotation) {
+            : m_position(position), m_rotation(rotation), m_angularVelocity(0.0f), m_velocity(0.0f, 0.0f), m_startPosition(position), m_startRotation(rotation) {
         }
 
         Vec2 getPosition() const { return m_position; }
         void setPosition(const Vec2& pos) { m_position = pos; }
         float getRotation() const { return m_rotation; }
         void setRotation(float rot) { m_rotation = rot; }
+        
+        float getAngularVelocity() const { return m_angularVelocity; }
+        void setAngularVelocity(float angularVel) { m_angularVelocity = angularVel; }
+        void addAngularVelocity(float deltaAngularVel) { m_angularVelocity += deltaAngularVel; }
+        
+        Vec2 getVelocity() const { return m_velocity; }
+        void setVelocity(const Vec2& vel) { m_velocity = vel; }
+        void addVelocity(const Vec2& deltaVel) { m_velocity += deltaVel; }
 
         Vec2 getStartPosition() const { return m_startPosition; }
         float getStartRotation() const { return m_startRotation; }
@@ -46,11 +56,15 @@ namespace dx3d
         void reset() {
             m_position = m_startPosition;
             m_rotation = m_startRotation;
+            m_angularVelocity = 0.0f;
+            m_velocity = Vec2(0.0f, 0.0f);
         }
 
     private:
         Vec2 m_position;
         float m_rotation;
+        float m_angularVelocity;
+        Vec2 m_velocity;
         Vec2 m_startPosition;
         float m_startRotation;
     };
@@ -67,6 +81,7 @@ namespace dx3d
         void load(GraphicsEngine& engine) override;
         void update(float dt) override;
         void render(GraphicsEngine& engine, SwapChain& swapChain) override;
+        void renderImGui(GraphicsEngine& engine) override;
         void fixedUpdate(float dt) override;
         void updateCameraMovement(float dt);
         void updateUI();
@@ -74,9 +89,28 @@ namespace dx3d
         void updateFrameDebugVisualization(); 
         void updateFrameDebug(float dt);  
         Vec2 calculateCenterOfMass(const TetriminoData& data);
+        float calculateRotationFromNodes(const std::vector<Vec2>& nodePositions, const std::string& tetriminoPrefix);
+        float calculateAngularVelocityFromNodes(const std::vector<Vec2>& nodePositions, const std::vector<Vec2>& nodeVelocities, const Vec2& centerOfMass);
+        void applyAngularImpulseToFrame(Entity* nodeEntity, const Vec2& nodePosition, const Vec2& impulse);
+        float calculateSpringBasedRotation(const std::string& tetriminoPrefix, const std::vector<Vec2>& nodePositions, const Vec2& centerOfMass);
+        float calculateSpringForceImbalance(const std::string& tetriminoPrefix);
+        float calculateSimpleSpringRotation(const std::string& tetriminoPrefix);
     private:
         LineRenderer* m_lineRenderer = nullptr;
         bool m_showFrameDebug = false;
+        
+        // Debug physics parameters
+        float m_debugFrameGravity = 0.1f;
+        float m_debugNodeGravityColliding = 0.2f;
+        float m_debugSpringRotationStrength = 0.5f;
+        float m_debugAngularDamping = 0.95f;
+        float m_debugCollisionThreshold = 0.8f;
+
+
+        // Helper functions for debug rendering
+        float calculateTotalSpringForce(const std::string& tetriminoPrefix);
+        void renderDebugTetrimino(const std::string& tetriminoPrefix, const Vec2& screenPosition, float scale);
+        
 
         bool isNodePartOfBeam(Entity* nodeEntity, Entity* beamEntity);
         bool checkNodeBeamCollision(Entity* nodeEntity, Entity* beamEntity);
@@ -96,6 +130,8 @@ namespace dx3d
         void createBoundaryWalls();
         void createDebugToggleButton();
         void createGameOverPanel();
+        void createDebugControls();
+        void updateDebugControls();
 
         // Collision detection
         void updateCollisions();
@@ -120,6 +156,7 @@ namespace dx3d
         void applyGravityToOrphanedNodes(const std::set<std::string>& affectedTetriminos, const std::vector<std::string>& removedFrames);
         bool isNodeOrphaned(const std::string& nodeName);
         void applyGravityToAllOrphanedNodes();
+        void applyGravityToUnstableTetriminos();
         void checkGameOverCondition();
         void handleGameOver();
         void restartGame();
@@ -233,6 +270,7 @@ namespace dx3d
         std::vector<Entity*> m_beamEntities;
         std::vector<Entity*> m_frameEntities;
         bool m_entitiesCacheDirty = true;
+        
         
         void updateEntityCache();
         void markEntityCacheDirty() { m_entitiesCacheDirty = true; }

@@ -7,6 +7,9 @@
 #include <DX3D/Core/Input.h>
 #include <iostream>
 #include <set>
+#include <iomanip>
+#include <sstream>
+#include <imgui.h>
 
 using namespace dx3d;
 void PhysicsTetrisScene::createTetriminoFrame(const std::string& baseName, Vec2 position, int tetriminoId) {
@@ -39,11 +42,7 @@ void PhysicsTetrisScene::load(GraphicsEngine& engine) {
     camera.setPosition(0.0f, 0.0f);
     camera.setZoom(DEFAULT_CAMERA_ZOOM);
     
-    // Create debug toggle button
-    createDebugToggleButton();
-    
-    // Create game over panel
-    createGameOverPanel();
+    // Engine UI replaced by ImGui; no engine-side buttons/panels are created
     
     // Initialize game systems
     initializeTetriminoTemplates();
@@ -416,13 +415,8 @@ void PhysicsTetrisScene::spawnNextTetrimino() {
 void PhysicsTetrisScene::update(float dt) {
     updateCameraMovement(dt);
     handleTetriminoInput(dt);
-
-    // Update debug toggle button
-    if (auto* buttonEntity = m_entityManager->findEntity("DebugToggleButton")) {
-        if (auto* button = buttonEntity->getComponent<ButtonComponent>()) {
-            button->update(dt);
-        }
-    }
+    
+    
 
     // Check for game over condition
     if (!m_gameOver) {
@@ -594,7 +588,11 @@ void PhysicsTetrisScene::resolveNodeBeamCollision(Entity* nodeEntity, Entity* be
         float velocityAlongNormal = velocity.dot(beamNormal);
         if (velocityAlongNormal < 0) {
             Vec2 reflectedVelocity = velocity - beamNormal * velocityAlongNormal * 1.2f; // Slight bounce
+            Vec2 impulse = beamNormal * velocityAlongNormal * 0.8f; // Calculate impulse for angular effect
             node->setVelocity(reflectedVelocity * 0.8f); // Add some damping
+            
+            // Apply angular impulse to frame from beam collision
+            applyAngularImpulseToFrame(nodeEntity, nodePos, impulse);
         }
 
         // Update sprite position
@@ -671,6 +669,10 @@ void PhysicsTetrisScene::resolveNodeCollision(Entity* node1Entity, Entity* node2
                 Vec2 impulse = normal * velocityAlongNormal * 0.5f;
                 node1->setVelocity(node1->getVelocity() - impulse);
                 node2->setVelocity(node2->getVelocity() + impulse);
+                
+                // Apply angular impulse to frames based on collision
+                applyAngularImpulseToFrame(node1Entity, pos1, impulse);
+                applyAngularImpulseToFrame(node2Entity, pos2, -impulse);
             }
         }
         else if (!node1->isPositionFixed()) {
@@ -697,7 +699,6 @@ void PhysicsTetrisScene::resolveNodeCollision(Entity* node1Entity, Entity* node2
 }
 
 void PhysicsTetrisScene::render(GraphicsEngine& engine, SwapChain& swapChain) {
-    engine.beginFrame(swapChain);
     auto& ctx = engine.getContext();
 
     // Set camera matrices
@@ -805,21 +806,8 @@ void PhysicsTetrisScene::render(GraphicsEngine& engine, SwapChain& swapChain) {
         renderFrameDebug(ctx);
     }
 
-    for (auto* entity : m_entityManager->getEntitiesWithComponent<ButtonComponent>()) {
-        if (auto* text = entity->getComponent<ButtonComponent>()) {
-            if (text->isVisible()) {
-                text->draw(ctx);
-            }
-        }
-    }
-    
-    // Render panels (including game over panel)
-    for (auto* entity : m_entityManager->getEntitiesWithComponent<PanelComponent>()) {
-        if (auto* panel = entity->getComponent<PanelComponent>()) {
-                panel->draw(ctx);
-        }
-    }
-    engine.endFrame(swapChain);
+    // Engine UI drawing removed; ImGui handles all on-screen controls/overlays
+    // frame begin/end handled centrally
 }
 
 void PhysicsTetrisScene::fixedUpdate(float dt) {
@@ -828,12 +816,86 @@ void PhysicsTetrisScene::fixedUpdate(float dt) {
     PhysicsSystem::updateBeams(*m_entityManager, dt);
 }
 
+void PhysicsTetrisScene::renderImGui(GraphicsEngine& engine)
+{
+    ImGui::SetNextWindowSize(ImVec2(420, 420), ImGuiCond_FirstUseEver);
+    if (ImGui::Begin("Physics Tetris"))
+    {
+        ImGui::Text("%s", "Gameplay & Debug Panel");
+        ImGui::Separator();
+
+        // Status
+        if (ImGui::CollapsingHeader("Status", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            ImGui::Text("Active Piece: %s", m_hasActiveTetrimino ? "Yes" : "No");
+            ImGui::Text("Game Over: %s", m_gameOver ? "Yes" : "No");
+        }
+
+        // Actions
+        if (ImGui::CollapsingHeader("Actions", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            if (ImGui::Button("Restart", ImVec2(-FLT_MIN, 0))) restartGame();
+            if (ImGui::Checkbox("Show Frame Debug", &m_showFrameDebug)) {
+                // no-op hook; runtime controlled
+            }
+        }
+
+        // Camera
+        if (ImGui::CollapsingHeader("Camera", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            auto* cameraEntity = m_entityManager->findEntity("MainCamera");
+            Camera2D* cam = cameraEntity ? cameraEntity->getComponent<Camera2D>() : nullptr;
+            float zoom = cam ? cam->getZoom() : 1.0f;
+            if (ImGui::SliderFloat("Zoom", &zoom, 0.4f, 2.0f, "%.2fx"))
+            {
+                if (cam) cam->setZoom(zoom);
+            }
+            if (ImGui::Button("Reset Camera", ImVec2(-FLT_MIN, 0)))
+            {
+                if (cam)
+                {
+                    cam->setPosition(0.0f, 0.0f);
+                    cam->setZoom(DEFAULT_CAMERA_ZOOM);
+                }
+            }
+        }
+
+        // Tuning
+        if (ImGui::CollapsingHeader("Tuning", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            ImGui::Text("Frame Gravity");
+            ImGui::SliderFloat("##fg", &m_debugFrameGravity, -1.0f, 1.0f, "%.3f");
+            ImGui::Text("Node Gravity (Colliding)");
+            ImGui::SliderFloat("##ng", &m_debugNodeGravityColliding, -1.0f, 1.0f, "%.3f");
+            ImGui::Text("Spring Rotation Strength");
+            ImGui::SliderFloat("##sr", &m_debugSpringRotationStrength, -2.0f, 2.0f, "%.3f");
+            ImGui::Text("Angular Damping");
+            ImGui::SliderFloat("##ad", &m_debugAngularDamping, 0.5f, 1.0f, "%.3f");
+            ImGui::Text("Collision Threshold");
+            ImGui::SliderFloat("##ct", &m_debugCollisionThreshold, 0.1f, 2.0f, "%.3f");
+        }
+    }
+    ImGui::End();
+
+    // Game Over overlay
+    if (m_gameOver) {
+        ImGui::SetNextWindowBgAlpha(0.9f);
+        ImGui::SetNextWindowPos(ImVec2(0.5f, 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+        ImGui::Begin("##GameOverOverlay", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove);
+        ImGui::Text("GAME OVER");
+        if (ImGui::Button("Restart")) {
+            restartGame();
+        }
+        ImGui::End();
+    }
+}
+
 void PhysicsTetrisScene::updateFrameBasedPhysics(float dt) {
     auto nodeEntities = m_entityManager->getEntitiesWithComponent<NodeComponent>();
     auto beamEntities = m_entityManager->getEntitiesWithComponent<BeamComponent>();
     auto frameEntities = m_entityManager->getEntitiesWithComponent<FrameComponent>();
 
-    // Update frame positions based on average node positions
+    // Update frame positions and rotations based on node positions
     for (auto* frameEntity : frameEntities) {
         auto* frame = frameEntity->getComponent<FrameComponent>();
         if (!frame) continue;
@@ -841,9 +903,11 @@ void PhysicsTetrisScene::updateFrameBasedPhysics(float dt) {
         std::string frameName = frameEntity->getName();
         std::string tetriminoPrefix = frameName.substr(0, frameName.find("_Frame"));
 
-        Vec2 averagePos(0.0f, 0.0f);
+        Vec2 averagePos(0.0f, 0.f);
         Vec2 averageVelocity(0.0f, 0.0f);
         int nodeCount = 0;
+        std::vector<Vec2> nodePositions;
+        std::vector<Vec2> nodeVelocities;
 
         // Calculate center of mass for this tetrimino
         for (auto* nodeEntity : nodeEntities) {
@@ -852,8 +916,13 @@ void PhysicsTetrisScene::updateFrameBasedPhysics(float dt) {
 
                 auto* node = nodeEntity->getComponent<NodeComponent>();
                 if (node && !node->isPositionFixed()) {
-                    averagePos += node->getPosition();
-                    averageVelocity += node->getVelocity();
+                    Vec2 nodePos = node->getPosition();
+                    Vec2 nodeVel = node->getVelocity();
+                    
+                    averagePos += nodePos;
+                    averageVelocity += nodeVel;
+                    nodePositions.push_back(nodePos);
+                    nodeVelocities.push_back(nodeVel);
                     nodeCount++;
                 }
             }
@@ -863,14 +932,87 @@ void PhysicsTetrisScene::updateFrameBasedPhysics(float dt) {
             averagePos *= (1.0f / nodeCount);
             averageVelocity *= (1.0f / nodeCount);
 
-            // Update frame position with some smoothing
+            // Apply physics to frames for non-active tetriminos
+            bool isActiveTetrimino = (tetriminoPrefix.find("_" + std::to_string(m_currentTetriminoId)) != std::string::npos);
+            
+            if (!isActiveTetrimino) {
+                // Apply very slight gravity to frames so whole pieces fall slightly
+                Vec2 currentFramePos = frame->getPosition();
+                Vec2 frameVelocity = frame->getVelocity();
+                
+                // Apply very small gravity to frames
+                frameVelocity.y -= GRAVITY_ACCELERATION * dt * m_debugFrameGravity; // Debug frame gravity
+                
+                // Update frame position based on velocity
+                Vec2 newFramePos = currentFramePos + frameVelocity * dt;
+                
+                // Apply boundary constraints to frame
+                float leftBound = -PLAY_FIELD_WIDTH / 2 + FRAME_BOUNDARY_PADDING;
+                float rightBound = PLAY_FIELD_WIDTH / 2 - FRAME_BOUNDARY_PADDING;
+                float bottomBound = -PLAY_FIELD_HEIGHT / 2 + NODE_SIZE / 2;
+                float topBound = PLAY_FIELD_HEIGHT / 2 + NODE_SIZE;
+                
+                // Constrain frame position to play field
+                if (newFramePos.x < leftBound) {
+                    newFramePos.x = leftBound;
+                    frameVelocity.x = -frameVelocity.x * BOUNDARY_BOUNCE;
+                }
+                else if (newFramePos.x > rightBound) {
+                    newFramePos.x = rightBound;
+                    frameVelocity.x = -frameVelocity.x * BOUNDARY_BOUNCE;
+                }
+                
+                if (newFramePos.y < bottomBound) {
+                    newFramePos.y = bottomBound;
+                    frameVelocity.y = -frameVelocity.y * BOUNDARY_BOUNCE;
+                }
+                else if (newFramePos.y > topBound) {
+                    newFramePos.y = topBound;
+                    frameVelocity.y = 0.0f;
+                }
+                
+                frame->setPosition(newFramePos);
+                
+                // Apply velocity damping to prevent clumping and excessive movement
+                frameVelocity *= 0.95f; // Light damping to prevent excessive bouncing
+                frame->setVelocity(frameVelocity);
+                
+                // Apply angular velocity and update rotation
+                float angularVel = frame->getAngularVelocity();
+                float newRotation = frame->getRotation() + angularVel * dt;
+                frame->setRotation(newRotation);
+                
+                // Apply light angular damping to allow natural rotation
+                angularVel *= m_debugAngularDamping; // Debug angular damping
+                frame->setAngularVelocity(angularVel);
+                
+                // Simple rotation toward springs with more force
+                if (nodeCount >= 2) {
+                    float rotationFromSprings = calculateSimpleSpringRotation(tetriminoPrefix);
+                    frame->addAngularVelocity(rotationFromSprings);
+                    
+                    // Check for obvious instability - if center of mass is far from frame center
+                    Vec2 framePos = frame->getPosition();
+                    Vec2 centerOfMass = averagePos;
+                    float imbalance = (centerOfMass - framePos).length();
+                    
+                    // If there's significant imbalance, add strong rotation
+                    if (imbalance > 15.0f) {
+                        float instabilityRotation = (rand() % 100 - 50) * 0.02f; // Random rotation for instability
+                        frame->addAngularVelocity(instabilityRotation);
+                    }
+
+                }
+            } else {
+                // For active tetriminos, update frame position based on average node positions
             Vec2 currentPos = frame->getPosition();
             Vec2 targetPos = averagePos;
             frame->setPosition(currentPos + (targetPos - currentPos) * 0.2f);
+            }
         }
     }
 
-    // Apply frame-based forces to nodes
+    // Apply physics to individual nodes (gravity, collision, frame forces)
     for (auto* nodeEntity : nodeEntities) {
         auto* node = nodeEntity->getComponent<NodeComponent>();
         if (!node || node->isPositionFixed()) continue;
@@ -885,18 +1027,49 @@ void PhysicsTetrisScene::updateFrameBasedPhysics(float dt) {
 
         bool isActiveTetrimino = (tetriminoPrefix.find("_" + std::to_string(m_currentTetriminoId)) != std::string::npos);
 
+        // Check if this node is colliding with something
+        bool isColliding = false;
+        Vec2 nodePos = node->getPosition();
+        
+        // Check collision with other nodes (more precise collision detection)
+        for (auto* otherNodeEntity : nodeEntities) {
+            if (otherNodeEntity == nodeEntity) continue;
+            auto* otherNode = otherNodeEntity->getComponent<NodeComponent>();
+            if (!otherNode || otherNode->isPositionFixed()) continue;
+            
+            Vec2 otherPos = otherNode->getPosition();
+            float distance = (nodePos - otherPos).length();
+            if (distance < NODE_SIZE * m_debugCollisionThreshold) { // Debug collision threshold
+                isColliding = true;
+                break;
+            }
+        }
+        
+        // Check collision with ground
+        if (nodePos.y <= -PLAY_FIELD_HEIGHT / 2 + NODE_SIZE) {
+            isColliding = true;
+        }
+
+        // Apply gravity to ALL nodes - full gravity normally, small downward force when colliding
+        Vec2 velocity = node->getVelocity();
+        if (isColliding) {
+            velocity.y -= GRAVITY_ACCELERATION * dt * m_debugNodeGravityColliding; // Debug gravity when colliding
+        } else {
+            velocity.y -= GRAVITY_ACCELERATION * dt; // Full gravity when not colliding
+        }
+        node->setVelocity(velocity);
+
         if (frameEntity) {
             auto* frame = frameEntity->getComponent<FrameComponent>();
             if (frame) {
                 Vec2 framePos = frame->getPosition();
 
+                // For active tetriminos, apply drop movement to frame
+                if (isActiveTetrimino) {
                 Vec2 dropMovement(0.0f, -9.8f*dt);
-                // If this is NOT the active tetrimino, reduce or disable drop
-                if (!isActiveTetrimino) {
-                    dropMovement *= 0.2f; 
-                }
                 Vec2 newPos = framePos + dropMovement;
                 frame->setPosition(newPos);
+                }
 
                 // Extract node index to get original offset
                 std::string nodeIndexStr = nodeName.substr(nodeName.find("_Node") + 5);
@@ -915,7 +1088,7 @@ void PhysicsTetrisScene::updateFrameBasedPhysics(float dt) {
 
                 // Calculate target position based on frame
                 framePos = frame->getPosition();
-                float frameRot = frame->getRotation(); // Keep rotation for both active and locked tetriminos
+                float frameRot = frame->getRotation();
                 Vec2 rotatedOffset = Vec2(
                     originalOffset.x * cosf(frameRot) - originalOffset.y * sinf(frameRot),
                     originalOffset.x * sinf(frameRot) + originalOffset.y * cosf(frameRot)
@@ -928,22 +1101,23 @@ void PhysicsTetrisScene::updateFrameBasedPhysics(float dt) {
                 float distance = displacement.length();
 
                 if (distance > 0.1f) {
-                    // Much stronger forces for active tetrimino to maintain cohesion
-                    float frameStiffness = isActiveTetrimino ? 5000.0f : 2000.0f;
-                    float dampingCoeff = isActiveTetrimino ? 80.0f : 40.0f;
+                    // Strong forces to maintain tetrimino shape
+                    float frameStiffness = isActiveTetrimino ? 5000.0f : 3000.0f; // Stronger for non-active
+                    float dampingCoeff = isActiveTetrimino ? 80.0f : 60.0f; // Less damping for spring-back
 
                     Vec2 frameForce = displacement * frameStiffness;
 
                     // Apply damping
-                    Vec2 velocity = node->getVelocity();
-                    Vec2 dampingForce = velocity * -dampingCoeff;
+                    Vec2 nodeVelocity = node->getVelocity();
+                    Vec2 dampingForce = nodeVelocity * -dampingCoeff;
 
                     // Combine forces
                     Vec2 totalForce = frameForce + dampingForce;
 
                     // Apply the force
-                    Vec2 acceleration = totalForce * 0.02f; // Mass factor
-                    node->setVelocity(velocity + acceleration * dt);
+                    float massFactor = isActiveTetrimino ? 0.02f : 0.015f;
+                    Vec2 acceleration = totalForce * massFactor;
+                    node->setVelocity(nodeVelocity + acceleration * dt);
                 }
             }
         }
@@ -1018,6 +1192,7 @@ void PhysicsTetrisScene::updateFrameBasedPhysics(float dt) {
             }
         }
     }
+
 }
 
 void PhysicsTetrisScene::handleTetriminoInput(float dt) {
@@ -1916,4 +2091,816 @@ void PhysicsTetrisScene::restartGame() {
     
     // Spawn first tetrimino
     spawnNextTetrimino();
+}
+
+float PhysicsTetrisScene::calculateRotationFromNodes(const std::vector<Vec2>& nodePositions, const std::string& tetriminoPrefix) {
+    if (nodePositions.size() < 2) return 0.0f;
+    
+    // Find the tetrimino type to get original offsets
+    std::string tetriminoType = tetriminoPrefix.substr(0, tetriminoPrefix.find("_"));
+    const TetriminoData* tetriminoData = nullptr;
+    
+    for (const auto& tetrimino : m_tetriminoTemplates) {
+        if (tetrimino.name == tetriminoType) {
+            tetriminoData = &tetrimino;
+            break;
+        }
+    }
+    
+    if (!tetriminoData || tetriminoData->nodeOffsets.size() < 2) return 0.0f;
+    
+    // Calculate center of mass of current positions
+    Vec2 currentCenter(0.0f, 0.0f);
+    for (const Vec2& pos : nodePositions) {
+        currentCenter += pos;
+    }
+    currentCenter *= (1.0f / nodePositions.size());
+    
+    // Use the first two nodes to determine rotation
+    Vec2 currentDir = (nodePositions[1] - nodePositions[0]).normalized();
+    Vec2 originalDir = (tetriminoData->nodeOffsets[1] - tetriminoData->nodeOffsets[0]).normalized();
+    
+    // Calculate angle between current and original directions
+    float dot = currentDir.dot(originalDir);
+    float det = currentDir.x * originalDir.y - currentDir.y * originalDir.x;
+    float angle = atan2f(det, dot);
+    
+    return angle;
+}
+
+float PhysicsTetrisScene::calculateAngularVelocityFromNodes(const std::vector<Vec2>& nodePositions, const std::vector<Vec2>& nodeVelocities, const Vec2& centerOfMass) {
+    if (nodePositions.size() < 2 || nodeVelocities.size() < 2) return 0.0f;
+    
+    // Calculate angular velocity from the first two nodes
+    Vec2 pos1 = nodePositions[0] - centerOfMass;
+    Vec2 pos2 = nodePositions[1] - centerOfMass;
+    Vec2 vel1 = nodeVelocities[0];
+    Vec2 vel2 = nodeVelocities[1];
+    
+    // Calculate angular velocity using cross product
+    // ω = (r × v) / |r|²
+    float angularVel1 = (pos1.x * vel1.y - pos1.y * vel1.x) / (pos1.length() * pos1.length() + 0.001f);
+    float angularVel2 = (pos2.x * vel2.y - pos2.y * vel2.x) / (pos2.length() * pos2.length() + 0.001f);
+    
+    // Average the angular velocities
+    return (angularVel1 + angularVel2) * 0.5f;
+}
+
+void PhysicsTetrisScene::applyAngularImpulseToFrame(Entity* nodeEntity, const Vec2& nodePosition, const Vec2& impulse) {
+    // Find the frame for this node
+    std::string nodeName = nodeEntity->getName();
+    if (nodeName.find("_Node") == std::string::npos) return;
+    
+    std::string tetriminoPrefix = nodeName.substr(0, nodeName.find("_Node"));
+    std::string frameName = tetriminoPrefix + "_Frame";
+    auto* frameEntity = m_entityManager->findEntity(frameName);
+    
+    if (!frameEntity) return;
+    
+    auto* frame = frameEntity->getComponent<FrameComponent>();
+    if (!frame) return;
+    
+    // Only apply to non-active tetriminos
+    bool isActiveTetrimino = (tetriminoPrefix.find("_" + std::to_string(m_currentTetriminoId)) != std::string::npos);
+    if (isActiveTetrimino) return;
+    
+    // Calculate angular impulse: τ = r × F
+    Vec2 framePos = frame->getPosition();
+    Vec2 leverArm = nodePosition - framePos;
+    
+    // Cross product: r × F = r.x * F.y - r.y * F.x
+    float torque = leverArm.x * impulse.y - leverArm.y * impulse.x;
+    
+    // Apply angular impulse (scaled down to be realistic)
+    float angularImpulse = torque * 0.00001f; // Much smaller scale factor to prevent chaotic rotation
+    frame->addAngularVelocity(angularImpulse);
+}
+
+float PhysicsTetrisScene::calculateSpringBasedRotation(const std::string& tetriminoPrefix, const std::vector<Vec2>& nodePositions, const Vec2& centerOfMass) {
+    if (nodePositions.size() < 2) return 0.0f;
+    
+    // First, check for obvious imbalance - if center of mass is far from frame center
+    Vec2 framePos = centerOfMass; // Use center of mass as frame position
+    float imbalanceMagnitude = 0.0f;
+    
+    // Calculate how much the nodes are displaced from their expected positions
+    float totalDisplacement = 0.0f;
+    for (const Vec2& nodePos : nodePositions) {
+        float displacement = (nodePos - framePos).length();
+        totalDisplacement += displacement;
+    }
+    float averageDisplacement = totalDisplacement / nodePositions.size();
+    
+    // If there's significant displacement, create strong rotation
+    if (averageDisplacement > 10.0f) {
+        // Calculate which side has more displacement (imbalance direction)
+        float leftDisplacement = 0.0f, rightDisplacement = 0.0f;
+        int leftCount = 0, rightCount = 0;
+        
+        for (const Vec2& nodePos : nodePositions) {
+            Vec2 fromCenter = nodePos - framePos;
+            if (fromCenter.x < 0) {
+                leftDisplacement += fromCenter.length();
+                leftCount++;
+            } else {
+                rightDisplacement += fromCenter.length();
+                rightCount++;
+            }
+        }
+        
+        // Create rotation toward the more displaced side
+        float imbalanceRotation = 0.0f;
+        if (leftCount > 0 && rightCount > 0) {
+            float leftAvg = leftDisplacement / leftCount;
+            float rightAvg = rightDisplacement / rightCount;
+            imbalanceRotation = (rightAvg - leftAvg) * 0.05f; // Strong rotation for imbalance
+        }
+        
+        return imbalanceRotation;
+    }
+    
+    // Get beam entities for this tetrimino
+    auto beamEntities = m_entityManager->getEntitiesWithComponent<BeamComponent>();
+    float totalTorque = 0.0f;
+    int beamCount = 0;
+    
+    for (auto* beamEntity : beamEntities) {
+        std::string beamName = beamEntity->getName();
+        
+        // Check if this beam belongs to the tetrimino
+        if (beamName.find(tetriminoPrefix) != std::string::npos) {
+            auto* beam = beamEntity->getComponent<BeamComponent>();
+            if (!beam) continue;
+            
+            // Get beam endpoints
+            auto* node1 = beam->getNode1()->getComponent<NodeComponent>();
+            auto* node2 = beam->getNode2()->getComponent<NodeComponent>();
+            if (!node1 || !node2) continue;
+            
+            Vec2 pos1 = node1->getPosition();
+            Vec2 pos2 = node2->getPosition();
+            
+            // Calculate beam stress (how much it's stretched/compressed)
+            float restLength = beam->getRestLength();
+            float currentLength = (pos2 - pos1).length();
+            float stress = (currentLength - restLength) / restLength;
+            
+            // Calculate beam direction from center of mass
+            Vec2 beamCenter = (pos1 + pos2) * 0.5f;
+            Vec2 beamDirection = (pos2 - pos1).normalized();
+            Vec2 fromCenter = beamCenter - centerOfMass;
+            
+            // Calculate torque based on stress and position
+            // Beams under tension (positive stress) want to pull the frame toward them
+            // Beams under compression (negative stress) want to push the frame away
+            float torque = stress * fromCenter.length() * 0.1f; // Increased scale factor
+            
+            // Determine rotation direction based on beam position relative to center
+            float crossProduct = fromCenter.x * beamDirection.y - fromCenter.y * beamDirection.x;
+            if (crossProduct != 0.0f) {
+                torque *= (crossProduct > 0.0f ? 1.0f : -1.0f);
+            }
+            
+            totalTorque += torque;
+            beamCount++;
+        }
+    }
+    
+    if (beamCount == 0) return 0.0f;
+    
+    // Average the torque and apply stronger influence
+    float averageTorque = totalTorque / beamCount;
+    return averageTorque * 0.5f; // Much stronger rotation influence
+}
+
+float PhysicsTetrisScene::calculateSpringForceImbalance(const std::string& tetriminoPrefix) {
+    // Get beam entities for this tetrimino
+    auto beamEntities = m_entityManager->getEntitiesWithComponent<BeamComponent>();
+    float totalStress = 0.0f;
+    float maxStress = 0.0f;
+    int beamCount = 0;
+    
+    for (auto* beamEntity : beamEntities) {
+        std::string beamName = beamEntity->getName();
+        
+        // Check if this beam belongs to the tetrimino
+        if (beamName.find(tetriminoPrefix) != std::string::npos) {
+            auto* beam = beamEntity->getComponent<BeamComponent>();
+            if (!beam) continue;
+            
+            // Get beam stress factor
+            float stress = beam->getStressFactor();
+            totalStress += stress;
+            maxStress = std::max(maxStress, stress);
+            beamCount++;
+        }
+    }
+    
+    if (beamCount == 0) return 0.0f;
+    
+    // Calculate imbalance based on average stress and maximum stress
+    float averageStress = totalStress / beamCount;
+    float imbalance = averageStress + (maxStress - averageStress) * 0.5f; // Weight toward max stress
+    
+    return std::min(imbalance, 1.0f); // Clamp to 0-1 range
+}
+
+float PhysicsTetrisScene::calculateSimpleSpringRotation(const std::string& tetriminoPrefix) {
+    // Get beam entities for this tetrimino
+    auto beamEntities = m_entityManager->getEntitiesWithComponent<BeamComponent>();
+    float leftForce = 0.0f, rightForce = 0.0f;
+    int leftCount = 0, rightCount = 0;
+    
+    for (auto* beamEntity : beamEntities) {
+        std::string beamName = beamEntity->getName();
+        
+        // Check if this beam belongs to the tetrimino
+        if (beamName.find(tetriminoPrefix) != std::string::npos) {
+            auto* beam = beamEntity->getComponent<BeamComponent>();
+            if (!beam) continue;
+            
+            // Get beam stress
+            float stress = beam->getStressFactor();
+            
+            // Get beam center position to determine left vs right
+            Vec2 beamCenter = beam->getCenterPosition();
+            
+            // Simple left/right classification based on beam center
+            if (beamCenter.x < 0) { // Left side
+                leftForce += stress;
+                leftCount++;
+            } else { // Right side
+                rightForce += stress;
+                rightCount++;
+            }
+        }
+    }
+    
+    if (leftCount == 0 || rightCount == 0) return 0.0f;
+    
+    // Calculate average force on each side
+    float leftAvg = leftForce / leftCount;
+    float rightAvg = rightForce / rightCount;
+    
+    // Rotate AWAY from the side with more force (opposite direction)
+    // If right side has more force, rotate counter-clockwise (negative) - away from right
+    // If left side has more force, rotate clockwise (positive) - away from left
+    float rotation = (leftAvg - rightAvg) * m_debugSpringRotationStrength; // Debug spring rotation strength
+    return rotation;
+}
+
+void PhysicsTetrisScene::applyGravityToUnstableTetriminos() {
+    auto nodeEntities = m_entityManager->getEntitiesWithComponent<NodeComponent>();
+    auto frameEntities = m_entityManager->getEntitiesWithComponent<FrameComponent>();
+    
+    for (auto* frameEntity : frameEntities) {
+        auto* frame = frameEntity->getComponent<FrameComponent>();
+        if (!frame) continue;
+        
+        std::string frameName = frameEntity->getName();
+        std::string tetriminoPrefix = frameName.substr(0, frameName.find("_Frame"));
+        
+        // Skip active tetriminos
+        bool isActiveTetrimino = (tetriminoPrefix.find("_" + std::to_string(m_currentTetriminoId)) != std::string::npos);
+        if (isActiveTetrimino) continue;
+        
+        // Check if this tetrimino is unstable
+        bool isUnstable = false;
+        Vec2 framePos = frame->getPosition();
+        int nodeCount = 0;
+        float totalDisplacement = 0.0f;
+        
+        // Check displacement of all nodes from their frame positions
+        for (auto* nodeEntity : nodeEntities) {
+            if (nodeEntity->getName().find(tetriminoPrefix) != std::string::npos &&
+                nodeEntity->getName().find("_Node") != std::string::npos) {
+                
+                auto* node = nodeEntity->getComponent<NodeComponent>();
+                if (node && !node->isPositionFixed()) {
+                    Vec2 nodePos = node->getPosition();
+                    float displacement = (nodePos - framePos).length();
+                    totalDisplacement += displacement;
+                    nodeCount++;
+                    
+                    // If any node is significantly displaced, mark as unstable
+                    if (displacement > 20.0f) {
+                        isUnstable = true;
+                    }
+                }
+            }
+        }
+        
+        // If unstable, apply additional gravity to all nodes
+        if (isUnstable && nodeCount > 0) {
+            for (auto* nodeEntity : nodeEntities) {
+                if (nodeEntity->getName().find(tetriminoPrefix) != std::string::npos &&
+                    nodeEntity->getName().find("_Node") != std::string::npos) {
+                    
+                    auto* node = nodeEntity->getComponent<NodeComponent>();
+                    if (node && !node->isPositionFixed()) {
+                        Vec2 velocity = node->getVelocity();
+                        // Apply additional downward gravity to unstable pieces
+                        velocity.y -= 150.0f * 0.016f; // Additional gravity force
+                        node->setVelocity(velocity);
+                    }
+                }
+            }
+        }
+    }
+}
+
+float PhysicsTetrisScene::calculateTotalSpringForce(const std::string& tetriminoPrefix) {
+    float totalStress = 0.0f;
+    auto beamEntities = m_entityManager->getEntitiesWithComponent<BeamComponent>();
+
+    for (auto* beamEntity : beamEntities) {
+        std::string beamName = beamEntity->getName();
+        if (beamName.find(tetriminoPrefix) != std::string::npos) {
+            auto* beam = beamEntity->getComponent<BeamComponent>();
+            if (beam) {
+                totalStress += std::abs(beam->getStressFactor()); // Sum absolute stress
+            }
+        }
+    }
+    return totalStress;
+}
+
+void PhysicsTetrisScene::renderDebugTetrimino(const std::string& tetriminoPrefix, const Vec2& screenPosition, float scale) {
+    // Get the tetrimino template data
+    std::string tetriminoType = tetriminoPrefix.substr(0, tetriminoPrefix.find("_"));
+    const TetriminoData* tetriminoData = nullptr;
+    
+    for (const auto& tetrimino : m_tetriminoTemplates) {
+        if (tetrimino.name == tetriminoType) {
+            tetriminoData = &tetrimino;
+            break;
+        }
+    }
+    
+    if (!tetriminoData) return;
+
+    // Render nodes from template data
+    for (size_t i = 0; i < tetriminoData->nodeOffsets.size(); ++i) {
+        Vec2 nodePos = screenPosition + tetriminoData->nodeOffsets[i] * scale * 0.01f; // Scale down for screen space
+        
+        // Color based on tetrimino type
+        Vec4 nodeColor = tetriminoData->color;
+        nodeColor.w = 0.8f; // Make slightly transparent
+        
+        // Draw node as a small circle
+        m_lineRenderer->addCircle(nodePos, 0.005f, nodeColor, 1.0f, 8);
+    }
+
+    // Render beams from template data
+    for (const auto& connection : tetriminoData->beamConnections) {
+        int node1Idx = connection.first;
+        int node2Idx = connection.second;
+        
+        if (node1Idx < tetriminoData->nodeOffsets.size() && node2Idx < tetriminoData->nodeOffsets.size()) {
+            Vec2 pos1 = screenPosition + tetriminoData->nodeOffsets[node1Idx] * scale * 0.01f;
+            Vec2 pos2 = screenPosition + tetriminoData->nodeOffsets[node2Idx] * scale * 0.01f;
+            
+            // Color based on tetrimino type
+            Vec4 beamColor = tetriminoData->color;
+            beamColor.w = 0.6f; // Make more transparent
+            
+            m_lineRenderer->addLine(pos1, pos2, beamColor, 1.0f);
+        }
+    }
+}
+
+void PhysicsTetrisScene::createDebugControls() {
+    // Always create the controls, but they'll be hidden initially
+    
+    // Frame Gravity Controls
+    auto& frameGravityUpEntity = m_entityManager->createEntity("FrameGravityUp");
+    auto& frameGravityUpButton = frameGravityUpEntity.addComponent<ButtonComponent>(
+        *m_graphicsDevice,
+        L"Frame Gravity +",
+        14.0f, 8.0f, 6.0f
+    );
+    frameGravityUpButton.enableScreenSpace(true);
+    frameGravityUpButton.setScreenPosition(0.1f, 0.1f);
+    frameGravityUpButton.setVisible(false); // Initially hidden
+    frameGravityUpButton.setOnClickCallback([this]() {
+        m_debugFrameGravity = std::min(1.0f, m_debugFrameGravity + 0.05f);
+        std::cout << "Frame Gravity: " << m_debugFrameGravity << std::endl;
+    });
+    
+    auto& frameGravityDownEntity = m_entityManager->createEntity("FrameGravityDown");
+    auto& frameGravityDownButton = frameGravityDownEntity.addComponent<ButtonComponent>(
+        *m_graphicsDevice,
+        L"Frame Gravity -",
+        14.0f, 8.0f, 6.0f
+    );
+    frameGravityDownButton.enableScreenSpace(true);
+    frameGravityDownButton.setScreenPosition(0.1f, 0.15f);
+    frameGravityDownButton.setVisible(false); // Initially hidden
+    frameGravityDownButton.setOnClickCallback([this]() {
+        m_debugFrameGravity = std::max(-1.0f, m_debugFrameGravity - 0.05f);
+        std::cout << "Frame Gravity: " << m_debugFrameGravity << std::endl;
+    });
+    
+    // Frame Gravity Fine Tuning
+    auto& frameGravityFineUpEntity = m_entityManager->createEntity("FrameGravityFineUp");
+    auto& frameGravityFineUpButton = frameGravityFineUpEntity.addComponent<ButtonComponent>(
+        *m_graphicsDevice,
+        L"++",
+        12.0f, 6.0f, 4.0f
+    );
+    frameGravityFineUpButton.enableScreenSpace(true);
+    frameGravityFineUpButton.setScreenPosition(0.25f, 0.1f);
+    frameGravityFineUpButton.setVisible(false);
+    frameGravityFineUpButton.setOnClickCallback([this]() {
+        m_debugFrameGravity = std::min(1.0f, m_debugFrameGravity + 0.001f);
+        std::cout << "Frame Gravity: " << m_debugFrameGravity << std::endl;
+    });
+    
+    auto& frameGravityFineDownEntity = m_entityManager->createEntity("FrameGravityFineDown");
+    auto& frameGravityFineDownButton = frameGravityFineDownEntity.addComponent<ButtonComponent>(
+        *m_graphicsDevice,
+        L"--",
+        12.0f, 6.0f, 4.0f
+    );
+    frameGravityFineDownButton.enableScreenSpace(true);
+    frameGravityFineDownButton.setScreenPosition(0.25f, 0.15f);
+    frameGravityFineDownButton.setVisible(false);
+    frameGravityFineDownButton.setOnClickCallback([this]() {
+        m_debugFrameGravity = std::max(-1.0f, m_debugFrameGravity - 0.001f);
+        std::cout << "Frame Gravity: " << m_debugFrameGravity << std::endl;
+    });
+    
+    // Frame Gravity Text Label
+    auto& frameGravityLabelEntity = m_entityManager->createEntity("FrameGravityLabel");
+    auto& frameGravityLabel = frameGravityLabelEntity.addComponent<ButtonComponent>(
+        *m_graphicsDevice,
+        L"Frame Gravity: 0.100",
+        12.0f, 0.0f, 0.0f
+    );
+    frameGravityLabel.enableScreenSpace(true);
+    frameGravityLabel.setScreenPosition(0.35f, 0.125f);
+    frameGravityLabel.setVisible(false);
+    frameGravityLabel.setNormalTint(Vec4(0.0f, 0.0f, 0.0f, 0.0f)); // Transparent background
+    frameGravityLabel.setHoveredTint(Vec4(0.0f, 0.0f, 0.0f, 0.0f));
+    frameGravityLabel.setPressedTint(Vec4(0.0f, 0.0f, 0.0f, 0.0f));
+    frameGravityLabel.setTextColor(Vec4(1.0f, 1.0f, 1.0f, 1.0f));
+    
+    // Node Gravity When Colliding Controls
+    auto& nodeGravityUpEntity = m_entityManager->createEntity("NodeGravityUp");
+    auto& nodeGravityUpButton = nodeGravityUpEntity.addComponent<ButtonComponent>(
+        *m_graphicsDevice,
+        L"Node Gravity +",
+        14.0f, 8.0f, 6.0f
+    );
+    nodeGravityUpButton.enableScreenSpace(true);
+    nodeGravityUpButton.setScreenPosition(0.1f, 0.25f);
+    nodeGravityUpButton.setVisible(false); // Initially hidden
+    nodeGravityUpButton.setOnClickCallback([this]() {
+        m_debugNodeGravityColliding = std::min(1.0f, m_debugNodeGravityColliding + 0.05f);
+        std::cout << "Node Gravity (Colliding): " << m_debugNodeGravityColliding << std::endl;
+    });
+    
+    auto& nodeGravityDownEntity = m_entityManager->createEntity("NodeGravityDown");
+    auto& nodeGravityDownButton = nodeGravityDownEntity.addComponent<ButtonComponent>(
+        *m_graphicsDevice,
+        L"Node Gravity -",
+        14.0f, 8.0f, 6.0f
+    );
+    nodeGravityDownButton.enableScreenSpace(true);
+    nodeGravityDownButton.setScreenPosition(0.1f, 0.3f);
+    nodeGravityDownButton.setVisible(false); // Initially hidden
+    nodeGravityDownButton.setOnClickCallback([this]() {
+        m_debugNodeGravityColliding = std::max(-1.0f, m_debugNodeGravityColliding - 0.05f);
+        std::cout << "Node Gravity (Colliding): " << m_debugNodeGravityColliding << std::endl;
+    });
+    
+    // Node Gravity Fine Tuning
+    auto& nodeGravityFineUpEntity = m_entityManager->createEntity("NodeGravityFineUp");
+    auto& nodeGravityFineUpButton = nodeGravityFineUpEntity.addComponent<ButtonComponent>(
+        *m_graphicsDevice,
+        L"++",
+        12.0f, 6.0f, 4.0f
+    );
+    nodeGravityFineUpButton.enableScreenSpace(true);
+    nodeGravityFineUpButton.setScreenPosition(0.25f, 0.25f);
+    nodeGravityFineUpButton.setVisible(false);
+    nodeGravityFineUpButton.setOnClickCallback([this]() {
+        m_debugNodeGravityColliding = std::min(1.0f, m_debugNodeGravityColliding + 0.001f);
+        std::cout << "Node Gravity (Colliding): " << m_debugNodeGravityColliding << std::endl;
+    });
+    
+    auto& nodeGravityFineDownEntity = m_entityManager->createEntity("NodeGravityFineDown");
+    auto& nodeGravityFineDownButton = nodeGravityFineDownEntity.addComponent<ButtonComponent>(
+        *m_graphicsDevice,
+        L"--",
+        12.0f, 6.0f, 4.0f
+    );
+    nodeGravityFineDownButton.enableScreenSpace(true);
+    nodeGravityFineDownButton.setScreenPosition(0.25f, 0.3f);
+    nodeGravityFineDownButton.setVisible(false);
+    nodeGravityFineDownButton.setOnClickCallback([this]() {
+        m_debugNodeGravityColliding = std::max(-1.0f, m_debugNodeGravityColliding - 0.001f);
+        std::cout << "Node Gravity (Colliding): " << m_debugNodeGravityColliding << std::endl;
+    });
+    
+    // Node Gravity Text Label
+    auto& nodeGravityLabelEntity = m_entityManager->createEntity("NodeGravityLabel");
+    auto& nodeGravityLabel = nodeGravityLabelEntity.addComponent<ButtonComponent>(
+        *m_graphicsDevice,
+        L"Node Gravity: 0.200",
+        12.0f, 0.0f, 0.0f
+    );
+    nodeGravityLabel.enableScreenSpace(true);
+    nodeGravityLabel.setScreenPosition(0.35f, 0.275f);
+    nodeGravityLabel.setVisible(false);
+    nodeGravityLabel.setNormalTint(Vec4(0.0f, 0.0f, 0.0f, 0.0f));
+    nodeGravityLabel.setHoveredTint(Vec4(0.0f, 0.0f, 0.0f, 0.0f));
+    nodeGravityLabel.setPressedTint(Vec4(0.0f, 0.0f, 0.0f, 0.0f));
+    nodeGravityLabel.setTextColor(Vec4(1.0f, 1.0f, 1.0f, 1.0f));
+    
+    // Spring Rotation Strength Controls
+    auto& springRotationUpEntity = m_entityManager->createEntity("SpringRotationUp");
+    auto& springRotationUpButton = springRotationUpEntity.addComponent<ButtonComponent>(
+        *m_graphicsDevice,
+        L"Spring Rotation +",
+        14.0f, 8.0f, 6.0f
+    );
+    springRotationUpButton.enableScreenSpace(true);
+    springRotationUpButton.setScreenPosition(0.1f, 0.4f);
+    springRotationUpButton.setVisible(false); // Initially hidden
+    springRotationUpButton.setOnClickCallback([this]() {
+        m_debugSpringRotationStrength = std::min(2.0f, m_debugSpringRotationStrength + 0.1f);
+        std::cout << "Spring Rotation Strength: " << m_debugSpringRotationStrength << std::endl;
+    });
+    
+    auto& springRotationDownEntity = m_entityManager->createEntity("SpringRotationDown");
+    auto& springRotationDownButton = springRotationDownEntity.addComponent<ButtonComponent>(
+        *m_graphicsDevice,
+        L"Spring Rotation -",
+        14.0f, 8.0f, 6.0f
+    );
+    springRotationDownButton.enableScreenSpace(true);
+    springRotationDownButton.setScreenPosition(0.1f, 0.45f);
+    springRotationDownButton.setVisible(false); // Initially hidden
+    springRotationDownButton.setOnClickCallback([this]() {
+        m_debugSpringRotationStrength = std::max(-2.0f, m_debugSpringRotationStrength - 0.1f);
+        std::cout << "Spring Rotation Strength: " << m_debugSpringRotationStrength << std::endl;
+    });
+    
+    // Spring Rotation Fine Tuning
+    auto& springRotationFineUpEntity = m_entityManager->createEntity("SpringRotationFineUp");
+    auto& springRotationFineUpButton = springRotationFineUpEntity.addComponent<ButtonComponent>(
+        *m_graphicsDevice,
+        L"++",
+        12.0f, 6.0f, 4.0f
+    );
+    springRotationFineUpButton.enableScreenSpace(true);
+    springRotationFineUpButton.setScreenPosition(0.25f, 0.4f);
+    springRotationFineUpButton.setVisible(false);
+    springRotationFineUpButton.setOnClickCallback([this]() {
+        m_debugSpringRotationStrength = std::min(2.0f, m_debugSpringRotationStrength + 0.001f);
+        std::cout << "Spring Rotation Strength: " << m_debugSpringRotationStrength << std::endl;
+    });
+    
+    auto& springRotationFineDownEntity = m_entityManager->createEntity("SpringRotationFineDown");
+    auto& springRotationFineDownButton = springRotationFineDownEntity.addComponent<ButtonComponent>(
+        *m_graphicsDevice,
+        L"--",
+        12.0f, 6.0f, 4.0f
+    );
+    springRotationFineDownButton.enableScreenSpace(true);
+    springRotationFineDownButton.setScreenPosition(0.25f, 0.45f);
+    springRotationFineDownButton.setVisible(false);
+    springRotationFineDownButton.setOnClickCallback([this]() {
+        m_debugSpringRotationStrength = std::max(-2.0f, m_debugSpringRotationStrength - 0.001f);
+        std::cout << "Spring Rotation Strength: " << m_debugSpringRotationStrength << std::endl;
+    });
+    
+    // Spring Rotation Text Label
+    auto& springRotationLabelEntity = m_entityManager->createEntity("SpringRotationLabel");
+    auto& springRotationLabel = springRotationLabelEntity.addComponent<ButtonComponent>(
+        *m_graphicsDevice,
+        L"Spring Rotation: 0.500",
+        12.0f, 0.0f, 0.0f
+    );
+    springRotationLabel.enableScreenSpace(true);
+    springRotationLabel.setScreenPosition(0.35f, 0.425f);
+    springRotationLabel.setVisible(false);
+    springRotationLabel.setNormalTint(Vec4(0.0f, 0.0f, 0.0f, 0.0f));
+    springRotationLabel.setHoveredTint(Vec4(0.0f, 0.0f, 0.0f, 0.0f));
+    springRotationLabel.setPressedTint(Vec4(0.0f, 0.0f, 0.0f, 0.0f));
+    springRotationLabel.setTextColor(Vec4(1.0f, 1.0f, 1.0f, 1.0f));
+    
+    // Angular Damping Controls
+    auto& angularDampingUpEntity = m_entityManager->createEntity("AngularDampingUp");
+    auto& angularDampingUpButton = angularDampingUpEntity.addComponent<ButtonComponent>(
+        *m_graphicsDevice,
+        L"Angular Damping +",
+        14.0f, 8.0f, 6.0f
+    );
+    angularDampingUpButton.enableScreenSpace(true);
+    angularDampingUpButton.setScreenPosition(0.1f, 0.55f);
+    angularDampingUpButton.setVisible(false); // Initially hidden
+    angularDampingUpButton.setOnClickCallback([this]() {
+        m_debugAngularDamping = std::min(1.0f, m_debugAngularDamping + 0.01f);
+        std::cout << "Angular Damping: " << m_debugAngularDamping << std::endl;
+    });
+    
+    auto& angularDampingDownEntity = m_entityManager->createEntity("AngularDampingDown");
+    auto& angularDampingDownButton = angularDampingDownEntity.addComponent<ButtonComponent>(
+        *m_graphicsDevice,
+        L"Angular Damping -",
+        14.0f, 8.0f, 6.0f
+    );
+    angularDampingDownButton.enableScreenSpace(true);
+    angularDampingDownButton.setScreenPosition(0.1f, 0.6f);
+    angularDampingDownButton.setVisible(false); // Initially hidden
+    angularDampingDownButton.setOnClickCallback([this]() {
+        m_debugAngularDamping = std::max(0.5f, m_debugAngularDamping - 0.01f);
+        std::cout << "Angular Damping: " << m_debugAngularDamping << std::endl;
+    });
+    
+    // Angular Damping Fine Tuning
+    auto& angularDampingFineUpEntity = m_entityManager->createEntity("AngularDampingFineUp");
+    auto& angularDampingFineUpButton = angularDampingFineUpEntity.addComponent<ButtonComponent>(
+        *m_graphicsDevice,
+        L"++",
+        12.0f, 6.0f, 4.0f
+    );
+    angularDampingFineUpButton.enableScreenSpace(true);
+    angularDampingFineUpButton.setScreenPosition(0.25f, 0.55f);
+    angularDampingFineUpButton.setVisible(false);
+    angularDampingFineUpButton.setOnClickCallback([this]() {
+        m_debugAngularDamping = std::min(1.0f, m_debugAngularDamping + 0.001f);
+        std::cout << "Angular Damping: " << m_debugAngularDamping << std::endl;
+    });
+    
+    auto& angularDampingFineDownEntity = m_entityManager->createEntity("AngularDampingFineDown");
+    auto& angularDampingFineDownButton = angularDampingFineDownEntity.addComponent<ButtonComponent>(
+        *m_graphicsDevice,
+        L"--",
+        12.0f, 6.0f, 4.0f
+    );
+    angularDampingFineDownButton.enableScreenSpace(true);
+    angularDampingFineDownButton.setScreenPosition(0.25f, 0.6f);
+    angularDampingFineDownButton.setVisible(false);
+    angularDampingFineDownButton.setOnClickCallback([this]() {
+        m_debugAngularDamping = std::max(0.5f, m_debugAngularDamping - 0.001f);
+        std::cout << "Angular Damping: " << m_debugAngularDamping << std::endl;
+    });
+    
+    // Angular Damping Text Label
+    auto& angularDampingLabelEntity = m_entityManager->createEntity("AngularDampingLabel");
+    auto& angularDampingLabel = angularDampingLabelEntity.addComponent<ButtonComponent>(
+        *m_graphicsDevice,
+        L"Angular Damping: 0.950",
+        12.0f, 0.0f, 0.0f
+    );
+    angularDampingLabel.enableScreenSpace(true);
+    angularDampingLabel.setScreenPosition(0.35f, 0.575f);
+    angularDampingLabel.setVisible(false);
+    angularDampingLabel.setNormalTint(Vec4(0.0f, 0.0f, 0.0f, 0.0f));
+    angularDampingLabel.setHoveredTint(Vec4(0.0f, 0.0f, 0.0f, 0.0f));
+    angularDampingLabel.setPressedTint(Vec4(0.0f, 0.0f, 0.0f, 0.0f));
+    angularDampingLabel.setTextColor(Vec4(1.0f, 1.0f, 1.0f, 1.0f));
+    
+    // Collision Threshold Controls
+    auto& collisionThresholdUpEntity = m_entityManager->createEntity("CollisionThresholdUp");
+    auto& collisionThresholdUpButton = collisionThresholdUpEntity.addComponent<ButtonComponent>(
+        *m_graphicsDevice,
+        L"Collision Threshold +",
+        14.0f, 8.0f, 6.0f
+    );
+    collisionThresholdUpButton.enableScreenSpace(true);
+    collisionThresholdUpButton.setScreenPosition(0.1f, 0.7f);
+    collisionThresholdUpButton.setVisible(false); // Initially hidden
+    collisionThresholdUpButton.setOnClickCallback([this]() {
+        m_debugCollisionThreshold = std::min(2.0f, m_debugCollisionThreshold + 0.1f);
+        std::cout << "Collision Threshold: " << m_debugCollisionThreshold << std::endl;
+    });
+    
+    auto& collisionThresholdDownEntity = m_entityManager->createEntity("CollisionThresholdDown");
+    auto& collisionThresholdDownButton = collisionThresholdDownEntity.addComponent<ButtonComponent>(
+        *m_graphicsDevice,
+        L"Collision Threshold -",
+        14.0f, 8.0f, 6.0f
+    );
+    collisionThresholdDownButton.enableScreenSpace(true);
+    collisionThresholdDownButton.setScreenPosition(0.1f, 0.75f);
+    collisionThresholdDownButton.setVisible(false); // Initially hidden
+    collisionThresholdDownButton.setOnClickCallback([this]() {
+        m_debugCollisionThreshold = std::max(0.1f, m_debugCollisionThreshold - 0.1f);
+        std::cout << "Collision Threshold: " << m_debugCollisionThreshold << std::endl;
+    });
+    
+    // Collision Threshold Fine Tuning
+    auto& collisionThresholdFineUpEntity = m_entityManager->createEntity("CollisionThresholdFineUp");
+    auto& collisionThresholdFineUpButton = collisionThresholdFineUpEntity.addComponent<ButtonComponent>(
+        *m_graphicsDevice,
+        L"++",
+        12.0f, 6.0f, 4.0f
+    );
+    collisionThresholdFineUpButton.enableScreenSpace(true);
+    collisionThresholdFineUpButton.setScreenPosition(0.25f, 0.7f);
+    collisionThresholdFineUpButton.setVisible(false);
+    collisionThresholdFineUpButton.setOnClickCallback([this]() {
+        m_debugCollisionThreshold = std::min(2.0f, m_debugCollisionThreshold + 0.001f);
+        std::cout << "Collision Threshold: " << m_debugCollisionThreshold << std::endl;
+    });
+    
+    auto& collisionThresholdFineDownEntity = m_entityManager->createEntity("CollisionThresholdFineDown");
+    auto& collisionThresholdFineDownButton = collisionThresholdFineDownEntity.addComponent<ButtonComponent>(
+        *m_graphicsDevice,
+        L"--",
+        12.0f, 6.0f, 4.0f
+    );
+    collisionThresholdFineDownButton.enableScreenSpace(true);
+    collisionThresholdFineDownButton.setScreenPosition(0.25f, 0.75f);
+    collisionThresholdFineDownButton.setVisible(false);
+    collisionThresholdFineDownButton.setOnClickCallback([this]() {
+        m_debugCollisionThreshold = std::max(0.1f, m_debugCollisionThreshold - 0.001f);
+        std::cout << "Collision Threshold: " << m_debugCollisionThreshold << std::endl;
+    });
+    
+    // Collision Threshold Text Label
+    auto& collisionThresholdLabelEntity = m_entityManager->createEntity("CollisionThresholdLabel");
+    auto& collisionThresholdLabel = collisionThresholdLabelEntity.addComponent<ButtonComponent>(
+        *m_graphicsDevice,
+        L"Collision Threshold: 0.800",
+        12.0f, 0.0f, 0.0f
+    );
+    collisionThresholdLabel.enableScreenSpace(true);
+    collisionThresholdLabel.setScreenPosition(0.35f, 0.725f);
+    collisionThresholdLabel.setVisible(false);
+    collisionThresholdLabel.setNormalTint(Vec4(0.0f, 0.0f, 0.0f, 0.0f));
+    collisionThresholdLabel.setHoveredTint(Vec4(0.0f, 0.0f, 0.0f, 0.0f));
+    collisionThresholdLabel.setPressedTint(Vec4(0.0f, 0.0f, 0.0f, 0.0f));
+    collisionThresholdLabel.setTextColor(Vec4(1.0f, 1.0f, 1.0f, 1.0f));
+}
+
+void PhysicsTetrisScene::updateDebugControls() {
+    // Show/hide debug controls based on debug toggle
+    bool showControls = m_showFrameDebug;
+    
+    std::vector<std::string> controlNames = {
+        "FrameGravityUp", "FrameGravityDown", "FrameGravityFineUp", "FrameGravityFineDown", "FrameGravityLabel",
+        "NodeGravityUp", "NodeGravityDown", "NodeGravityFineUp", "NodeGravityFineDown", "NodeGravityLabel",
+        "SpringRotationUp", "SpringRotationDown", "SpringRotationFineUp", "SpringRotationFineDown", "SpringRotationLabel",
+        "AngularDampingUp", "AngularDampingDown", "AngularDampingFineUp", "AngularDampingFineDown", "AngularDampingLabel",
+        "CollisionThresholdUp", "CollisionThresholdDown", "CollisionThresholdFineUp", "CollisionThresholdFineDown", "CollisionThresholdLabel"
+    };
+    
+    for (const auto& name : controlNames) {
+        if (auto* entity = m_entityManager->findEntity(name)) {
+            if (auto* button = entity->getComponent<ButtonComponent>()) {
+                button->setVisible(showControls);
+                if (showControls) {
+                    button->update(0.016f); // Update button
+                }
+            }
+        }
+    }
+    
+    // Update text labels with current values
+    if (showControls) {
+        // Update Frame Gravity Label
+        if (auto* entity = m_entityManager->findEntity("FrameGravityLabel")) {
+            if (auto* button = entity->getComponent<ButtonComponent>()) {
+                std::wstring text = L"Frame Gravity: " + std::to_wstring(m_debugFrameGravity).substr(0, 5);
+                button->setText(text);
+            }
+        }
+        
+        // Update Node Gravity Label
+        if (auto* entity = m_entityManager->findEntity("NodeGravityLabel")) {
+            if (auto* button = entity->getComponent<ButtonComponent>()) {
+                std::wstring text = L"Node Gravity: " + std::to_wstring(m_debugNodeGravityColliding).substr(0, 5);
+                button->setText(text);
+            }
+        }
+        
+        // Update Spring Rotation Label
+        if (auto* entity = m_entityManager->findEntity("SpringRotationLabel")) {
+            if (auto* button = entity->getComponent<ButtonComponent>()) {
+                std::wstring text = L"Spring Rotation: " + std::to_wstring(m_debugSpringRotationStrength).substr(0, 5);
+                button->setText(text);
+            }
+        }
+        
+        // Update Angular Damping Label
+        if (auto* entity = m_entityManager->findEntity("AngularDampingLabel")) {
+            if (auto* button = entity->getComponent<ButtonComponent>()) {
+                std::wstring text = L"Angular Damping: " + std::to_wstring(m_debugAngularDamping).substr(0, 5);
+                button->setText(text);
+            }
+        }
+        
+        // Update Collision Threshold Label
+        if (auto* entity = m_entityManager->findEntity("CollisionThresholdLabel")) {
+            if (auto* button = entity->getComponent<ButtonComponent>()) {
+                std::wstring text = L"Collision Threshold: " + std::to_wstring(m_debugCollisionThreshold).substr(0, 5);
+                button->setText(text);
+            }
+        }
+    }
 }

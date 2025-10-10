@@ -4,7 +4,7 @@
 #include <DX3D/Graphics/VertexBuffer.h>
 #include <DX3D/Graphics/GraphicsDevice.h>
 #include <DX3D/Graphics/IndexBuffer.h>
-
+#include<iostream>
 
 dx3d::DeviceContext::DeviceContext(const GraphicsResourceDesc& gDesc): GraphicsResource(gDesc)
 {
@@ -143,10 +143,10 @@ void dx3d::DeviceContext::createConstantBuffers()
 		"Failed to create default sampler state"
 	);
 
-	// Light buffer (PS b2)
+    // Light buffer (PS b2)
 	D3D11_BUFFER_DESC lightDesc{};
 	lightDesc.Usage = D3D11_USAGE_DYNAMIC;
-	lightDesc.ByteWidth = 16 + (32 * 4); // 16-byte header + 4 lights (each 32 bytes)
+    lightDesc.ByteWidth = 16 + (32 * 10); // 16-byte header + 10 lights (each 32 bytes)
 	lightDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	lightDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	DX3DGraphicsLogThrowOnFail(
@@ -174,6 +174,40 @@ void dx3d::DeviceContext::createConstantBuffers()
 	DX3DGraphicsLogThrowOnFail(
 		m_device.CreateBuffer(&camDesc, nullptr, m_cameraBuffer.GetAddressOf()),
 		"Failed to create camera constant buffer"
+	);
+
+	// PBR buffer (PS b5)
+	D3D11_BUFFER_DESC pbrDesc{};
+	pbrDesc.Usage = D3D11_USAGE_DYNAMIC;
+	pbrDesc.ByteWidth = 48; // enabled(4) + albedo(12) + metallic(4) + roughness(4) + pad(24)
+	pbrDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	pbrDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	DX3DGraphicsLogThrowOnFail(
+		m_device.CreateBuffer(&pbrDesc, nullptr, m_pbrBuffer.GetAddressOf()),
+		"Failed to create PBR constant buffer"
+	);
+
+	// Spotlight buffer (PS b6)
+	D3D11_BUFFER_DESC spotDesc{};
+	spotDesc.Usage = D3D11_USAGE_DYNAMIC;
+	spotDesc.ByteWidth = 80; // increased size to match shader expectations
+	spotDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	spotDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	DX3DGraphicsLogThrowOnFail(
+		m_device.CreateBuffer(&spotDesc, nullptr, m_spotlightBuffer.GetAddressOf()),
+		"Failed to create spotlight constant buffer"
+	);
+
+    // Shadow buffer (PS b7)
+	D3D11_BUFFER_DESC shadowDesc{};
+	shadowDesc.Usage = D3D11_USAGE_DYNAMIC;
+    // 10 matrices (10*64) + count (4) padded to 16 bytes
+    shadowDesc.ByteWidth = 64 * 10 + 16;
+	shadowDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	shadowDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	DX3DGraphicsLogThrowOnFail(
+		m_device.CreateBuffer(&shadowDesc, nullptr, m_shadowBuffer.GetAddressOf()),
+		"Failed to create shadow constant buffer"
 	);
 	// Initialize with identity matrices
 	m_currentTransforms.worldMatrix = Mat4::identity();
@@ -224,7 +258,7 @@ void dx3d::DeviceContext::setDirectionalLight(const Vec3& direction, const Vec3&
 {
 	struct Header { ui32 count; float pad[3]; };
 	struct PackedLight { Vec3 dir; float intensity; Vec3 color; float pad0; };
-	struct Buffer { Header h; PackedLight l[4]; };
+    struct Buffer { Header h; PackedLight l[10]; };
 	Buffer buf{}; buf.h.count = 1;
 	buf.l[0] = { direction,intensity,color,0.0f };
 
@@ -238,8 +272,8 @@ void dx3d::DeviceContext::setLights(const std::vector<Vec3>& dirs, const std::ve
 {
 	struct Header { ui32 count; float pad[3]; };
 	struct PackedLight { Vec3 dir; float intensity; Vec3 color; float pad0; };
-	struct Buffer { Header h; PackedLight l[4]; };
-	Buffer buf{}; buf.h.count = (ui32)std::min<size_t>(4, std::min(dirs.size(), std::min(colors.size(), intensities.size())));
+    struct Buffer { Header h; PackedLight l[10]; };
+    Buffer buf{}; buf.h.count = (ui32)std::min<size_t>(10, std::min(dirs.size(), std::min(colors.size(), intensities.size())));
 	for (ui32 i = 0; i < buf.h.count; ++i) buf.l[i] = { dirs[i], intensities[i], colors[i], 0.0f };
 
 	D3D11_MAPPED_SUBRESOURCE mapped{};
@@ -267,6 +301,42 @@ void dx3d::DeviceContext::setCameraPosition(const Vec3& pos)
 	if (SUCCEEDED(hr)) { memcpy(mapped.pData, &c, sizeof(Cam)); m_context->Unmap(m_cameraBuffer.Get(), 0); }
 	m_context->PSSetConstantBuffers(4, 1, m_cameraBuffer.GetAddressOf());
 }
+
+void dx3d::DeviceContext::setPBR(bool enabled, const Vec3& albedo, float metallic, float roughness)
+{
+	struct PBRBufferData {
+		ui32 usePBR; float pad0[3];
+		Vec3 albedo; float metallic;
+		float roughness; float pad1[3];
+	};
+	PBRBufferData p{}; p.usePBR = enabled ? 1u : 0u; p.albedo = albedo; p.metallic = metallic; p.roughness = roughness;
+	D3D11_MAPPED_SUBRESOURCE mapped{};
+	HRESULT hr = m_context->Map(m_pbrBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+	if (SUCCEEDED(hr)) { memcpy(mapped.pData, &p, sizeof(PBRBufferData)); m_context->Unmap(m_pbrBuffer.Get(), 0); }
+	m_context->PSSetConstantBuffers(5, 1, m_pbrBuffer.GetAddressOf());
+}
+
+void dx3d::DeviceContext::setSpotlight(bool enabled, const Vec3& position, const Vec3& direction, float range,
+	float innerAngleRadians, float outerAngleRadians, const Vec3& color, float intensity)
+{
+	struct SpotBuf {
+		ui32 enabled; float pad0[3];
+		Vec3 pos; float range;
+		Vec3 dir; float innerCos;
+		float outerCos; Vec3 col;
+		float intensity; float pad1[3];
+	};
+	SpotBuf s{};
+	s.enabled = enabled ? 1u : 0u;
+	s.pos = position; s.range = range;
+	Vec3 nd = direction.normalized(); s.dir = nd; s.innerCos = std::cos(innerAngleRadians);
+	s.outerCos = std::cos(outerAngleRadians); s.col = color; s.intensity = intensity;
+
+	D3D11_MAPPED_SUBRESOURCE mapped{};
+	HRESULT hr = m_context->Map(m_spotlightBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+	if (SUCCEEDED(hr)) { memcpy(mapped.pData, &s, sizeof(SpotBuf)); m_context->Unmap(m_spotlightBuffer.Get(), 0); }
+	m_context->PSSetConstantBuffers(6, 1, m_spotlightBuffer.GetAddressOf());
+}
 void dx3d::DeviceContext::clearAndSetBackBuffer(const SwapChain& swapChain, const Vec4& color)
 {
 	f32 fColor[] = {color.x,color.y,color.z,color.w};
@@ -289,6 +359,7 @@ void dx3d::DeviceContext::setGraphicsPipelineState(const GraphicsPipelineState& 
     m_context->IASetInputLayout(pipeline.m_layout.Get());
 	m_context->VSSetShader(pipeline.m_vs.Get(), nullptr, 0);
 	m_context->PSSetShader(pipeline.m_ps.Get(), nullptr, 0);
+	
 }
 
 void dx3d::DeviceContext::setVertexBuffer(const VertexBuffer& buffer)
@@ -403,4 +474,51 @@ void dx3d::DeviceContext::updateTransformBuffer()
 		// Bind the constant buffer to vertex shader
 		m_context->VSSetConstantBuffers(0, 1, m_worldMatrixBuffer.GetAddressOf());
 	}
+}
+
+void dx3d::DeviceContext::setShadowMap(ID3D11ShaderResourceView* shadowMap, ID3D11SamplerState* shadowSampler)
+{
+	// Bind shadow map texture to slot 1 (slot 0 is for regular textures)
+	m_context->PSSetShaderResources(1, 1, &shadowMap);
+	
+	// Bind shadow sampler to slot 1 (slot 0 is for regular samplers)
+	m_context->PSSetSamplers(1, 1, &shadowSampler);
+}
+
+void dx3d::DeviceContext::setShadowMaps(ID3D11ShaderResourceView* const* shadowMaps, ui32 count, ID3D11SamplerState* shadowSampler)
+{
+    // Bind up to 10 SRVs starting at slot 1
+    ui32 clamped = std::min(count, 10u);
+    m_context->PSSetShaderResources(1, clamped, shadowMaps);
+    m_context->PSSetSamplers(1, 1, &shadowSampler);
+}
+
+void dx3d::DeviceContext::setShadowMatrix(const Mat4& lightViewProj)
+{
+	D3D11_MAPPED_SUBRESOURCE mapped{};
+	HRESULT hr = m_context->Map(m_shadowBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+	if (SUCCEEDED(hr)) {
+        // Write first matrix, zero the rest, set count=1
+        struct ShadowCB { Mat4 mats[10]; ui32 count; float pad[3]; } cb{};
+        cb.mats[0] = lightViewProj;
+        cb.count = 1;
+        memcpy(mapped.pData, &cb, sizeof(ShadowCB));
+		m_context->Unmap(m_shadowBuffer.Get(), 0);
+	}
+	m_context->PSSetConstantBuffers(7, 1, m_shadowBuffer.GetAddressOf());
+}
+
+void dx3d::DeviceContext::setShadowMatrices(const std::vector<Mat4>& lightViewProjMatrices)
+{
+    D3D11_MAPPED_SUBRESOURCE mapped{};
+    HRESULT hr = m_context->Map(m_shadowBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+    if (SUCCEEDED(hr)) {
+        struct ShadowCB { Mat4 mats[10]; ui32 count; float pad[3]; } cb{};
+        ui32 n = static_cast<ui32>(std::min<size_t>(10, lightViewProjMatrices.size()));
+        for (ui32 i = 0; i < n; ++i) cb.mats[i] = lightViewProjMatrices[i];
+        cb.count = n;
+        memcpy(mapped.pData, &cb, sizeof(ShadowCB));
+        m_context->Unmap(m_shadowBuffer.Get(), 0);
+    }
+    m_context->PSSetConstantBuffers(7, 1, m_shadowBuffer.GetAddressOf());
 }

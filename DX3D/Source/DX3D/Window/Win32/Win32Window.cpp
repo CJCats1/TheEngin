@@ -1,6 +1,8 @@
 ﻿#include <DX3D/Window/Window.h>
 #include <DX3D/Core/Input.h>
 #include <Windows.h>
+#include <imgui.h>
+#include <backends/imgui_impl_win32.h>
 #include <stdexcept>
 
 namespace dx3d {
@@ -9,8 +11,14 @@ namespace dx3d {
 }
 
 // Forward global procedure → instance
+// Forward declaration to satisfy the compiler even if the backend header
+// is not picked up correctly by IntelliSense. The implementation is
+// provided by imgui_impl_win32.cpp.
+LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 static LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
+    if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam))
+        return 1;
     if (dx3d::g_windowInstance)
         return dx3d::g_windowInstance->handleMessage(hwnd, msg, wparam, lparam);
 

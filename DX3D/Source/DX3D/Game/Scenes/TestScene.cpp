@@ -324,7 +324,6 @@ void TestScene::updateCameraMovement(float dt) {
 }
 
 void TestScene::render(GraphicsEngine& engine, SwapChain& swapChain) {
-    engine.beginFrame(swapChain);
     auto& ctx = engine.getContext();
     float screenWidth = GraphicsEngine::getWindowWidth();
     float screenHeight = GraphicsEngine::getWindowHeight();
@@ -378,5 +377,5 @@ void TestScene::render(GraphicsEngine& engine, SwapChain& swapChain) {
             }
         }
     }
-    engine.endFrame(swapChain);
+    // frame begin/end handled centrally
 }

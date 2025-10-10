@@ -16,19 +16,32 @@ ButtonComponent::ButtonComponent(GraphicsDevice& device,
         TextSystem::initialize(device);
     }
 
-    m_text = std::make_unique<TextComponent>(
-        device,
-        TextSystem::getRenderer(),
-        text,
-        fontSize
-    );
+    // Only create text component if TextSystem is available
+    if (TextSystem::isInitialized()) {
+        m_text = std::make_unique<TextComponent>(
+            device,
+            TextSystem::getRenderer(),
+            text,
+            fontSize
+        );
+    } else {
+        std::cout << "Warning: TextSystem not available, button will render without text\n";
+        // Create a dummy text component or handle gracefully
+        m_text = nullptr;
+    }
 
-    m_text->setFontFamily(L"Arial");
-    m_text->setColor(Vec4(0, 0, 0, 1));
+    if (m_text) {
+        m_text->setFontFamily(L"Arial");
+        m_text->setColor(Vec4(0, 0, 0, 1));
 
-    Vec2 textSize = m_text->getTextSize();
-    m_width = textSize.x + 2.0f * m_paddingX;
-    m_height = textSize.y + 2.0f * m_paddingY;
+        Vec2 textSize = m_text->getTextSize();
+        m_width = textSize.x + 2.0f * m_paddingX;
+        m_height = textSize.y + 2.0f * m_paddingY;
+    } else {
+        // Use default size when text is not available
+        m_width = 100.0f + 2.0f * m_paddingX;
+        m_height = 30.0f + 2.0f * m_paddingY;
+    }
 
     // Create sprite component
     m_sprite = std::make_unique<SpriteComponent>(
@@ -90,14 +103,16 @@ ButtonComponent::ButtonComponent(GraphicsDevice& device,
 }
 
 void ButtonComponent::initialize() {
-    // Set default text properties
-    m_text->setFontFamily(L"Arial");
-    m_text->setColor(Vec4(0.0f, 0.0f, 0.0f, 1.0f)); // Black text
+    if (m_text) {
+        // Set default text properties
+        m_text->setFontFamily(L"Arial");
+        m_text->setColor(Vec4(0.0f, 0.0f, 0.0f, 1.0f)); // Black text
 
-    // Center text on button
-    Vec2 textSize = m_text->getTextSize();
-    float textOffsetX = (m_width - textSize.x) * 0.5f;
-    float textOffsetY = (m_height - textSize.y) * 0.5f;
+        // Center text on button
+        Vec2 textSize = m_text->getTextSize();
+        float textOffsetX = (m_width - textSize.x) * 0.5f;
+        float textOffsetY = (m_height - textSize.y) * 0.5f;
+    }
 
     // Apply initial visual state
     updateVisualState();
@@ -110,19 +125,21 @@ void ButtonComponent::setPosition(float x, float y, float z) {
 void ButtonComponent::setPosition(const Vec3& pos) {
     m_sprite->setPosition(pos);
 
-    // Update text position to stay centered on button
-    Vec2 textSize = m_text->getTextSize();
-    float textOffsetX = (m_width - textSize.x) * 0.5f;
-    float textOffsetY = (m_height - textSize.y) * 0.5f;
+    if (m_text) {
+        // Update text position to stay centered on button
+        Vec2 textSize = m_text->getTextSize();
+        float textOffsetX = (m_width - textSize.x) * 0.5f;
+        float textOffsetY = (m_height - textSize.y) * 0.5f;
 
-    if (m_useScreenSpace) {
-        m_text->setScreenPosition(
-            m_screenPosition.x + textOffsetX / GraphicsEngine::getWindowWidth(),
-            m_screenPosition.y + textOffsetY / GraphicsEngine::getWindowHeight()
-        );
-    }
-    else {
-        m_text->setPosition(pos.x + textOffsetX, pos.y + textOffsetY, pos.z + 0.1f);
+        if (m_useScreenSpace) {
+            m_text->setScreenPosition(
+                m_screenPosition.x + textOffsetX / GraphicsEngine::getWindowWidth(),
+                m_screenPosition.y + textOffsetY / GraphicsEngine::getWindowHeight()
+            );
+        }
+        else {
+            m_text->setPosition(pos.x + textOffsetX, pos.y + textOffsetY, pos.z + 0.1f);
+        }
     }
 }
 
@@ -141,18 +158,20 @@ void ButtonComponent::setScreenPosition(float x, float y) {
     m_sprite->setScreenPosition(screenX, screenY);
     m_sprite->enableScreenSpace(true);
 
-    // Center text on button in screen space
-    Vec2 textSize = m_text->getTextSize();
-    float textOffsetX = (m_width - textSize.x) * 0.5f;
-    float textOffsetY = (m_height - textSize.y) * 0.5f;
+    if (m_text) {
+        // Center text on button in screen space
+        Vec2 textSize = m_text->getTextSize();
+        float textOffsetX = (m_width - textSize.x) * 0.5f;
+        float textOffsetY = (m_height - textSize.y) * 0.5f;
 
-    float winW = (float)GraphicsEngine::getWindowWidth();
-    float winH = (float)GraphicsEngine::getWindowHeight();
+        float winW = (float)GraphicsEngine::getWindowWidth();
+        float winH = (float)GraphicsEngine::getWindowHeight();
 
-    m_text->setScreenPosition(
-        screenX + (textOffsetX / winW),
-        screenY + (textOffsetY / winH)
-    );
+        m_text->setScreenPosition(
+            screenX + (textOffsetX / winW),
+            screenY + (textOffsetY / winH)
+        );
+    }
 }
 
 void ButtonComponent::enableScreenSpace(bool enable) {
@@ -181,31 +200,40 @@ void ButtonComponent::setSize(float width, float height) {
 }
 
 void ButtonComponent::setText(const std::wstring& text) {
-    m_text->setText(text);
-
-    // Recalculate text positioning
-    Vec3 currentPos = getPosition();
-    setPosition(currentPos);
+    if (m_text) {
+        m_text->setText(text);
+        // Recalculate text positioning
+        Vec3 currentPos = getPosition();
+        setPosition(currentPos);
+    }
 }
 
 void ButtonComponent::setFontFamily(const std::wstring& fontFamily) {
-    m_text->setFontFamily(fontFamily);
+    if (m_text) {
+        m_text->setFontFamily(fontFamily);
+    }
 }
 
 void ButtonComponent::setFontSize(float fontSize) {
-    m_text->setFontSize(fontSize);
-
-    // Recalculate text positioning
-    Vec3 currentPos = getPosition();
-    setPosition(currentPos);
+    if (m_text) {
+        m_text->setFontSize(fontSize);
+        // Recalculate text positioning
+        Vec3 currentPos = getPosition();
+        setPosition(currentPos);
+    }
 }
 
 void ButtonComponent::setTextColor(const Vec4& color) {
-    m_text->setColor(color);
+    if (m_text) {
+        m_text->setColor(color);
+    }
 }
 
 std::wstring ButtonComponent::getText() const {
-    return m_text->getText();
+    if (m_text) {
+        return m_text->getText();
+    }
+    return L"";
 }
 
 void ButtonComponent::setState(ButtonState state) {
@@ -267,7 +295,9 @@ void ButtonComponent::draw(DeviceContext& ctx) {
     }
 
     m_sprite->draw(ctx);
-    m_text->draw(ctx);
+    if (m_text) {
+        m_text->draw(ctx);
+    }
 }
 
 bool ButtonComponent::isPointInside(const Vec2& point) const {

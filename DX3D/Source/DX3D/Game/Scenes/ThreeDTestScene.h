@@ -14,6 +14,7 @@ namespace dx3d {
     private:
         std::shared_ptr<Mesh> m_cube;
         std::shared_ptr<Mesh> m_model;
+        std::vector<std::shared_ptr<Mesh>> m_modelMeshes; // For multi-material models
         Camera3D m_camera{ 1.04719755f, 16.0f/9.0f, 0.1f, 1000.0f }; // ~60 deg
         float m_angleY{ 0.0f };
         float m_angleX{ 0.0f };

@@ -20,7 +20,7 @@ namespace dx3d {
         // Add a component to this entity
         template<typename T, typename... Args>
         T& addComponent(Args&&... args) {
-            auto component = std::make_unique<T>(std::forward<Args>(args)...);
+            auto component = std::unique_ptr<T>(new T(std::forward<Args>(args)...));
             T& ref = *component;
 
             // Store the component with type erasure

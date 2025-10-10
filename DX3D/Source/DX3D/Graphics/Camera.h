@@ -5,6 +5,12 @@
 namespace dx3d {
     class Camera3D {
     public:
+        Camera3D() : m_fovY(1.04719755f), m_aspect(16.0f/9.0f), m_nearZ(0.1f), m_farZ(1000.0f) {
+            m_position = Vec3(0.0f, 0.0f, -5.0f);
+            m_target = Vec3(0.0f, 0.0f, 0.0f);
+            m_up = Vec3(0.0f, 1.0f, 0.0f);
+        }
+        
         Camera3D(float fovYRadians, float aspect, float nearZ = 0.1f, float farZ = 1000.0f)
             : m_fovY(fovYRadians), m_aspect(aspect), m_nearZ(nearZ), m_farZ(farZ) {
             m_position = Vec3(0.0f, 0.0f, -5.0f);

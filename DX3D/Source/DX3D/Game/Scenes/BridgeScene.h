@@ -17,6 +17,7 @@ namespace dx3d {
         void update(float dt) override;
         void render(GraphicsEngine& engine, SwapChain& swapChain) override;
         void fixedUpdate(float dt) override;
+        void renderImGui(GraphicsEngine& engine) override;
         // UI and mode management
         void createUI(GraphicsEngine& engine);
         void setMode(SceneMode mode);
@@ -61,6 +62,7 @@ namespace dx3d {
         float m_numberOfNodes = 0.0f;
         std::chrono::high_resolution_clock::time_point m_startTime;
         float m_simulationTime = 0.0f;
+        float m_simulationSpeed = 1.0f;
         bool m_showDebugInfo = false;
         Entity* m_selectedNode = nullptr;
 

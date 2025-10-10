@@ -26,9 +26,14 @@ SOFTWARE.*/
 #include <DX3D/Core/Base.h>
 #include <DX3D/Core/Core.h>
 #include <chrono>
+
+// Forward declarations
+namespace dx3d {
+    class SwapChain;
+}
 namespace dx3d
 {
-	enum class SceneType { None, TestScene, BridgeScene, SpiderSolitaireScene, PhysicsTetrisScene , PartitionScene, ThreeDTestScene, ThreeDBridgeGameScene
+	enum class SceneType { None, TestScene, BridgeScene, SpiderSolitaireScene, PhysicsTetrisScene , PartitionScene, ThreeDTestScene, MarbleMazeScene
 	};
 	class Scene;
 	class TestScene; // Forward declaration
@@ -43,6 +48,11 @@ namespace dx3d
 		void setScene(std::unique_ptr<Scene> scene);
 		void onKeyDown(int keyCode);
 		void onKeyUp(int keyCode);
+		void ImguiRebuild();
+		void SetImguiRebuild(bool rebuild) { imguiRebuild = rebuild; }
+		
+		// Static method to trigger ImGui rebuild from scenes
+		static void TriggerImguiRebuild();
 	private:
 		void onInternalUpdate();
 		std::chrono::steady_clock::time_point m_lastFrameTime;
@@ -52,5 +62,9 @@ namespace dx3d
 		std::unique_ptr<Display> m_display{};
 		std::unique_ptr<Scene> m_activeScene{};
 		bool m_isRunning{ true };
+		bool imguiRebuild{ false };
+		
+		// Static reference to current Game instance
+		static Game* s_currentInstance;
 	};
 }

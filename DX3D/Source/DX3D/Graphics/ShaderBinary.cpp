@@ -1,7 +1,7 @@
 #include <DX3D/Graphics/ShaderBinary.h>
 #include <DX3D/Graphics/GraphicsUtils.h>
 #include <d3dcompiler.h>
-
+#include <iostream>
 dx3d::ShaderBinary::ShaderBinary(const ShaderCompileDesc& desc, const GraphicsResourceDesc& gDesc): 
 	GraphicsResource(gDesc),m_type(desc.shaderType)
 {
@@ -9,6 +9,8 @@ dx3d::ShaderBinary::ShaderBinary(const ShaderCompileDesc& desc, const GraphicsRe
 	if (!desc.shaderSourceCode) DX3DLogThrowInvalidArg("No shader source code provided.");
 	if (!desc.shaderSourceCodeSize) DX3DLogThrowInvalidArg("No shader source code size provided.");
 	if (!desc.shaderEntryPoint) DX3DLogThrowInvalidArg("No shader entry point provided.");
+
+	std::cout << "ShaderBinary: Compiling shader " << desc.shaderSourceName << " with entry point " << desc.shaderEntryPoint << std::endl;
 
 	UINT compileFlags{};
 
@@ -32,6 +34,8 @@ dx3d::ShaderBinary::ShaderBinary(const ShaderCompileDesc& desc, const GraphicsRe
 		),
 		errorBlob.Get()
 	);
+	
+	std::cout << "ShaderBinary: Shader compiled successfully" << std::endl;
 }
 
 dx3d::BinaryData dx3d::ShaderBinary::getData() const noexcept

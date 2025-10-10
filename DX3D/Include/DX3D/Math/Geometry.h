@@ -178,214 +178,27 @@ namespace dx3d {
         const f32& operator[](int index) const { return m[index]; }
 
         // Static factory methods
-        static Mat4 identity() {
-            return Mat4();
-        }
-        static Mat4 orthographicLH(f32 left, f32 right, f32 bottom, f32 top, f32 nearZ, f32 farZ) {
-            Mat4 result;
-
-            f32 width = right - left;
-            f32 height = top - bottom;
-            f32 depth = farZ - nearZ;
-
-            if (width == 0.0f || height == 0.0f || depth == 0.0f) {
-                return identity();
-            }
-
-            result.m[0] = 2.0f / width;                           // Scale X
-            result.m[5] = 2.0f / height;                          // Scale Y  
-            result.m[10] = 1.0f / depth;                          // Scale Z
-            result.m[12] = -(right + left) / width;               // Translate X
-            result.m[13] = -(top + bottom) / height;              // Translate Y
-            result.m[14] = -nearZ / depth;                        // Translate Z
-            result.m[15] = 1.0f;                                  // W
-
-            return result;
-        }
-
-        // Screen-space projection: (0,0) at top-left, (width, height) at bottom-right
-        static Mat4 orthographicScreen(f32 screenWidth, f32 screenHeight, f32 nearZ = 0.0f, f32 farZ = 1.0f) {
-            // DirectX screen-space projection:
-            // X: [0, screenWidth] → [-1, 1] (left to right)
-            // Y: [0, screenHeight] → [1, -1] (top to bottom, flipped for DirectX clip space)
-            // Z: [nearZ, farZ] → [0, 1] (DirectX depth range)
-
-            Mat4 result;
-
-            // X: map [0, screenWidth] to [-1, 1]
-            result.m[0] = 2.0f / screenWidth;     // Scale
-            result.m[12] = -1.0f;                 // Translate to start at -1
-
-            // Y: map [0, screenHeight] to [1, -1] (flip for DirectX)
-            result.m[5] = -2.0f / screenHeight;   // Scale and flip
-            result.m[13] = 1.0f;                  // Translate to start at 1
-
-            // Z: map [nearZ, farZ] to [0, 1] (DirectX depth)
-            result.m[10] = 1.0f / (farZ - nearZ); // Scale
-            result.m[14] = -nearZ / (farZ - nearZ); // Translate
-
-            result.m[15] = 1.0f;                  // W component
-
-            return result;
-        }
-        static Mat4 orthographic(f32 width, f32 height, f32 nearZ, f32 farZ) {
-            Mat4 result = {};
-    
-    // DirectX uses left-handed coordinate system
-    // Orthographic projection matrix for DirectX 11
-    
-    f32 left = -width * 0.5f;
-    f32 right = width * 0.5f;
-    f32 bottom = -height * 0.5f;
-    f32 top = height * 0.5f;
-    
-    // Standard orthographic projection matrix
-    // Maps to NDC space [-1, 1] for X and Y, [0, 1] for Z (DirectX)
-    
-    result(0, 0) = 2.0f / (right - left);           // 2.0f / width
-    result(1, 1) = 2.0f / (top - bottom);          // 2.0f / height
-    result(2, 2) = 1.0f / (farZ - nearZ);          // DirectX Z mapping [0,1]
-    result(3, 3) = 1.0f;
-    
-    result(3, 0) = -(right + left) / (right - left);   // 0.0f (centered)
-    result(3, 1) = -(top + bottom) / (top - bottom);   // 0.0f (centered)
-    result(3, 2) = -nearZ / (farZ - nearZ);            // Z offset
-    
-    return result;
-        }
-        static Mat4 orthographicPixelSpace(f32 width, f32 height, f32 nearZ = 0.1f, f32 farZ = 100.0f) {
-            Mat4 result;
-            // Map [0, width] to [-1, 1] and [0, height] to [1, -1] (Y flipped for top-left origin)
-            result.m[0] = 2.0f / width;                    // X scale
-            result.m[5] = -2.0f / height;                  // Y scale (negative to flip Y-axis)  
-            result.m[10] = -2.0f / (farZ - nearZ);         // Z scale
-            result.m[12] = -1.0f;                          // X offset (shift to start at -1)
-            result.m[13] = 1.0f;                           // Y offset (shift to start at 1)
-            result.m[14] = -(farZ + nearZ) / (farZ - nearZ); // Z offset
-            result.m[15] = 1.0f;                           // W component
-            return result;
-        }
-        static Mat4 createScreenSpaceProjection(float screenWidth, float screenHeight) {
-            // Same as camera's orthographic projection - maps screen pixels to world units
-            return Mat4::orthographic(
-                screenWidth,   // width
-                screenHeight,  // height  
-                -100.0f,       // near plane
-                100.0f         // far plane
-            );
-        }
-        static Mat4 translation(const Vec3& pos) {
-            Mat4 result;
-            result.m[12] = pos.x;
-            result.m[13] = pos.y;
-            result.m[14] = pos.z;
-            return result;
-        }
-        static Mat4 transposeMatrix(const Mat4& matrix) {
-            Mat4 result;
-            const float* src = matrix.data();
-            float* dst = result.data();
-
-            for (int row = 0; row < 4; ++row) {
-                for (int col = 0; col < 4; ++col) {
-                    dst[row * 4 + col] = src[col * 4 + row];
-                }
-            }
-            return result;
-        }
-
-        static Mat4 scale(const Vec3& scale) {
-            Mat4 result;
-            result.m[0] = scale.x;
-            result.m[5] = scale.y;
-            result.m[10] = scale.z;
-            return result;
-        }
-
-        static Mat4 rotationZ(f32 angle) {
-            Mat4 result;
-            f32 c = std::cos(angle);
-            f32 s = std::sin(angle);
-            result.m[0] = c;  result.m[1] = s;
-            result.m[4] = -s; result.m[5] = c;
-            return result;
-        }
-
-        static Mat4 rotationY(f32 angle) {
-            Mat4 result;
-            f32 c = std::cos(angle);
-            f32 s = std::sin(angle);
-            result.m[0] = c;   result.m[2] = -s;
-            result.m[8] = s;   result.m[10] = c;
-            return result;
-        }
-
-        static Mat4 rotationX(f32 angle) {
-            Mat4 result;
-            f32 c = std::cos(angle);
-            f32 s = std::sin(angle);
-            result.m[5] = c;   result.m[6] = s;
-            result.m[9] = -s;  result.m[10] = c;
-            return result;
-        }
+        static Mat4 identity();
+        static Mat4 orthographicLH(f32 left, f32 right, f32 bottom, f32 top, f32 nearZ, f32 farZ);
+        static Mat4 orthographicScreen(f32 screenWidth, f32 screenHeight, f32 nearZ = 0.0f, f32 farZ = 1.0f);
+        static Mat4 orthographic(f32 width, f32 height, f32 nearZ, f32 farZ);
+        static Mat4 orthographicPixelSpace(f32 width, f32 height, f32 nearZ = 0.1f, f32 farZ = 100.0f);
+        static Mat4 createScreenSpaceProjection(float screenWidth, float screenHeight);
+        static Mat4 translation(const Vec3& pos);
+        static Mat4 transposeMatrix(const Mat4& matrix);
+        static Mat4 scale(const Vec3& scale);
+        static Mat4 rotationZ(f32 angle);
+        static Mat4 rotationY(f32 angle);
+        static Mat4 rotationX(f32 angle);
 
         // Matrix multiplication
-        Mat4 operator*(const Mat4& other) const {
-            Mat4 result;
-            for (int row = 0; row < 4; ++row) {
-                for (int col = 0; col < 4; ++col) {
-                    result.m[row * 4 + col] = 0;
-                    for (int k = 0; k < 4; ++k) {
-                        result.m[row * 4 + col] += m[row * 4 + k] * other.m[k * 4 + col];
-                    }
-                }
-            }
-            return result;
-        }
+        Mat4 operator*(const Mat4& other) const;
 
         // Access raw data (for sending to GPU)
         const f32* data() const { return m; }
         f32* data() { return m; }
-        static Mat4 lookAt(const Vec3& eye, const Vec3& target, const Vec3& up) {
-            Vec3 zaxis = (target - eye).normalized();         // forward
-            Vec3 xaxis = up.cross(zaxis).normalized();        // right
-            Vec3 yaxis = zaxis.cross(xaxis);                  // up
-
-            Mat4 result;
-            result.m[0] = xaxis.x; result.m[1] = yaxis.x; result.m[2] = zaxis.x; result.m[3] = 0.0f;
-            result.m[4] = xaxis.y; result.m[5] = yaxis.y; result.m[6] = zaxis.y; result.m[7] = 0.0f;
-            result.m[8] = xaxis.z; result.m[9] = yaxis.z; result.m[10] = zaxis.z; result.m[11] = 0.0f;
-            result.m[12] = -xaxis.dot(eye);
-            result.m[13] = -yaxis.dot(eye);
-            result.m[14] = -zaxis.dot(eye);
-            result.m[15] = 1.0f;
-            return result;
-        }
-
-        static Mat4 perspective(f32 fovY, f32 aspect, f32 nearZ, f32 farZ) {
-            f32 f = 1.0f / std::tan(fovY * 0.5f);
-            Mat4 result;
-            result.m[0] = f / aspect;
-            result.m[1] = 0.0f;
-            result.m[2] = 0.0f;
-            result.m[3] = 0.0f;
-
-            result.m[4] = 0.0f;
-            result.m[5] = f;
-            result.m[6] = 0.0f;
-            result.m[7] = 0.0f;
-
-            result.m[8] = 0.0f;
-            result.m[9] = 0.0f;
-            result.m[10] = farZ / (farZ - nearZ);
-            result.m[11] = 1.0f;
-
-            result.m[12] = 0.0f;
-            result.m[13] = 0.0f;
-            result.m[14] = -(farZ * nearZ) / (farZ - nearZ);
-            result.m[15] = 0.0f;
-            return result;
-        }
+        static Mat4 lookAt(const Vec3& eye, const Vec3& target, const Vec3& up);
+        static Mat4 perspective(f32 fovY, f32 aspect, f32 nearZ, f32 farZ);
 
     private:
         f32 m[16]; // Column-major order
@@ -399,4 +212,27 @@ namespace dx3d {
         Vec4 color;
     };
     
+}
+
+namespace dx3d {
+    namespace geom {
+        struct HalfPlane { Vec2 n; float d; };
+
+        // 2D geometry helpers (declarations)
+        float cross(const Vec2& o, const Vec2& a, const Vec2& b);
+
+        std::vector<Vec2> clipPolygonWithHalfPlane(
+            const std::vector<Vec2>& poly,
+            const HalfPlane& hp
+        );
+
+        std::vector<Vec2> computeVoronoiCell(
+            const Vec2& site,
+            const std::vector<Vec2>& allSites,
+            const Vec2& boundsCenter,
+            const Vec2& boundsSize
+        );
+
+        std::vector<Vec2> computeConvexHull(const std::vector<Vec2>& points);
+    }
 }

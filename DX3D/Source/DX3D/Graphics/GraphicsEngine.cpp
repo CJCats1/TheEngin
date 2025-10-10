@@ -12,9 +12,11 @@ float dx3d::GraphicsEngine::m_windowWidth = 1280.0f;
 
 dx3d::GraphicsEngine::GraphicsEngine(const GraphicsEngineDesc& desc) : Base(desc.base)
 {
+    std::cout << "GraphicsEngine: Starting initialization..." << std::endl;
     m_graphicsDevice = std::make_shared<GraphicsDevice>(GraphicsDeviceDesc{ m_logger });
     auto& device = *m_graphicsDevice;
     m_deviceContext = device.createDeviceContext();
+    std::cout << "GraphicsEngine: Device and context created" << std::endl;
 
     // ---- Default world-space pipeline (Basic.hlsl) ----
     {
@@ -33,17 +35,44 @@ dx3d::GraphicsEngine::GraphicsEngine(const GraphicsEngineDesc& desc) : Base(desc
 
     // ---- 3D world-space pipeline (Basic3D.hlsl) ----
     {
+        std::cout << "GraphicsEngine: Creating 3D pipeline..." << std::endl;
         constexpr char shaderFilePath[] = "DX3D/Assets/Shaders/Basic3D.hlsl";
         std::ifstream shaderStream(shaderFilePath);
-        if (!shaderStream) DX3DLogThrowError("Failed to open Basic3D.hlsl.");
+        if (!shaderStream) {
+            std::cout << "ERROR: Failed to open Basic3D.hlsl" << std::endl;
+            DX3DLogThrowError("Failed to open Basic3D.hlsl.");
+        }
         std::string shaderFileData{ std::istreambuf_iterator<char>(shaderStream), std::istreambuf_iterator<char>() };
         auto* src = shaderFileData.c_str();
         auto   len = shaderFileData.length();
+        std::cout << "Basic3D.hlsl loaded, size: " << len << " bytes" << std::endl;
 
         auto vs = device.compileShader({ shaderFilePath, src, len, "VSMain", ShaderType::VertexShader });
         auto ps = device.compileShader({ shaderFilePath, src, len, "PSMain", ShaderType::PixelShader });
+        
+        // Debug: Check if shaders compiled successfully
+        std::cout << "About to check shader compilation results..." << std::endl;
+        if (vs) {
+            std::cout << "3D vertex shader compiled successfully" << std::endl;
+        } else {
+            std::cout << "ERROR: Failed to compile 3D vertex shader" << std::endl;
+        }
+        
+        if (ps) {
+            std::cout << "3D pixel shader compiled successfully" << std::endl;
+        } else {
+            std::cout << "ERROR: Failed to compile 3D pixel shader" << std::endl;
+        }
+        
         auto vsSig = device.createVertexShaderSignature({ vs });
         m_pipeline3D = device.createGraphicsPipelineState({ *vsSig, *ps });
+        
+        // Debug: Check if 3D pipeline was created successfully
+        if (m_pipeline3D) {
+            std::cout << "3D pipeline created successfully" << std::endl;
+        } else {
+            std::cout << "ERROR: Failed to create 3D pipeline" << std::endl;
+        }
     }
 
     // ---- Text screen-space pipeline (Text.hlsl) ----
@@ -104,6 +133,53 @@ dx3d::GraphicsEngine::GraphicsEngine(const GraphicsEngineDesc& desc) : Base(desc
             m_toonPipeline.reset();
         }
     }
+
+    // ---- Simple shadow map pipeline (SimpleShadowMap.hlsl) ----
+    {
+        constexpr char shaderFilePath[] = "DX3D/Assets/Shaders/SimpleShadowMap.hlsl";
+        std::ifstream shaderStream(shaderFilePath);
+        
+        if (shaderStream) {
+            std::string shaderFileData{ std::istreambuf_iterator<char>(shaderStream), std::istreambuf_iterator<char>() };
+            auto* src = shaderFileData.c_str();
+            auto   len = shaderFileData.length();
+            
+            auto vs = device.compileShader({ shaderFilePath, src, len, "VSMain", ShaderType::VertexShader });
+            auto vsSig = device.createVertexShaderSignature({ vs });
+            
+            // Create pipeline with vertex shader and pixel shader
+            auto ps = device.compileShader({ shaderFilePath, src, len, "PSMain", ShaderType::PixelShader });
+            m_shadowMapPipeline = device.createGraphicsPipelineState({ *vsSig, *ps });
+            std::cout << "Simple shadow map pipeline created successfully" << std::endl;
+        }
+        else {
+            std::cout << "Failed to create simple shadow map pipeline - shader file not found" << std::endl;
+            m_shadowMapPipeline.reset();
+        }
+    }
+
+    // ---- Simple shadow map debug pipeline (SimpleShadowDebug.hlsl) ----
+    {
+        constexpr char shaderFilePath[] = "DX3D/Assets/Shaders/SimpleShadowDebug.hlsl";
+        std::ifstream shaderStream(shaderFilePath);
+        
+        if (shaderStream) {
+            std::string shaderFileData{ std::istreambuf_iterator<char>(shaderStream), std::istreambuf_iterator<char>() };
+            auto* src = shaderFileData.c_str();
+            auto   len = shaderFileData.length();
+            
+            auto vs = device.compileShader({ shaderFilePath, src, len, "VSMain", ShaderType::VertexShader });
+            auto ps = device.compileShader({ shaderFilePath, src, len, "PSMain", ShaderType::PixelShader });
+            auto vsSig = device.createVertexShaderSignature({ vs });
+            
+            m_shadowMapDebugPipeline = device.createGraphicsPipelineState({ *vsSig, *ps });
+            std::cout << "Simple shadow map debug pipeline created successfully" << std::endl;
+        }
+        else {
+            std::cout << "Failed to create simple shadow map debug pipeline - shader file not found" << std::endl;
+            m_shadowMapDebugPipeline.reset();
+        }
+    }
 }
 
 
@@ -125,26 +201,51 @@ void dx3d::GraphicsEngine::beginFrame(SwapChain& swapChain)
     // Optional dotted background pass in screen space
     if (m_backgroundDotsPipeline && m_fullscreenQuad)
     {
-        context.setGraphicsPipelineState(*m_backgroundDotsPipeline);
-        // Build constants
-        struct Params { float viewportSize[2]; float dotSpacing; float dotRadius; float baseColor[4]; float dotColor[4]; } p{};
-        p.viewportSize[0] = swapChain.getSize().width;
-        p.viewportSize[1] = swapChain.getSize().height;
-        p.dotSpacing = 40.0f;   // pixels
-        p.dotRadius = 1.2f;     // pixels
-        p.baseColor[0] = 0.27f; p.baseColor[1] = 0.39f; p.baseColor[2] = 0.55f; p.baseColor[3] = 1.0f; // same clear color
-        p.dotColor[0] = 0.20f; p.dotColor[1] = 0.32f; p.dotColor[2] = 0.46f; p.dotColor[3] = 0.6f;    // darker blue, alpha as strength
-        context.setPSConstants0(&p, sizeof(p));
-
-        // Disable depth for background
-        context.disableDepthTest();
-        // Issue a trivial draw (VS uses SV_VertexID so we can draw 3 vertices)
-        context.drawTriangleList(3, 0);
-        // Restore default
-        context.enableDepthTest();
+        renderBackgroundDots(context, m_backgroundDotsPipeline.get(), 
+            swapChain.getSize().width, swapChain.getSize().height);
     }
 
     context.setGraphicsPipelineState(*m_pipeline);
+}
+
+void GraphicsEngine::renderBackgroundDots(DeviceContext& context, GraphicsPipelineState* backgroundDotsPipeline, 
+    float screenWidth, float screenHeight, float dotSpacing, float dotRadius,
+    const Vec4& baseColor, const Vec4& dotColor)
+{
+    if (!backgroundDotsPipeline) return;
+    
+    context.setGraphicsPipelineState(*backgroundDotsPipeline);
+    
+    // Build constants for background dots shader
+    struct DotParams { 
+        float viewportSize[2]; 
+        float dotSpacing; 
+        float dotRadius; 
+        float baseColor[4]; 
+        float dotColor[4]; 
+    } params{};
+    
+    params.viewportSize[0] = screenWidth;
+    params.viewportSize[1] = screenHeight;
+    params.dotSpacing = dotSpacing;
+    params.dotRadius = dotRadius;
+    params.baseColor[0] = baseColor.x;
+    params.baseColor[1] = baseColor.y;
+    params.baseColor[2] = baseColor.z;
+    params.baseColor[3] = baseColor.w;
+    params.dotColor[0] = dotColor.x;
+    params.dotColor[1] = dotColor.y;
+    params.dotColor[2] = dotColor.z;
+    params.dotColor[3] = dotColor.w;
+    
+    context.setPSConstants0(&params, sizeof(params));
+    
+    // Disable depth for background
+    context.disableDepthTest();
+    // Draw fullscreen triangle (3 vertices)
+    context.drawTriangleList(3, 0);
+    // Restore depth testing
+    context.enableDepthTest();
 }
 
 void dx3d::GraphicsEngine::endFrame(SwapChain& swapChain)

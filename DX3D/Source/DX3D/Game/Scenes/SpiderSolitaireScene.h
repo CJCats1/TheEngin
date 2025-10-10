@@ -91,6 +91,7 @@ namespace dx3d {
         void load(GraphicsEngine& engine) override;
         void update(float dt) override;
         void render(GraphicsEngine& engine, SwapChain& swapChain) override;
+        void renderImGui(GraphicsEngine& engine) override;
 
     private:
         // Game setup

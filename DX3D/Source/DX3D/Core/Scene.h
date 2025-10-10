@@ -3,6 +3,7 @@
 namespace dx3d {
     class GraphicsEngine;
     class SwapChain;
+    class Game;
 
     class Scene {
     public:
@@ -13,6 +14,8 @@ namespace dx3d {
         virtual void update(float dt) = 0;
 		virtual void fixedUpdate(float dt) {}
         virtual void render(GraphicsEngine& engine, SwapChain& swapChain) = 0;
+        // ImGui hook per scene; default draws fallback content
+        virtual void renderImGui(GraphicsEngine& engine);
 
         // Input handling methods - override these in derived classes if needed
         virtual void onKeyDown(int keyCode) {}

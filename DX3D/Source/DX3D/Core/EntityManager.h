@@ -12,10 +12,11 @@ namespace dx3d {
         // Create a new entity
         Entity& createEntity(const std::string& name = "") {
             EntityId id = m_nextEntityId++;
-            auto entity = std::make_unique<Entity>(id, name);
+            
+            // Create entity with raw pointer to avoid unique_ptr issues
+            Entity* entity = new Entity(id, name);
+            m_entities.push_back(std::unique_ptr<Entity>(entity));
             Entity& ref = *entity;
-
-            m_entities.push_back(std::move(entity));
 
             if (!name.empty()) {
                 m_namedEntities[name] = &ref;

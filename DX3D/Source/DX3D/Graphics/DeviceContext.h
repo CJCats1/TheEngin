@@ -48,13 +48,26 @@ namespace dx3d
 		void setMaterial(const Vec3& specColor, float shininess, float ambient);
 		void setCameraPosition(const Vec3& pos);
 
+		// PBR controls (PS b5)
+		void setPBR(bool enabled, const Vec3& albedo, float metallic, float roughness);
+		// Spotlight (PS b6)
+		void setSpotlight(bool enabled, const Vec3& position, const Vec3& direction, float range,
+			float innerAngleRadians, float outerAngleRadians, const Vec3& color, float intensity);
+
 	void disableDepthTest();
 	void enableDepthTest();
 
 	// Utility: set a small PS constant buffer at slot 0
 	void setPSConstants0(const void* data, ui32 byteSize);
 	
+	// Shadow mapping support
+		void setShadowMap(ID3D11ShaderResourceView* shadowMap, ID3D11SamplerState* shadowSampler);
+		void setShadowMaps(ID3D11ShaderResourceView* const* shadowMaps, ui32 count, ID3D11SamplerState* shadowSampler);
+		void setShadowMatrix(const Mat4& lightViewProj);
+		void setShadowMatrices(const std::vector<Mat4>& lightViewProjMatrices);
+	
 	ID3D11SamplerState* getDefaultSampler() const { return m_defaultSampler.Get(); }
+	ID3D11DeviceContext* getD3DDeviceContext() const { return m_context.Get(); }
 
 	private:
 		Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_context{};
@@ -70,6 +83,9 @@ namespace dx3d
 		Microsoft::WRL::ComPtr<ID3D11Buffer> m_lightBuffer;
 		Microsoft::WRL::ComPtr<ID3D11Buffer> m_materialBuffer;
 		Microsoft::WRL::ComPtr<ID3D11Buffer> m_cameraBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> m_pbrBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> m_spotlightBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> m_shadowBuffer;
 		friend class GraphicsDevice;
 		void createConstantBuffers();
 		void createBlendStates();

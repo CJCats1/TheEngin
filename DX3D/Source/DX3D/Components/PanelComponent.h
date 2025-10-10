@@ -37,14 +37,19 @@ namespace dx3d {
                 if (!TextSystem::isInitialized())
                     TextSystem::initialize(device);
 
-                m_text = std::make_unique<TextComponent>(
-                    device,
-                    TextSystem::getRenderer(),
-                    titleText,
-                    fontSize
-                );
-                m_text->setFontFamily(L"Consolas");
-                m_text->setColor(Vec4(1, 1, 1, 1)); // white text
+                if (TextSystem::isInitialized()) {
+                    m_text = std::make_unique<TextComponent>(
+                        device,
+                        TextSystem::getRenderer(),
+                        titleText,
+                        fontSize
+                    );
+                    m_text->setFontFamily(L"Consolas");
+                    m_text->setColor(Vec4(1, 1, 1, 1)); // white text
+                } else {
+                    std::cout << "Warning: TextSystem not available, panel will render without title text\n";
+                    m_text = nullptr;
+                }
             }
         }
 

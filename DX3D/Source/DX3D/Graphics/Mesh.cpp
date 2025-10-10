@@ -1,4 +1,5 @@
 #include <DX3D/Graphics/Mesh.h>
+#include <DX3D/Graphics/FBXLoader.h>
 #include <DX3D/Graphics/Texture2D.h>
 #include <unordered_map>
 #include <fstream>
@@ -149,6 +150,157 @@ std::shared_ptr<Mesh> Mesh::CreateFromOBJ(GraphicsDevice& device, const std::str
     }
     return m;
 }
+
+std::vector<std::shared_ptr<Mesh>> Mesh::CreateFromOBJMultiMaterial(GraphicsDevice& device, const std::string& path)
+{
+    std::ifstream in(path);
+    if (!in) return {};
+
+    // Helper: directory of OBJ to resolve relative MTL/texture paths
+    auto getDir = [](const std::string& p) -> std::string {
+        size_t s = p.find_last_of("/\\");
+        return (s == std::string::npos) ? std::string() : p.substr(0, s + 1);
+    };
+    const std::string baseDir = getDir(path);
+
+    std::vector<Vec3> positions;
+    std::vector<Vec3> normals;
+    std::vector<Vec2> uvs;
+
+    struct Idx { int v{-1}, vt{-1}, vn{-1}; };
+    
+    // Map material name -> texture path and material data
+    std::unordered_map<std::string, std::string> mtlNameToTex;
+    std::unordered_map<std::string, std::string> mtlNameToMapKd;
+    std::string currentUseMtl;
+
+    auto loadMTL = [&](const std::string& mtlFilename){
+        std::ifstream min(baseDir + mtlFilename);
+        if (!min) return;
+        std::string line;
+        std::string currentMtl;
+        while (std::getline(min, line))
+        {
+            if (line.empty() || line[0] == '#') continue;
+            std::istringstream ls(line);
+            std::string tag; ls >> tag;
+            if (tag == "newmtl") { 
+                ls >> currentMtl; 
+            }
+            else if (tag == "map_Kd") {
+                std::string texPath; ls >> texPath;
+                if (!currentMtl.empty()) {
+                    mtlNameToMapKd[currentMtl] = texPath;
+                    mtlNameToTex[currentMtl] = texPath;
+                }
+            }
+        }
+    };
+
+    // Store vertices for each material
+    std::unordered_map<std::string, std::vector<Vertex>> materialVertices;
+    std::unordered_map<std::string, std::vector<ui32>> materialIndices;
+    std::unordered_map<std::string, ui32> materialVertexCount;
+
+    std::string line;
+    while (std::getline(in, line))
+    {
+        if (line.empty() || line[0] == '#') continue;
+        std::istringstream ls(line);
+        std::string tag; ls >> tag;
+        if (tag == "v") { float x,y,z; ls >> x >> y >> z; positions.push_back({x,y,z}); }
+        else if (tag == "vt") { float u,v; ls >> u >> v; uvs.push_back({u,1.0f - v}); }
+        else if (tag == "vn") { float x,y,z; ls >> x >> y >> z; normals.push_back({x,y,z}); }
+        else if (tag == "mtllib") { std::string mtlFile; ls >> mtlFile; loadMTL(mtlFile); }
+        else if (tag == "usemtl") { 
+            ls >> currentUseMtl;
+        }
+        else if (tag == "f") {
+            std::vector<Idx> face;
+            std::string vert;
+            while (ls >> vert) {
+                Idx idx{}; int v=-1, vt=-1, vn=-1;
+                // Parse v/vt/vn or v//vn or v/vt
+                size_t p1 = vert.find('/');
+                size_t p2 = vert.find('/', p1 == std::string::npos ? p1 : p1+1);
+                try {
+                    if (p1 == std::string::npos) { v = std::stoi(vert); }
+                    else {
+                        v = std::stoi(vert.substr(0, p1));
+                        if (p2 == std::string::npos) {
+                            vt = std::stoi(vert.substr(p1+1));
+                        } else {
+                            if (p2 > p1+1) vt = std::stoi(vert.substr(p1+1, p2 - (p1+1)));
+                            if (p2+1 < vert.size()) vn = std::stoi(vert.substr(p2+1));
+                        }
+                    }
+                } catch(...) { }
+                idx.v = v; idx.vt = vt; idx.vn = vn; face.push_back(idx);
+            }
+            // Triangulate fan if quad/ngon
+            for (size_t i = 1; i + 1 < face.size(); ++i) {
+                Idx tri[3] = { face[0], face[i], face[i+1] };
+                for (int k=0;k<3;k++)
+                {
+                    int v = tri[k].v; int vt = tri[k].vt; int vn = tri[k].vn;
+                    if (v < 0) continue; // skip invalid
+                    Vec3 pos = positions[(size_t)(v-1)];
+                    Vec2 uv = (vt>0 && (size_t)(vt-1) < uvs.size()) ? uvs[(size_t)(vt-1)] : Vec2(0,0);
+                    Vec3 nor = (vn>0 && (size_t)(vn-1) < normals.size()) ? normals[(size_t)(vn-1)] : Vec3(0,0,1);
+                    
+                    // Add to current material's vertex list
+                    materialVertices[currentUseMtl].push_back({ pos, nor, uv, Color::WHITE });
+                    materialIndices[currentUseMtl].push_back((ui32)materialVertices[currentUseMtl].size()-1);
+                }
+            }
+        }
+    }
+
+    // Create meshes for each material
+    std::vector<std::shared_ptr<Mesh>> meshes;
+    
+    for (const auto& [materialName, vertices] : materialVertices) {
+        if (vertices.empty()) continue;
+        
+        auto m = std::make_shared<Mesh>();
+        m->m_vertexCount = (ui32)vertices.size();
+        m->m_indexCount = (ui32)materialIndices[materialName].size();
+        m->m_vb = device.createVertexBuffer({ vertices.data(), m->m_vertexCount, sizeof(Vertex) });
+        m->m_ib = device.createIndexBuffer({ materialIndices[materialName].data(), m->m_indexCount, sizeof(ui32) });
+        
+        // Load texture for this material
+        auto it = mtlNameToTex.find(materialName);
+        if (it != mtlNameToTex.end()) {
+            // Use absolute path to ensure texture is found
+            std::string texturePath = it->second;
+            std::string fullPath;
+            
+            // If it's already an absolute path, use it as is
+            if (texturePath.find(':') != std::string::npos || texturePath[0] == '/') {
+                fullPath = texturePath;
+            } else {
+                // Convert relative path to absolute path
+                fullPath = "D:/TheEngine/TheEngine/" + baseDir + texturePath;
+            }
+            
+            std::wstring wpath;
+            wpath.assign(fullPath.begin(), fullPath.end());
+            auto tex = dx3d::Texture2D::LoadTexture2D(device.getD3DDevice(), wpath.c_str());
+            if (tex) {
+                m->setTexture(tex);
+            } else {
+                m->setTexture(dx3d::Texture2D::CreateDebugTexture(device.getD3DDevice()));
+            }
+        } else {
+            m->setTexture(dx3d::Texture2D::CreateDebugTexture(device.getD3DDevice()));
+        }
+        
+        meshes.push_back(m);
+    }
+    
+    return meshes;
+}
+
 std::shared_ptr<Mesh> Mesh::CreateQuadSolidColored(GraphicsDevice& device, float w, float h, Vec4 Color)
 {
     const float hw = w * 0.5f;
@@ -251,6 +403,37 @@ std::shared_ptr<Mesh> Mesh::CreateCube(GraphicsDevice& device, float size)
     auto whiteTexture = dx3d::Texture2D::CreateDebugTexture(device.getD3DDevice());
     m->setTexture(whiteTexture);
     m->m_width = size; m->m_height = size;
+    return m;
+}
+
+std::shared_ptr<Mesh> Mesh::CreatePlane(GraphicsDevice& device, float width, float height)
+{
+    const float w = width * 0.5f;
+    const float h = height * 0.5f;
+    
+    // Create a plane with 4 vertices (2 triangles) - facing up
+    const Vertex verts[] = {
+        // Position, Normal, UV, Color
+        { { -w, 0, -h }, { 0, 1, 0 }, { 0, 0 }, Color::WHITE }, // Bottom-left
+        { {  w, 0, -h }, { 0, 1, 0 }, { 1, 0 }, Color::WHITE }, // Bottom-right
+        { {  w, 0,  h }, { 0, 1, 0 }, { 1, 1 }, Color::WHITE }, // Top-right
+        { { -w, 0,  h }, { 0, 1, 0 }, { 0, 1 }, Color::WHITE }  // Top-left
+    };
+
+    const ui32 idx[] = {
+        0, 2, 1,  // First triangle (flipped winding)
+        0, 3, 2   // Second triangle (flipped winding)
+    };
+
+    auto m = std::make_shared<Mesh>();
+    m->m_vertexCount = (ui32)std::size(verts);
+    m->m_indexCount = (ui32)std::size(idx);
+    m->m_vb = device.createVertexBuffer({ verts, m->m_vertexCount, sizeof(Vertex) });
+    m->m_ib = device.createIndexBuffer({ idx, m->m_indexCount, sizeof(ui32) });
+    // Ensure a non-black base color by setting a default white texture
+    auto whiteTexture = dx3d::Texture2D::CreateDebugTexture(device.getD3DDevice());
+    m->setTexture(whiteTexture);
+    m->m_width = width; m->m_height = height;
     return m;
 }
 
@@ -378,6 +561,7 @@ std::shared_ptr<Mesh> Mesh::CreateCylinder(GraphicsDevice& device, float radius,
 
 void Mesh::draw(DeviceContext& ctx) const
 {
+    
     ctx.setVertexBuffer(*m_vb);
     if (m_ib)
         ctx.setIndexBuffer(*m_ib);
@@ -391,9 +575,9 @@ void Mesh::draw(DeviceContext& ctx) const
     ctx.setPSSampler(0, ctx.getDefaultSampler());
 
     // Draw
-    if (m_ib)
+    if (m_ib) {
         ctx.drawIndexedTriangleList(m_indexCount, 0);
-    else
+    } else
         ctx.drawTriangleList(m_vertexCount, 0);
 }
 void Mesh::setSpriteFrame(int frameX, int frameY, int totalFramesX, int totalFramesY)
@@ -454,4 +638,34 @@ void Mesh::updateUVCoordinates()
     // Note: This assumes you have a way to update vertex buffer data
     // You might need to add this method to your GraphicsDevice/VertexBuffer class
     m_vb = m_device->createVertexBuffer({ verts, m_vertexCount, sizeof(Vertex) });
+}
+
+// FBX Loading Functions
+// Note: These are basic implementations that can be enhanced with proper FBX parsing
+// For production use, consider integrating Assimp or Autodesk FBX SDK
+
+std::shared_ptr<Mesh> Mesh::CreateFromFBX(GraphicsDevice& device, const std::string& path)
+{
+    // Use the FBXLoader to load the mesh
+    auto mesh = FBXLoader::LoadMesh(device, path);
+    
+    // If FBX loading fails, fallback to a cube
+    if (!mesh) {
+        return CreateCube(device, 1.0f);
+    }
+    
+    return mesh;
+}
+
+std::vector<std::shared_ptr<Mesh>> Mesh::CreateFromFBXMultiMaterial(GraphicsDevice& device, const std::string& path)
+{
+    // Use the FBXLoader to load multiple meshes
+    auto meshes = FBXLoader::LoadMeshes(device, path);
+    
+    // If FBX loading fails, fallback to a single cube
+    if (meshes.empty()) {
+        meshes.push_back(CreateCube(device, 1.0f));
+    }
+    
+    return meshes;
 }

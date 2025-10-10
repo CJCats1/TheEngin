@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <random>
 #include <cmath>
+#include <imgui.h>
 
 using namespace dx3d;
 
@@ -143,7 +144,7 @@ void SpiderSolitaireScene::load(GraphicsEngine& engine) {
     createCards(device);
     setupTableau();
     dealInitialCards();
-    createUI(device);
+    // Engine UI disabled; ImGui will provide controls
 
     int numDeals = m_stock.size() / 10; // each deal = 10 cards
     m_stockIndicators.clear();
@@ -540,12 +541,7 @@ void SpiderSolitaireScene::update(float dt) {
         }
     }
 
-    auto buttonEntities = m_entityManager->getEntitiesWithComponent<ButtonComponent>();
-    for (auto* entity : buttonEntities) {
-        if (auto* button = entity->getComponent<ButtonComponent>()) {
-            button->update(dt);
-        }
-    }
+    // Engine ButtonComponents removed; handled via ImGui
     
     // Update frame debug visualization
     updateFrameDebugVisualization();
@@ -1381,7 +1377,6 @@ void SpiderSolitaireScene::updateCameraMovement(float dt) {
 }
 
 void SpiderSolitaireScene::render(GraphicsEngine& engine, SwapChain& swapChain) {
-    engine.beginFrame(swapChain);
     auto& ctx = engine.getContext();
     float screenWidth = GraphicsEngine::getWindowWidth();
     float screenHeight = GraphicsEngine::getWindowHeight();
@@ -1464,35 +1459,130 @@ void SpiderSolitaireScene::render(GraphicsEngine& engine, SwapChain& swapChain) 
     // This ensures it uses pure world coordinates without sprite interference
     renderFrameDebug(ctx);
 
-    // Set up screen space matrices for UI elements
-    ctx.setScreenSpaceMatrices(screenWidth, screenHeight);
-
-    // Render screen-space UI elements
-    for (auto* entity : m_entityManager->getEntitiesWithComponent<SpriteComponent>()) {
-        if (auto* sprite = entity->getComponent<SpriteComponent>()) {
-            if (sprite->isScreenSpace()) {
-                sprite->draw(ctx);
-            }
-        }
-    }
-
-    // Render text
-    for (auto* entity : m_entityManager->getEntitiesWithComponent<TextComponent>()) {
-        if (auto* text = entity->getComponent<TextComponent>()) {
-            if (text->isVisible()) {
-                text->draw(ctx);
-            }
-        }
-    }
-    for (auto* entity : m_entityManager->getEntitiesWithComponent<ButtonComponent>()) {
-        if (auto* text = entity->getComponent<ButtonComponent>()) {
-            if (text->isVisible()) {
-                text->draw(ctx); // Will respect m_useScreenSpace
-            }
-        }
-    }
+    // Engine screen-space UI disabled; ImGui will render controls separately
     
-    engine.endFrame(swapChain);
+    // frame begin/end handled centrally
+}
+
+void SpiderSolitaireScene::renderImGui(GraphicsEngine& engine)
+{
+	ImGui::SetNextWindowSize(ImVec2(450, 400), ImGuiCond_FirstUseEver);
+    if (ImGui::Begin("Spider Solitaire"))
+    {
+        // Header
+        ImGui::Text("%s", "Gameplay & Debug Panel");
+        ImGui::Separator();
+
+        // Stats section
+        if (ImGui::CollapsingHeader("Stats", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            int dealsRemaining = static_cast<int>(m_stock.size()) / 10;
+            int emptyColumns = 0;
+            for (int i = 0; i < 10; ++i) if (m_tableau[i].isEmpty()) emptyColumns++;
+
+            ImGui::Text("Completed Suits: %d / 8", m_completedSuits);
+            ImGui::Text("Empty Columns: %d / 10", emptyColumns);
+
+            ImGui::Text("Deals Remaining: %d", dealsRemaining);
+            float dealsFrac = dealsRemaining / 5.0f; // 50 cards / 10 = 5 max deals
+            dealsFrac = dealsFrac < 0.0f ? 0.0f : (dealsFrac > 1.0f ? 1.0f : dealsFrac);
+            ImGui::ProgressBar(dealsFrac, ImVec2(-FLT_MIN, 0), "Stock");
+
+            // Difficulty label
+            const char* diffLabel = "Unknown";
+            switch (m_difficulty)
+            {
+            case SpiderDifficulty::OneSuit: diffLabel = "One Suit"; break;
+            case SpiderDifficulty::TwoSuit: diffLabel = "Two Suit"; break;
+            case SpiderDifficulty::FourSuit: diffLabel = "Four Suit"; break;
+            }
+            ImGui::Text("Difficulty: %s", diffLabel);
+        }
+
+        // Actions section
+        if (ImGui::CollapsingHeader("Actions", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            if (m_celebrationActive) ImGui::BeginDisabled(true);
+            if (ImGui::Button("Undo", ImVec2(-FLT_MIN, 0)))
+            {
+                restoreGameState();
+            }
+            if (ImGui::Button("Deal New Row", ImVec2(-FLT_MIN, 0)))
+            {
+                dealNewRow();
+            }
+            if (m_celebrationActive) ImGui::EndDisabled();
+
+            // Celebration controls
+            if (isGameWon())
+            {
+                if (ImGui::Button(m_celebrationActive ? "Celebration Running" : "Restart Celebration", ImVec2(-FLT_MIN, 0)))
+                {
+                    if (!m_celebrationActive) startCelebration();
+                }
+            }
+        }
+
+        // Camera section
+        if (ImGui::CollapsingHeader("Camera", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            auto* cameraEntity = m_entityManager->findEntity("MainCamera");
+            Camera2D* cam = cameraEntity ? cameraEntity->getComponent<Camera2D>() : nullptr;
+            float zoom = cam ? cam->getZoom() : 1.0f;
+            if (ImGui::SliderFloat("Zoom", &zoom, 0.4f, 2.0f, "%.2fx"))
+            {
+                if (cam) cam->setZoom(zoom);
+            }
+            if (ImGui::Button("Reset Camera", ImVec2(-FLT_MIN, 0)))
+            {
+                if (cam)
+                {
+                    cam->setPosition(0.0f, 0.0f);
+                    cam->setZoom(0.8f);
+                }
+            }
+        }
+
+        // Debug section
+        if (ImGui::CollapsingHeader("Debug", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            if (ImGui::Checkbox("Show Frame Debug", &m_showFrameDebug))
+            {
+                // Also update the button label if on-screen button exists
+                auto* buttonEntity = m_entityManager->findEntity("DebugToggleButton");
+                if (buttonEntity)
+                {
+                    if (auto* button = buttonEntity->getComponent<ButtonComponent>())
+                    {
+                        button->setText(m_showFrameDebug ? L"Debug: ON" : L"Debug: OFF");
+                    }
+                }
+            }
+
+            if (ImGui::Button("Physics Jitter Test (P)", ImVec2(-FLT_MIN, 0)))
+            {
+                // Mirror the P-key behavior for convenience
+                auto cardEntities = m_entityManager->getEntitiesWithComponent<CardPhysicsComponent>();
+                for (auto* cardEntity : cardEntities)
+                {
+                    if (auto* physics = cardEntity->getComponent<CardPhysicsComponent>())
+                    {
+                        auto* sprite = cardEntity->getComponent<SpriteComponent>();
+                        if (sprite)
+                        {
+                            Vec3 currentPos = sprite->getPosition();
+                            physics->setTargetPosition(Vec2(currentPos.x, currentPos.y));
+                            physics->setRestPosition(Vec2(currentPos.x, currentPos.y));
+                        }
+                        physics->addRandomJitter(200.0f);
+                    }
+                }
+            }
+
+            ImGui::TextWrapped("Tips: Drag sequences. Space deals new row. Z undoes. Q/E zoom, WASD move.");
+        }
+    }
+    ImGui::End();
 }
 
 // Physics functions

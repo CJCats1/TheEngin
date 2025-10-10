@@ -9,6 +9,9 @@
 #include <DX3D/Components/ButtonComponent.h>
 #include <DX3D/Components/PanelComponent.h>
 #include <iostream>
+// ImGui demo
+#include <imgui.h>
+#include <implot.h>
 
 using namespace dx3d;
 void BridgeScene::resetBridge() {
@@ -266,8 +269,8 @@ void BridgeScene::update(float dt) {
         handleDeleteMode();
     }
 
-    // Update button interactions
-    updateButtonInteractions(dt);
+    // Disable engine button interactions when using ImGui buttons
+    //updateButtonInteractions(dt);
 }
 
 void BridgeScene::updateCameraMovement(float dt) {
@@ -303,7 +306,6 @@ void BridgeScene::updateCameraMovement(float dt) {
 }
 
 void BridgeScene::render(GraphicsEngine& engine, SwapChain& swapChain) {
-    engine.beginFrame(swapChain);
     auto& ctx = engine.getContext();
 
     float screenWidth = static_cast<float>(GraphicsEngine::getWindowWidth());
@@ -351,26 +353,28 @@ void BridgeScene::render(GraphicsEngine& engine, SwapChain& swapChain) {
         }
     }
 
-    for (auto* entity : m_entityManager->getEntitiesWithComponent<ButtonComponent>()) {
-        if (auto* text = entity->getComponent<ButtonComponent>()) {
-            if (text->isVisible()) {
-                text->draw(ctx); // Will respect m_useScreenSpace
-            }
-        }
-    }
-    for (auto* entity : m_entityManager->getEntitiesWithComponent<PanelComponent>()) {
-        if (auto* text = entity->getComponent<PanelComponent>()) {
-                text->draw(ctx); // Will respect m_useScreenSpace
-        }
-    }
-    for (auto* entity : m_entityManager->getEntitiesWithComponent<TextComponent>()) {
-        if (auto* text = entity->getComponent<TextComponent>()) {
-            if (text->isVisible()) {
-                text->draw(ctx); // Will respect m_useScreenSpace
-            }
-        }
-    }
-    engine.endFrame(swapChain);
+    // Skip drawing engine ButtonComponents – replaced by ImGui controls
+    //for (auto* entity : m_entityManager->getEntitiesWithComponent<ButtonComponent>()) {
+    //    if (auto* text = entity->getComponent<ButtonComponent>()) {
+    //        if (text->isVisible()) {
+    //            text->draw(ctx); // Will respect m_useScreenSpace
+    //        }
+    //    }
+    //}
+    // Skip drawing engine Panel/Text components – replicated in ImGui window
+    //for (auto* entity : m_entityManager->getEntitiesWithComponent<PanelComponent>()) {
+    //    if (auto* text = entity->getComponent<PanelComponent>()) {
+    //            text->draw(ctx); // Will respect m_useScreenSpace
+    //    }
+    //}
+    //for (auto* entity : m_entityManager->getEntitiesWithComponent<TextComponent>()) {
+    //    if (auto* text = entity->getComponent<TextComponent>()) {
+    //        if (text->isVisible()) {
+    //            text->draw(ctx); // Will respect m_useScreenSpace
+    //        }
+    //    }
+    //}
+    // Present is handled centrally after ImGui rendering
 }
 
 void dx3d::BridgeScene::fixedUpdate(float dt)
@@ -738,4 +742,38 @@ void BridgeScene::toggleDeleteMode() {
         m_tempNode = nullptr;
         m_tempBeam = nullptr;
     }
+}
+
+void BridgeScene::renderImGui(GraphicsEngine& engine)
+{
+    ImGui::SetNextWindowSize(ImVec2(340, 260), ImGuiCond_FirstUseEver);
+    if (ImGui::Begin("Bridge Controls"))
+    {
+        ImGui::Text("Simulation: %s", m_isSimulationRunning ? "Running" : "Stopped");
+        ImGui::Text("Mode: %s", m_currentMode == SceneMode::Build ? (m_inDeleteMode ? "DELETE" : "BUILD") : "SIMULATING");
+        ImGui::Text("Nodes: %d  Beams: %d", (int)m_numberOfNodes, (int)m_numberOfBeams);
+        ImGui::Separator();
+        if (ImGui::Button("Build Mode", ImVec2(-FLT_MIN, 0))) {
+            setMode(SceneMode::Build);
+        }
+        if (ImGui::Button("Simulate Mode", ImVec2(-FLT_MIN, 0))) {
+            setMode(SceneMode::Simulating);
+        }
+        if (ImGui::Button("Delete Mode", ImVec2(-FLT_MIN, 0))) {
+            if (m_currentMode == SceneMode::Build) toggleDeleteMode();
+        }
+        if (ImGui::Button("Reset Bridge", ImVec2(-FLT_MIN, 0))) {
+            resetBridge();
+        }
+        ImGui::Separator();
+        if (m_currentMode == SceneMode::Build) {
+            if (m_inDeleteMode) ImGui::TextWrapped("Click nodes to delete them (hold Shift for multi-delete).");
+            else if (m_nodeAttachedToMouse) ImGui::TextWrapped("Drag to place a new node, release to connect.");
+            else ImGui::TextWrapped("Click a node to start building.");
+        }
+        else {
+            ImGui::TextWrapped("Simulation is running.");
+        }
+    }
+    ImGui::End();
 }

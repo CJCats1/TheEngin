@@ -2,6 +2,7 @@
 #include <DX3D/Graphics/GraphicsEngine.h>
 #include <DX3D/Graphics/SwapChain.h>
 #include <DX3D/Core/Input.h>
+#include <windows.h>
 
 using namespace dx3d;
 
@@ -9,7 +10,10 @@ void ThreeDTestScene::load(GraphicsEngine& engine)
 {
     auto& device = engine.getGraphicsDevice();
     m_cube = Mesh::CreateCube(device, 1.0f);
-    m_model = Mesh::CreateFromOBJ(device, "DX3D/Assets/models/headcrab/headcrab.obj");
+    
+    
+    // Use single mesh approach for now to ensure basic texture loading works
+    m_model = Mesh::CreateFromOBJ(device, "D:/TheEngine/TheEngine/DX3D/Assets/models/headcrab/headcrab.obj");
 
     float w = GraphicsEngine::getWindowWidth();
     float h = GraphicsEngine::getWindowHeight();
@@ -72,7 +76,6 @@ void ThreeDTestScene::update(float dt)
 
 void ThreeDTestScene::render(GraphicsEngine& engine, SwapChain& swapChain)
 {
-    engine.beginFrame(swapChain);
     auto& ctx = engine.getContext();
 
     ctx.enableDepthTest();
@@ -100,7 +103,7 @@ void ThreeDTestScene::render(GraphicsEngine& engine, SwapChain& swapChain)
         m_model->draw(ctx);
     }
 
-    engine.endFrame(swapChain);
+    // frame begin/end handled centrally
 }
 
 

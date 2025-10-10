@@ -86,6 +86,12 @@ namespace dx3d {
         hr = m_device.getD3DDevice()->QueryInterface(IID_PPV_ARGS(&dxgiDevice));
         if (FAILED(hr)) {
             std::cout << "QueryInterface IDXGIDevice FAILED: 0x" << std::hex << hr << "\n";
+            // Check if this is the E_NOINTERFACE error (0x80004002) which commonly occurs under RenderDoc
+            if (hr == 0x80004002) {
+                std::cout << "Direct2D initialization failed: Device does not support IDXGIDevice interface (common under RenderDoc)\n";
+                std::cout << "Text rendering will be disabled. This is expected when running under RenderDoc.\n";
+                return false;
+            }
             return false;
         }
 
@@ -460,7 +466,8 @@ namespace dx3d {
             }
             else {
                 s_renderer.reset();
-                std::cout << "[DEBUG] TextSystem FAILED to initialize\n";
+                std::cout << "[DEBUG] TextSystem FAILED to initialize - Text rendering will be disabled\n";
+                std::cout << "[DEBUG] This is expected when running under RenderDoc or other debugging tools\n";
             }
         }
         else {
@@ -477,6 +484,9 @@ namespace dx3d {
     }
 
     DirectWriteRenderer& TextSystem::getRenderer() {
+        if (!s_initialized || !s_renderer) {
+            throw std::runtime_error("TextSystem::getRenderer() called but TextSystem is not initialized");
+        }
         return *s_renderer;
     }
 

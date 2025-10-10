@@ -33,8 +33,8 @@ namespace dx3d
 
         void executeCommandList(DeviceContext& context);
         ID3D11Device* getD3DDevice() const noexcept { return m_d3dDevice.Get(); }
-    private:
         GraphicsResourceDesc getGraphicsResourceDesc() const noexcept;
+    private:
 
     private:
         Microsoft::WRL::ComPtr<ID3D11Device>        m_d3dDevice{};
