@@ -119,6 +119,24 @@ namespace dx3d
 
         Vec2 m_quadtreeVisualOffset = Vec2(0, 0);
         float m_offsetSpeed = 50.0f; // Speed for offset movement
+        
+        // Centralized size configuration - change these values to update everything
+        static constexpr float QUADTREE_SIZE = 500.0f;
+        static constexpr float ENTITY_AREA_SIZE = 300.0f;
+        static constexpr float CAMERA_ZOOM = 1.5f;
+        
+        // Calculate window aspect ratio for entity bounds
+        float getWindowAspectRatio() const {
+            float screenWidth = GraphicsEngine::getWindowWidth();
+            float screenHeight = GraphicsEngine::getWindowHeight();
+            return screenWidth / screenHeight;
+        }
+        
+        // Quadtree control parameters - reasonable scale for entities
+        Vec2 m_quadtreeSize = Vec2(QUADTREE_SIZE, QUADTREE_SIZE); // Reasonable size for spatial partitioning
+        float m_cameraZoom = CAMERA_ZOOM; // Zoom out to see the full quadtree
+        Vec2 m_entitySpawnRange = Vec2(-ENTITY_AREA_SIZE/2.0f, ENTITY_AREA_SIZE/2.0f); // Match entity bounds
+        Vec2 m_entityBounds = Vec2(ENTITY_AREA_SIZE, ENTITY_AREA_SIZE); // Will be updated in load() to match window aspect ratio
         void createTestEntities(GraphicsDevice& device);
         void createUIElements(GraphicsDevice& device);
         void addRandomEntities();
@@ -160,8 +178,11 @@ namespace dx3d
         void calculateLightViewProj();
         void createTest3DEntities(GraphicsDevice& device);
         void addRandom3DEntities(GraphicsDevice& device, int count = 5);
+        void addUnit3DEntity(GraphicsDevice& device);
         void clearAllEntities3D();
         void renderShadowMapDebug(GraphicsEngine& engine);
+        void recreateShadowMaps();
+        void createShadowSampler(ID3D11Device* device);
         
         // 3D camera presets
         enum class CameraPreset { FirstPerson, TopDown, Isometric };
@@ -188,6 +209,35 @@ namespace dx3d
         Mat4 m_lightViewProj;
         Mat4 m_lightViewProj2; // second light matrix
         bool m_showShadowMapDebug = false;
+        
+        // Shadow mapping controls
+        bool m_enableShadowMapping = true;
+        bool m_light1Shadows = true;
+        bool m_light2Shadows = true;
+        float m_shadowBias = 0.001f;
+        float m_slopeBias = 0.01f;
+        float m_normalOffset = 0.5f;
+        int m_shadowMapSize = 1024;
+        bool m_softShadows = true;
+        float m_shadowRadius = 1.0f;
+        int m_pcfSamples = 4;
+        bool m_showShadowAcne = false;
+        
+        // Light control variables
+        struct LightSettings {
+            bool enabled = true;
+            Vec3 direction = Vec3(0.0f, -1.0f, 0.0f);
+            Vec3 color = Vec3(1.0f, 1.0f, 1.0f);
+            float intensity = 1.0f;
+            Vec3 position = Vec3(0.0f, 50.0f, 0.0f);
+            Vec3 target = Vec3(0.0f, 0.0f, 0.0f);
+            float orthoSize = 100.0f;
+            float nearPlane = 0.1f;
+            float farPlane = 200.0f;
+        };
+        
+        LightSettings m_light1;
+        LightSettings m_light2;
         // ImGui depth preview controls
         bool m_showShadowPreview = true;
         int m_selectedShadowMap = 0; // 0: light 1, 1: light 2
@@ -195,6 +245,8 @@ namespace dx3d
         Vec2 m_lastMouse = Vec2(0.0f, 0.0f);
         bool m_mouseCaptured = false;
         CameraPreset m_cameraPreset = CameraPreset::TopDown;
+        
+        // Third-person follow camera removed
         
         // FPS Camera controls
         float m_cameraMoveSpeed = 15.0f;
@@ -214,6 +266,11 @@ namespace dx3d
         
         // Entity speed control
         float m_entitySpeedMultiplier = 3.0f;  // Speed multiplier for entity movement
+        
+        // 3D spawn bounds controls
+        float m_spawnBoundsX = 500.0f;  // X-axis spawn range (-m_spawnBoundsX to +m_spawnBoundsX)
+        float m_spawnBoundsY = 500.0f;  // Y-axis spawn range (-m_spawnBoundsY to +m_spawnBoundsY)
+        float m_spawnBoundsZ = 500.0f;  // Z-axis spawn range (-m_spawnBoundsZ to +m_spawnBoundsZ)
         
         // ImGui font oversampling controls
         int m_fontOversampleH = 1;
@@ -309,6 +366,8 @@ namespace dx3d
         void updateDBSCANEntityColors();
         Vec4 getDBSCANClusterColor(int clusterIndex);
         void resetDBSCANLabels();
+        void resetEntityColorsToDefault();
+        void drawClusterCenterLines();
         
         // Dynamic clustering methods
         void updateEntityAssignments();
@@ -339,6 +398,29 @@ namespace dx3d
         // KD-tree visualization settings
         bool m_kdShowSplitLines = false; // false=boxes, true=split lines
 
+        // Octree visualization settings
+        bool m_showOctree = false;
+        bool m_showOctreeBoxes = true;
+        bool m_showOctreeWireframe = false;
+        float m_octreeLineThickness = 0.5f;
+        Vec4 m_octreeLineColor = Vec4(0.8f, 0.2f, 0.8f, 1.0f); // Purple color
+        int m_octreeMaxDepth = 4;
+        float m_octreeVisualizationScale = 0.1f; // Scale factor for octree visualization
+        Vec3 m_octreeVisualizationRotation = Vec3(0.0f, 0.0f, 0.0f); // Rotation in degrees
+        Vec3 m_octreeVisualizationOffset = Vec3(0.0f, 0.0f, 0.0f); // Translation offset
+        bool m_showOctreeDepthColors = true;
+        
+        // Octree visualization methods
+        void updateOctreeVisualization();
+        void generateOctreeVisualization();
+        void drawOctreeNode(const Octree* node, int depth, const Vec3& center, const Vec3& size);
+        Vec3 rotatePointAroundOrigin(const Vec3& point, float rotX, float rotY, float rotZ);
+        
+        
+        // Unit square methods
+        void createOrUpdateUnitSquare();
+        std::string m_unitSquareEntityName = "";
+
         // Convex hull utilities
         std::vector<Vec2> computeConvexHull(const std::vector<Vec2>& points);
         float cross(const Vec2& o, const Vec2& a, const Vec2& b);
@@ -347,5 +429,30 @@ namespace dx3d
         struct HalfPlane { Vec2 n; float d; };
         std::vector<Vec2> clipPolygonWithHalfPlane(const std::vector<Vec2>& poly, const HalfPlane& hp);
         std::vector<Vec2> computeVoronoiCell(const Vec2& site, const std::vector<Vec2>& allSites, const Vec2& boundsCenter, const Vec2& boundsSize);
+
+        // 3D Spatial structure selection
+        enum class Spatial3DType { Octree, KDTree };
+        Spatial3DType m_spatial3DType = Spatial3DType::Octree;
+        int m_kdMaxDepth = 6;
+        int m_kdLeafCapacity = 2;
+
+        // Clustering mode selection (2D)
+        enum class ClusteringMode { None, KMeans, DBSCAN };
+        ClusteringMode m_clusteringMode = ClusteringMode::None;
+
+        // Clustering visualization mode
+        enum class ClusterVizMode { None, ConvexHull, Voronoi };
+        ClusterVizMode m_clusterVizMode = ClusterVizMode::None;
+
+        // KD-Tree 3D visualization helpers
+        struct KDTree3DNode {
+            Vec3 center;
+            Vec3 size;
+            int depth = 0;
+            int axis = 0; // 0=X,1=Y,2=Z
+            int count = 0; // number of points in this node
+        };
+        void generateKDTreeVisualization();
+        void buildKDTree3D(const std::vector<Vec3>& points, const std::vector<int>& indices, const Vec3& center, const Vec3& size, int depth, int maxDepth, int maxEntities, int axis, std::vector<KDTree3DNode>& outNodes);
     };
 }

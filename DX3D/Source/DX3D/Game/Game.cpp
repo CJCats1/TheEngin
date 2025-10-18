@@ -37,6 +37,7 @@ SOFTWARE.*/
 #include <DX3D/Game/Scenes/PartitionScene.h>
 #include <DX3D/Game/Scenes/ThreeDTestScene.h>
 #include <DX3D/Game/Scenes/MarbleMazeScene.h>
+#include <DX3D/Game/Scenes/FlipFluidSimulationScene.h>
 #include <DX3D/Graphics/SwapChain.h>
 
 // Define the static Game instance
@@ -148,6 +149,11 @@ void dx3d::Game::onInternalUpdate()
         setScene(std::make_unique<dx3d::MarbleMazeScene>());
         m_currentSceneType = SceneType::MarbleMazeScene;
     }
+    if (input.isKeyDown(Key::Num8) && m_currentSceneType != SceneType::FlipFluidSimulationScene)
+    {
+        setScene(std::make_unique<dx3d::FlipFluidSimulationScene>());
+        m_currentSceneType = SceneType::FlipFluidSimulationScene;
+    }
     if (input.isKeyDown(Key::Escape))
     {
         m_isRunning = false;
@@ -212,6 +218,7 @@ void dx3d::Game::onInternalUpdate()
             case SceneType::PartitionScene: currentIndex = 4; break;
             case SceneType::ThreeDTestScene: currentIndex = 5; break;
             case SceneType::MarbleMazeScene: currentIndex = 6; break;
+            case SceneType::FlipFluidSimulationScene: currentIndex = 7; break;
             default: break;
             }
 
@@ -222,10 +229,11 @@ void dx3d::Game::onInternalUpdate()
                 "PhysicsTetrisScene",
                 "PartitionScene",
                 "ThreeDTestScene",
-                "MarbleMazeScene"
+                "MarbleMazeScene",
+                "FlipFluidSimulationScene"
             };
 
-            if (ImGui::ListBox("##SceneList", &currentIndex, items, IM_ARRAYSIZE(items), 7))
+            if (ImGui::ListBox("##SceneList", &currentIndex, items, IM_ARRAYSIZE(items), 8))
             {
                 // Switch scene when selection changes
                 switch (currentIndex)
@@ -237,10 +245,11 @@ void dx3d::Game::onInternalUpdate()
                 case 4: setScene(std::make_unique<dx3d::PartitionScene>()); m_currentSceneType = SceneType::PartitionScene; break;
                 case 5: setScene(std::make_unique<dx3d::ThreeDTestScene>()); m_currentSceneType = SceneType::ThreeDTestScene; break;
                 case 6: setScene(std::make_unique<dx3d::MarbleMazeScene>()); m_currentSceneType = SceneType::MarbleMazeScene; break;
+                case 7: setScene(std::make_unique<dx3d::FlipFluidSimulationScene>()); m_currentSceneType = SceneType::FlipFluidSimulationScene; break;
                 default: break;
                 }
             }
-            ImGui::TextDisabled("Hotkeys: 1-7 switch scenes");
+            ImGui::TextDisabled("Hotkeys: 1-8 switch scenes");
         }
         ImGui::End();
     }

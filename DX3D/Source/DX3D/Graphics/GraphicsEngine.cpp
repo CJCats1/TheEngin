@@ -180,6 +180,68 @@ dx3d::GraphicsEngine::GraphicsEngine(const GraphicsEngineDesc& desc) : Base(desc
             m_shadowMapDebugPipeline.reset();
         }
     }
+
+    // ---- Line rendering pipeline (Line.hlsl) ----
+    {
+        std::cout << "GraphicsEngine: Creating line pipeline..." << std::endl;
+        constexpr char shaderFilePath[] = "DX3D/Assets/Shaders/Line.hlsl";
+        std::ifstream shaderStream(shaderFilePath);
+        
+        if (shaderStream) {
+            std::string shaderFileData{ std::istreambuf_iterator<char>(shaderStream), std::istreambuf_iterator<char>() };
+            auto* src = shaderFileData.c_str();
+            auto len = shaderFileData.length();
+            
+            auto vs = device.compileShader({ shaderFilePath, src, len, "VSMain", ShaderType::VertexShader });
+            auto ps = device.compileShader({ shaderFilePath, src, len, "PSMain", ShaderType::PixelShader });
+            
+            if (vs && ps) {
+                auto vsSig = device.createVertexShaderSignature({ vs });
+                m_linePipeline = device.createGraphicsPipelineState({ *vsSig, *ps });
+                std::cout << "Line pipeline created successfully" << std::endl;
+            } else {
+                std::cout << "ERROR: Failed to compile line shaders" << std::endl;
+                m_linePipeline.reset();
+            }
+        }
+        else {
+            std::cout << "Failed to create line pipeline - shader file not found" << std::endl;
+            m_linePipeline.reset();
+        }
+    }
+
+    // Create skybox pipeline
+    {
+        std::cout << "Creating skybox pipeline..." << std::endl;
+        constexpr char shaderFilePath[] = "DX3D/Assets/Shaders/Skybox.hlsl";
+        std::ifstream shaderStream(shaderFilePath);
+        
+        if (shaderStream) {
+            std::string shaderFileData{ std::istreambuf_iterator<char>(shaderStream), std::istreambuf_iterator<char>() };
+            auto* src = shaderFileData.c_str();
+            auto len = shaderFileData.length();
+            
+            auto vs = device.compileShader({ shaderFilePath, src, len, "VSMain", ShaderType::VertexShader });
+            auto ps = device.compileShader({ shaderFilePath, src, len, "PSMain", ShaderType::PixelShader });
+            
+            if (vs && ps) {
+                auto vsSig = device.createVertexShaderSignature({ vs });
+                if (vsSig) {
+                    m_skyboxPipeline = device.createGraphicsPipelineState({ *vsSig, *ps });
+                    std::cout << "Skybox pipeline created successfully" << std::endl;
+                } else {
+                    std::cout << "ERROR: Failed to create skybox vertex shader signature" << std::endl;
+                    m_skyboxPipeline.reset();
+                }
+            } else {
+                std::cout << "ERROR: Failed to compile skybox shaders" << std::endl;
+                m_skyboxPipeline.reset();
+            }
+        } else {
+            std::cout << "Failed to create skybox pipeline - shader file not found" << std::endl;
+            m_skyboxPipeline.reset();
+        }
+    }
 }
 
 

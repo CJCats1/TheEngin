@@ -35,6 +35,12 @@ namespace dx3d {
 
         // Get entities in this node
         const std::vector<OctreeEntity>& getEntities() const { return m_entities; }
+        
+        // Get depth of this node
+        int getDepth() const { return m_depth; }
+        
+        // Check if this node or any of its children contain entities
+        bool hasEntitiesInSubtree() const;
 
     private:
         Vec3 m_center;

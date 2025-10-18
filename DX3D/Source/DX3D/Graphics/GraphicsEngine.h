@@ -32,6 +32,8 @@ namespace dx3d
         GraphicsPipelineState& getShadowMapPipeline() noexcept { return *m_shadowMapPipeline; }
         GraphicsPipelineState* getShadowMapDebugPipeline() noexcept { return m_shadowMapDebugPipeline.get(); }
         GraphicsPipelineState* getBackgroundDotsPipeline() noexcept { return m_backgroundDotsPipeline.get(); }
+        GraphicsPipelineState* getLinePipeline() noexcept { return m_linePipeline.get(); }
+        GraphicsPipelineState* getSkyboxPipeline() noexcept { return m_skyboxPipeline.get(); }
         std::shared_ptr<Mesh> getFullscreenQuad() noexcept { return m_fullscreenQuad; }
         
         // Static function to render background dots (reusable)
@@ -51,6 +53,8 @@ namespace dx3d
         std::shared_ptr<GraphicsPipelineState> m_toonPipeline;
         std::shared_ptr<GraphicsPipelineState> m_shadowMapPipeline;
         std::shared_ptr<GraphicsPipelineState> m_shadowMapDebugPipeline;
+        std::shared_ptr<GraphicsPipelineState> m_linePipeline;
+        std::shared_ptr<GraphicsPipelineState> m_skyboxPipeline;
         std::shared_ptr<Mesh> m_fullscreenQuad;
     };
 

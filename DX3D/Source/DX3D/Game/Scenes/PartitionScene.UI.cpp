@@ -58,7 +58,6 @@ void PartitionScene::createUIElements(GraphicsDevice& device) {
             // Switch to original (K-means) offset when leaving DBSCAN
             m_quadtreeVisualOffset = m_quadtreeVisualOffsetOriginal;
             updateQuadtreeVisualization();
-            std::cout << "Offset: (" << m_quadtreeVisualOffset.x << ", " << m_quadtreeVisualOffset.y << ")" << std::endl;
         }
         
         m_kmeansEnabled = !m_kmeansEnabled;
@@ -66,7 +65,6 @@ void PartitionScene::createUIElements(GraphicsDevice& device) {
             // Ensure K-means uses the original offset
             m_quadtreeVisualOffset = m_quadtreeVisualOffsetOriginal;
             updateQuadtreeVisualization();
-            std::cout << "Offset: (" << m_quadtreeVisualOffset.x << ", " << m_quadtreeVisualOffset.y << ")" << std::endl;
             performKMeansClustering();
         } else {
             // Reset colors to default

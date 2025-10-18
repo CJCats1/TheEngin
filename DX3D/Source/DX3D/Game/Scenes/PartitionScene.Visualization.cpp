@@ -10,6 +10,8 @@ void PartitionScene::updateQuadtreeVisualization() {
     if (!m_lineRenderer) return;
 
     m_lineRenderer->clear();
+    
+    // Debug: Print current state
 
     // Use world space rendering for quadtree visualization
     m_lineRenderer->enableScreenSpace(false);
@@ -33,7 +35,8 @@ void PartitionScene::updateQuadtreeVisualization() {
             if (m_useVoronoi) {
                 // Compute Voronoi cell for this centroid within quadtree bounds
                 Vec2 boundsCenter = Vec2(0.0f, 0.0f);
-                Vec2 boundsSize = Vec2(800.0f, 600.0f);
+                // Match Octree/KD visualization extents: use current quadtree size (window-fitting)
+                Vec2 boundsSize = m_quadtreeSize;
 
                 // Collect all sites
                 std::vector<Vec2> allSites;
@@ -145,7 +148,8 @@ void PartitionScene::updateQuadtreeVisualization() {
         // Draw Voronoi partitions for DBSCAN clusters using their centroids (exclusive with hulls)
         if (m_dbscanUseVoronoi && !dbscanCentroids.empty()) {
             Vec2 boundsCenter = Vec2(0.0f, 0.0f);
-            Vec2 boundsSize = Vec2(800.0f, 600.0f);
+            // Match Octree/KD visualization extents: use current quadtree size (window-fitting)
+            Vec2 boundsSize = m_quadtreeSize;
             for (size_t i = 0; i < m_dbscanClusters.size(); ++i) {
                 auto cell = geom::computeVoronoiCell(dbscanCentroids[i], dbscanCentroids, boundsCenter, boundsSize);
                 if (cell.size() >= 3) {
@@ -192,9 +196,17 @@ void PartitionScene::updateQuadtreeVisualization() {
         }
     }
 
-    if (!m_showQuadtree) { respawnWorldAnchorSprite(); return; }
+    if (!m_showQuadtree) { 
+        respawnWorldAnchorSprite(); 
+        return; 
+    }
 
+    
     if (m_partitionType == PartitionType::Quadtree) {
+        // Draw outer quadtree boundary first (thick red lines)
+        Vec2 visualCenter = Vec2(0.0f, 0.0f) + m_quadtreeVisualOffset;
+        m_lineRenderer->addRect(visualCenter, m_quadtreeSize, Vec4(1.0f, 0.0f, 0.0f, 1.0f), 2.0f); // Red color, thick lines for outer boundary
+        
         // Draw Quadtree nodes
         std::vector<Quadtree*> nodes;
         m_quadtree->getAllNodes(nodes);
@@ -202,37 +214,52 @@ void PartitionScene::updateQuadtreeVisualization() {
             Vec2 center = node->getCenter();
             Vec2 size = node->getSize();
             Vec2 visualCenter = center + m_quadtreeVisualOffset;
-            m_lineRenderer->addRect(visualCenter, size, Vec4(0.0f, 0.0f, 0.0f, 0.6f), 1.0f);
+            
+            // Draw all quadtree nodes with thin lines
+            m_lineRenderer->addRect(visualCenter, size, Vec4(1.0f, 0.0f, 0.0f, 1.0f), 0.1f); // Red color, very thin lines
+            
             const auto& entities = node->getEntities();
             for (const auto& entity : entities) {
                 Vec2 visualEntityPos = entity.position + m_quadtreeVisualOffset;
-                m_lineRenderer->addRect(visualEntityPos, entity.size, Vec4(0.0f, 0.0f, 0.0f, 0.8f), 2.0f);
+                m_lineRenderer->addRect(visualEntityPos, entity.size, Vec4(0.0f, 1.0f, 0.0f, 1.0f), 0.5f); // Green color, thin lines
             }
         }
     } else if (m_partitionType == PartitionType::AABB) {
+        // Draw outer AABB boundary first (thick blue lines)
+        Vec2 visualCenter = Vec2(0.0f, 0.0f) + m_quadtreeVisualOffset;
+        m_lineRenderer->addRect(visualCenter, m_quadtreeSize, Vec4(0.0f, 0.0f, 1.0f, 1.0f), 2.0f); // Blue color, thick lines for outer boundary
+        
         // Draw AABB tree nodes
         std::vector<AABBNode*> nodes;
         m_aabbTree->getAllNodes(nodes);
         for (auto* node : nodes) {
             Vec2 visualCenter = node->center + m_quadtreeVisualOffset;
             Vec2 size = node->halfSize * 2.0f;
-            m_lineRenderer->addRect(visualCenter, size, Vec4(0.0f, 0.0f, 1.0f, 0.5f), 1.0f);
+            
+            // Draw all AABB nodes with thin lines
+            m_lineRenderer->addRect(visualCenter, size, Vec4(0.0f, 0.0f, 1.0f, 1.0f), 0.1f); // Blue color, very thin lines
+            
             if (node->isLeaf) {
                 for (const auto& e : node->entities) {
                     Vec2 visualEntityPos = e.position + m_quadtreeVisualOffset;
-                    m_lineRenderer->addRect(visualEntityPos, e.size, Vec4(0.0f, 0.0f, 0.0f, 0.8f), 2.0f);
+                    m_lineRenderer->addRect(visualEntityPos, e.size, Vec4(1.0f, 1.0f, 0.0f, 1.0f), 0.5f); // Yellow color, thin lines
                 }
             }
         }
     } else {
+        // Draw outer KD-Tree boundary first (thick magenta lines)
+        Vec2 visualCenter = Vec2(0.0f, 0.0f) + m_quadtreeVisualOffset;
+        m_lineRenderer->addRect(visualCenter, m_quadtreeSize, Vec4(1.0f, 0.0f, 1.0f, 1.0f), 2.0f); // Magenta color, thick lines for outer boundary
+        
         // Draw KD tree nodes
         std::vector<KDNode*> nodes;
         m_kdTree->getAllNodes(nodes);
         for (auto* node : nodes) {
             Vec2 visualCenter = node->center + m_quadtreeVisualOffset;
             Vec2 size = node->halfSize * 2.0f;
-            // Use black for KD tree visualization for better contrast
-            Vec4 color = Vec4(0.0f, 0.0f, 0.0f, 0.6f);
+            Vec4 color = Vec4(1.0f, 0.0f, 1.0f, 1.0f); // Magenta color for testing
+            
+            // Draw all KD tree nodes with thin lines
             if (m_kdShowSplitLines && !node->isLeaf) {
                 // Draw split line segment inside this node's box
                 if (node->axis == 0) {
@@ -240,25 +267,30 @@ void PartitionScene::updateQuadtreeVisualization() {
                     float x = node->split + m_quadtreeVisualOffset.x;
                     float y0 = visualCenter.y - size.y * 0.5f;
                     float y1 = visualCenter.y + size.y * 0.5f;
-                    m_lineRenderer->addLine(Vec2(x, y0), Vec2(x, y1), color, 1.5f);
+                    m_lineRenderer->addLine(Vec2(x, y0), Vec2(x, y1), color, 0.1f); // Very thin lines
                 } else {
                     // horizontal line at split y
                     float y = node->split + m_quadtreeVisualOffset.y;
                     float x0 = visualCenter.x - size.x * 0.5f;
                     float x1 = visualCenter.x + size.x * 0.5f;
-                    m_lineRenderer->addLine(Vec2(x0, y), Vec2(x1, y), color, 1.5f);
+                    m_lineRenderer->addLine(Vec2(x0, y), Vec2(x1, y), color, 0.1f); // Very thin lines
                 }
             } else {
-                m_lineRenderer->addRect(visualCenter, size, color, 1.0f);
+                m_lineRenderer->addRect(visualCenter, size, color, 0.1f); // Very thin lines
             }
+            
             if (node->isLeaf) {
                 for (const auto& e : node->entities) {
                     Vec2 visualEntityPos = e.position + m_quadtreeVisualOffset;
-                    m_lineRenderer->addRect(visualEntityPos, e.size, Vec4(0.0f, 0.0f, 0.0f, 0.8f), 2.0f);
+                    m_lineRenderer->addRect(visualEntityPos, e.size, Vec4(1.0f, 1.0f, 0.0f, 1.0f), 0.5f); // Thin lines
                 }
             }
         }
     }
+    
+    // CRITICAL: Update the LineRenderer buffers after adding all lines
+    m_lineRenderer->updateBuffer();
+    
     respawnWorldAnchorSprite();
 }
 

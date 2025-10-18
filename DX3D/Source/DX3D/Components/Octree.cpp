@@ -146,3 +146,21 @@ int Octree::getOctant(const Vec3& position) const {
     
     return -1; // Position is exactly on a boundary
 }
+
+bool Octree::hasEntitiesInSubtree() const {
+    // Check if this node has entities
+    if (!m_entities.empty()) {
+        return true;
+    }
+    
+    // Check if any children have entities
+    if (!isLeaf()) {
+        for (int i = 0; i < 8; i++) {
+            if (m_children[i] && m_children[i]->hasEntitiesInSubtree()) {
+                return true;
+            }
+        }
+    }
+    
+    return false;
+}

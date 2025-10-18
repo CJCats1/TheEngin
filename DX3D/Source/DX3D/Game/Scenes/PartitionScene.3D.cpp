@@ -68,7 +68,7 @@ void PartitionScene::setCameraPreset(CameraPreset preset) {
         m_cameraYaw = 0.785398f; // 45 degrees
         m_cameraPitch = -0.523599f; // -30 degrees
         m_camera3D.setTarget(Vec3(0.0f, 0.0f, 0.0f));
-        m_camera3D.setUp(Vec3(0.0f, 0.0f, -1.0f));
+        m_camera3D.setUp(Vec3(0.0f, 1.0f, 0.0f));
         fovY = 0.785398f; // 45 degrees
         m_camera3D.setPerspective(fovY, aspect, nearZ, farZ);
     }
@@ -80,13 +80,21 @@ void PartitionScene::convertTo3D() {
     m_camera3D.setPerspective(1.22173048f, aspect, 0.1f, 5000.0f);
     setCameraPreset(CameraPreset::FirstPerson); // Start in FPS mode
     
+    // Always show dotted background in 3D mode
+    m_showDottedBackground = true;
+    
+    // Clear the 2D camera from LineRenderer so it uses the 3D camera matrices set by the scene
+    if (m_lineRenderer) {
+        m_lineRenderer->clearCamera();
+    }
+    
     // Initialize shadow mapping
     auto& device = m_entityManager->findEntity("LineRenderer")->getComponent<LineRenderer>()->getDevice();
     GraphicsResourceDesc gDesc = device.getGraphicsResourceDesc();
     
-    m_shadowMap = std::make_unique<ShadowMap>(gDesc, 1024, 1024);
-    m_shadowMap2 = std::make_unique<ShadowMap>(gDesc, 1024, 1024);
-    m_shadowSampler = ShadowMap::createShadowSampler(device.getD3DDevice());
+    m_shadowMap = std::make_unique<ShadowMap>(gDesc, m_shadowMapSize, m_shadowMapSize);
+    m_shadowMap2 = std::make_unique<ShadowMap>(gDesc, m_shadowMapSize, m_shadowMapSize);
+    createShadowSampler(device.getD3DDevice());
     
     // Create test 3D entities
     createTest3DEntities(device);
@@ -108,10 +116,21 @@ void PartitionScene::convertTo2D() {
     }
     
     m_movingEntities3D.clear();
+    
+    // Restore the 2D camera for LineRenderer
+    if (m_lineRenderer && m_entityManager) {
+        if (auto* cameraEntity = m_entityManager->findEntity("MainCamera")) {
+            if (auto* camera = cameraEntity->getComponent<Camera2D>()) {
+                m_lineRenderer->setCamera(camera);
+            }
+        }
+    }
 }
 
 void PartitionScene::update3DCamera(float dt) {
     auto& input = Input::getInstance();
+    
+    // Third-person follow mode removed
     
     // Only update camera if we're in FPS mode
     if (m_cameraPreset != CameraPreset::FirstPerson) return;
@@ -124,9 +143,9 @@ void PartitionScene::update3DCamera(float dt) {
         if (m_mouseCaptured) {
             Vec2 mouseDelta = currentMouse - m_lastMouse;
             
-            // Apply mouse sensitivity
-            m_cameraYaw -= mouseDelta.x * m_cameraMouseSensitivity;
-            m_cameraPitch -= mouseDelta.y * m_cameraMouseSensitivity;
+            // Apply mouse sensitivity (inverted controls)
+            m_cameraYaw += mouseDelta.x * m_cameraMouseSensitivity;  // Inverted: + instead of -
+            m_cameraPitch += mouseDelta.y * m_cameraMouseSensitivity;  // Inverted: + instead of -
             
             // Clamp pitch to prevent over-rotation
             const float maxPitch = 1.57f; // 90 degrees
@@ -178,7 +197,7 @@ void PartitionScene::update3DCamera(float dt) {
     if (input.isKeyDown(Key::Space)) {
         moveDirection.y += 1.0f;
     }
-    if (input.isKeyDown(Key::C)) {
+    if (input.isKeyDown(Key::Control)) {
         moveDirection.y -= 1.0f;
     }
     
@@ -199,6 +218,8 @@ void PartitionScene::update3DCamera(float dt) {
     
     m_camera3D.setTarget(target);
 }
+
+// Removed: updateThirdPersonFollowCamera
 
 void PartitionScene::update3DMovingEntities(float dt) {
     if (!m_entitiesMoving) return;
@@ -243,6 +264,42 @@ void PartitionScene::update3DMovingEntities(float dt) {
             }
         }
     }
+    
+    // Update octree if visualization is enabled
+    if (m_showOctree) {
+        // Rebuild octree with current 3D entity positions
+        m_octree->clear();
+        int entitiesInserted = 0;
+        
+        // Get all 3D mesh entities directly from the entity manager
+        auto mesh3DEntities = m_entityManager->getEntitiesWithComponent<Mesh3DComponent>();
+        for (auto* entity : mesh3DEntities) {
+            if (auto* meshComp = entity->getComponent<Mesh3DComponent>()) {
+                if (meshComp->isVisible()) {
+                    Vec3 actualPosition = meshComp->getPosition();
+                    Vec3 actualScale = meshComp->getScale();
+                    
+                    // Use a reasonable entity size for octree (not the mesh scale which might be huge)
+                    Vec3 entitySize = Vec3(2.0f, 2.0f, 2.0f); // Standard entity size
+                    
+                    // Only filter out entities that are extremely far out (like background planes)
+                    if (actualPosition.x >= -1000.0f && actualPosition.x <= 1000.0f &&
+                        actualPosition.y >= -1000.0f && actualPosition.y <= 1000.0f &&
+                        actualPosition.z >= -1000.0f && actualPosition.z <= 1000.0f) {
+                        
+                        OctreeEntity octreeEntity;
+                        octreeEntity.position = actualPosition;
+                        octreeEntity.size = entitySize; // Use consistent entity size
+                        octreeEntity.id = entitiesInserted; // Use insertion order as ID
+                        m_octree->insert(octreeEntity);
+                        entitiesInserted++;
+                    }
+                }
+            }
+        }
+        updateOctreeVisualization();
+    }
+    
 }
 
 Vec3 PartitionScene::screenToWorldPosition3D(const Vec2& screenPos) {
@@ -278,15 +335,16 @@ void PartitionScene::createTest3DEntities(GraphicsDevice& device) {
     // Create some test 3D entities
     std::random_device rd;
     std::mt19937 gen(rd());
-    // Wider spawn area so entities start farther apart
-    std::uniform_real_distribution<float> posDist(-100.0f, 100.0f);
-    std::uniform_real_distribution<float> heightDist(-5.0f, 5.0f); // Height above ground
-    std::uniform_real_distribution<float> sizeDist(0.15f, 0.35f);
+    // Use configurable spawn bounds for all axes
+    std::uniform_real_distribution<float> posDistX(-m_spawnBoundsX, m_spawnBoundsX);
+    std::uniform_real_distribution<float> posDistY(-m_spawnBoundsY, m_spawnBoundsY);
+    std::uniform_real_distribution<float> posDistZ(-m_spawnBoundsZ, m_spawnBoundsZ);
+    std::uniform_real_distribution<float> sizeDist(0.05f, 0.15f);
     // Faster initial velocities so they travel further
-    std::uniform_real_distribution<float> velDist(-20.0f, 20.0f);
+    std::uniform_real_distribution<float> velDist(-40.0f, 40.0f);
 
     // Enforce a minimum spacing between spawns to avoid overlap
-    const float minSpawnDistance = 6.0f; // world units
+    const float minSpawnDistance = 4.0f; // world units (adjusted for smaller entities but still reasonable spacing)
     std::vector<Vec3> acceptedPositions;
     
     for (int i = 0; i < 10; i++) {
@@ -296,7 +354,7 @@ void PartitionScene::createTest3DEntities(GraphicsDevice& device) {
         Vec3 position;
         int attempts = 0;
         do {
-            position = Vec3(posDist(gen), heightDist(gen), posDist(gen));
+            position = Vec3(posDistX(gen), posDistY(gen), posDistZ(gen));
             attempts++;
             if (attempts > 200) break; // safety
         } while (std::any_of(acceptedPositions.begin(), acceptedPositions.end(), [&](const Vec3& p){
@@ -336,14 +394,35 @@ void PartitionScene::createTest3DEntities(GraphicsDevice& device) {
         movingEntity3D.name = "3DEntity" + std::to_string(i);
         movingEntity3D.velocity = velocity;
         // Expanded bounds so they can travel much farther before bouncing
-        movingEntity3D.bounds = Vec3(150.0f, 100.0f, 150.0f);
+        movingEntity3D.bounds = Vec3(300.0f, 400.0f, 300.0f);
         movingEntity3D.position = position;
         movingEntity3D.size = size;
         movingEntity3D.id = i;
         movingEntity3D.active = true;
         
         m_movingEntities3D.push_back(movingEntity3D);
+        
+        // Add to octree for 3D visualization
+        OctreeEntity octreeEntity;
+        octreeEntity.position = position;
+        octreeEntity.size = size;
+        octreeEntity.id = i;
+        m_octree->insert(octreeEntity);
     }
+    
+    // Create a transparent unit 3D entity to fix LineRenderer issues
+    auto& transparentEntity = m_entityManager->createEntity("TransparentUnit3D");
+    auto transparentMesh = Mesh::CreateCube(device, 1.0f);
+    if (transparentMesh) {
+        auto& transparentMeshComp = transparentEntity.addComponent<Mesh3DComponent>(transparentMesh);
+        transparentMeshComp.setPosition(Vec3(0.0f, 0.0f, 0.0f));
+        transparentMeshComp.setScale(Vec3(1.0f, 1.0f, 1.0f));
+        transparentMeshComp.setVisible(false); // Make it invisible
+        transparentMeshComp.setMaterial(Vec3(1.0f, 1.0f, 1.0f), 1.0f, 0.0f); // White material, no shine
+    }
+    
+    // Create or update the unit square
+    createOrUpdateUnitSquare();
     
     // Create a ground plane
     auto& groundEntity = m_entityManager->createEntity("GroundPlane");
@@ -367,33 +446,100 @@ void PartitionScene::createTest3DEntities(GraphicsDevice& device) {
     }
     
     // Create a background plane with dotted pattern
-    auto& backgroundEntity = m_entityManager->createEntity("BackgroundPlane");
-    auto backgroundMesh = Mesh::CreatePlane(device, 200.0f, 200.0f); // Large background plane
-    if (backgroundMesh) {
-        // You could load a dotted texture here if you have one
-        // For now, we'll use a simple color
-        auto& backgroundMeshComp = backgroundEntity.addComponent<Mesh3DComponent>(backgroundMesh);
-        backgroundMeshComp.setPosition(Vec3(0.0f, -100.0f, 0.0f)); // Far behind everything
-        backgroundMeshComp.setScale(Vec3(2.0f, 2.0f, 1.0f)); // Make it large
-        backgroundMeshComp.setVisible(true);
+    //auto& backgroundEntity = m_entityManager->createEntity("BackgroundPlane");
+    //auto backgroundMesh = Mesh::CreatePlane(device, 200.0f, 200.0f); // Large background plane
+    //if (backgroundMesh) {
+    //    // You could load a dotted texture here if you have one
+    //    // For now, we'll use a simple color
+    //    auto& backgroundMeshComp = backgroundEntity.addComponent<Mesh3DComponent>(backgroundMesh);
+    //    backgroundMeshComp.setPosition(Vec3(0.0f, -100.0f, 0.0f)); // Far behind everything
+    //    backgroundMeshComp.setScale(Vec3(2.0f, 2.0f, 1.0f)); // Make it large
+    //    backgroundMeshComp.setVisible(true);
+    //    
+    //    // Set material for background - dark blue to match dotted pattern
+    //    backgroundMeshComp.setMaterial(Vec3(0.1f, 0.1f, 0.2f), 1.0f, 0.0f); // Dark blue, no shine
+    //}
+    
+    // Octree will be updated per-frame for moving entities
+}
+
+void PartitionScene::addUnit3DEntity(GraphicsDevice& device) {
+    // Create a single unit 3D entity at the origin
+    auto& entity = m_entityManager->createEntity("Unit3DEntity" + std::to_string(static_cast<int>(m_movingEntities3D.size())));
+    
+    Vec3 position(0.0f, 0.0f, 0.0f); // Origin
+    Vec3 size(0.1f, 0.1f, 0.1f); // Smaller unit size
+    Vec3 velocity(0.0f, 0.0f, 0.0f); // Stationary
+    
+    // Create a unit cube mesh
+    auto mesh = Mesh::CreateCube(device, 1.0f);
+    if (mesh) {
+        // Apply beam texture
+        std::wstring beamTexturePath;
+        beamTexturePath.assign(L"DX3D/Assets/Textures/beam.png");
+        auto beamTexture = Texture2D::LoadTexture2D(device.getD3DDevice(), beamTexturePath.c_str());
+        if (beamTexture) {
+            mesh->setTexture(beamTexture);
+        }
         
-        // Set material for background - dark blue to match dotted pattern
-        backgroundMeshComp.setMaterial(Vec3(0.1f, 0.1f, 0.2f), 1.0f, 0.0f); // Dark blue, no shine
+        auto& meshComp = entity.addComponent<Mesh3DComponent>(mesh);
+        meshComp.setPosition(position);
+        meshComp.setScale(Vec3(0.1f, 0.1f, 0.1f)); // Scale down the mesh
+        meshComp.setVisible(true);
+        
+        // Set material properties for proper 3D rendering
+        meshComp.setMaterial(Vec3(1.0f, 0.2f, 0.2f), 64.0f, 0.3f); // Red material to distinguish from others
     }
+    
+    // Create moving entity data
+    MovingEntity3D movingEntity3D;
+    movingEntity3D.name = entity.getName();
+    movingEntity3D.velocity = velocity;
+    movingEntity3D.bounds = Vec3(300.0f, 400.0f, 300.0f);
+    movingEntity3D.position = position;
+    movingEntity3D.size = size;
+    movingEntity3D.id = static_cast<int>(m_movingEntities3D.size());
+    movingEntity3D.active = true;
+    m_movingEntities3D.push_back(movingEntity3D);
+    
+    // Add to octree for 3D visualization
+    OctreeEntity octreeEntity;
+    octreeEntity.position = position;
+    octreeEntity.size = size;
+    octreeEntity.id = static_cast<int>(m_movingEntities3D.size() - 1);
+    m_octree->insert(octreeEntity);
+    
+    // Octree will be updated per-frame for moving entities
+    
+    // Create a transparent unit 3D entity to fix LineRenderer issues
+    auto& transparentEntity = m_entityManager->createEntity("TransparentUnit3D_" + std::to_string(static_cast<int>(m_movingEntities3D.size())));
+    auto transparentMesh = Mesh::CreateCube(device, 1.0f);
+    if (transparentMesh) {
+        auto& transparentMeshComp = transparentEntity.addComponent<Mesh3DComponent>(transparentMesh);
+        transparentMeshComp.setPosition(Vec3(0.0f, 0.0f, 0.0f));
+        transparentMeshComp.setScale(Vec3(1.0f, 1.0f, 1.0f));
+        transparentMeshComp.setVisible(false); // Make it invisible
+        transparentMeshComp.setMaterial(Vec3(1.0f, 1.0f, 1.0f), 1.0f, 0.0f); // White material, no shine
+    }
+    
+    // Create or update the unit square
+    createOrUpdateUnitSquare();
 }
 
 void PartitionScene::addRandom3DEntities(GraphicsDevice& device, int count) {
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_real_distribution<float> posDist(-40.0f, 40.0f);
-    std::uniform_real_distribution<float> heightDist(-5.0f, 5.0f);
-    std::uniform_real_distribution<float> sizeDist(0.15f, 0.35f);
-    std::uniform_real_distribution<float> velDist(-20.0f, 20.0f);
+    // Use configurable spawn bounds for all axes
+    std::uniform_real_distribution<float> posDistX(-m_spawnBoundsX, m_spawnBoundsX);
+    std::uniform_real_distribution<float> posDistY(-m_spawnBoundsY, m_spawnBoundsY);
+    std::uniform_real_distribution<float> posDistZ(-m_spawnBoundsZ, m_spawnBoundsZ);
+    std::uniform_real_distribution<float> sizeDist(0.05f, 0.15f);
+    std::uniform_real_distribution<float> velDist(-40.0f, 40.0f);
 
     for (int i = 0; i < count; ++i) {
         auto& entity = m_entityManager->createEntity("3DEntity" + std::to_string(static_cast<int>(m_movingEntities3D.size())));
 
-        Vec3 position(posDist(gen), heightDist(gen), posDist(gen));
+        Vec3 position(posDistX(gen), posDistY(gen), posDistZ(gen));
         Vec3 size(sizeDist(gen), sizeDist(gen), sizeDist(gen));
         Vec3 velocity(velDist(gen), velDist(gen), velDist(gen));
 
@@ -414,13 +560,36 @@ void PartitionScene::addRandom3DEntities(GraphicsDevice& device, int count) {
         MovingEntity3D movingEntity3D;
         movingEntity3D.name = entity.getName();
         movingEntity3D.velocity = velocity;
-        movingEntity3D.bounds = Vec3(80.0f, 80.0f, 80.0f);
+        movingEntity3D.bounds = Vec3(300.0f, 400.0f, 300.0f);
         movingEntity3D.position = position;
         movingEntity3D.size = size;
         movingEntity3D.id = static_cast<int>(m_movingEntities3D.size());
         movingEntity3D.active = true;
         m_movingEntities3D.push_back(movingEntity3D);
+        
+        // Add to octree for 3D visualization
+        OctreeEntity octreeEntity;
+        octreeEntity.position = position;
+        octreeEntity.size = size;
+        octreeEntity.id = static_cast<int>(m_movingEntities3D.size() - 1);
+        m_octree->insert(octreeEntity);
+        
+        // Octree will be updated per-frame for moving entities
     }
+    
+    // Create a transparent unit 3D entity to fix LineRenderer issues
+    auto& transparentEntity = m_entityManager->createEntity("TransparentUnit3D_" + std::to_string(static_cast<int>(m_movingEntities3D.size())));
+    auto transparentMesh = Mesh::CreateCube(device, 1.0f);
+    if (transparentMesh) {
+        auto& transparentMeshComp = transparentEntity.addComponent<Mesh3DComponent>(transparentMesh);
+        transparentMeshComp.setPosition(Vec3(0.0f, 0.0f, 0.0f));
+        transparentMeshComp.setScale(Vec3(1.0f, 1.0f, 1.0f));
+        transparentMeshComp.setVisible(false); // Make it invisible
+        transparentMeshComp.setMaterial(Vec3(1.0f, 1.0f, 1.0f), 1.0f, 0.0f); // White material, no shine
+    }
+    
+    // Create or update the unit square
+    createOrUpdateUnitSquare();
 }
 
 void PartitionScene::clearAllEntities3D() {
@@ -428,7 +597,7 @@ void PartitionScene::clearAllEntities3D() {
     const auto& entities = m_entityManager->getEntities();
     for (const auto& entity : entities) {
         std::string entityName = entity->getName();
-        if (entityName.find("3DEntity") == 0) {
+        if (entityName.find("3DEntity") == 0 || entityName.find("Unit3DEntity") == 0 || entityName.find("TransparentUnit3D") == 0 || entityName.find("UnitSquare") == 0) {
             entitiesToRemove.insert(entityName);
         }
     }
@@ -436,28 +605,38 @@ void PartitionScene::clearAllEntities3D() {
         m_entityManager->removeEntity(name);
     }
     m_movingEntities3D.clear();
+    
+    // Clear octree when all entities are removed
+    if (m_octree) {
+        m_octree->clear();
+    }
+    
+    // Clear unit square tracking
+    m_unitSquareEntityName = "";
+    
+    // Octree will be updated per-frame for moving entities
 }
 
 void PartitionScene::calculateLightViewProj() {
     // Light 1: top-down
-    Vec3 lightPos(0.0f, 50.0f, 0.0f);
-    Vec3 lightTarget(0.0f, 0.0f, 0.0f);
-    Vec3 lightUp(0.0f, 0.0f, 1.0f);
-    Mat4 lightView = Mat4::lookAt(lightPos, lightTarget, lightUp);
-    Mat4 lightProj = Mat4::orthographic(100.0f, 100.0f, 0.1f, 200.0f);
-    m_lightViewProj = lightView * lightProj;
+    if (m_light1.enabled) {
+        Vec3 lightUp(0.0f, 0.0f, 1.0f);
+        Mat4 lightView = Mat4::lookAt(m_light1.position, m_light1.target, lightUp);
+        Mat4 lightProj = Mat4::orthographic(m_light1.orthoSize, m_light1.orthoSize, m_light1.nearPlane, m_light1.farPlane);
+        m_lightViewProj = lightView * lightProj;
+    }
 
     // Light 2: angled
-    Vec3 lightPos2(60.0f, 60.0f, 60.0f);
-    Vec3 lightTarget2(0.0f, 0.0f, 0.0f);
-    Vec3 lightUp2(0.0f, 1.0f, 0.0f);
-    Mat4 lightView2 = Mat4::lookAt(lightPos2, lightTarget2, lightUp2);
-    Mat4 lightProj2 = Mat4::orthographic(120.0f, 120.0f, 0.1f, 250.0f);
-    m_lightViewProj2 = lightView2 * lightProj2;
+    if (m_light2.enabled) {
+        Vec3 lightUp2(0.0f, 1.0f, 0.0f);
+        Mat4 lightView2 = Mat4::lookAt(m_light2.position, m_light2.target, lightUp2);
+        Mat4 lightProj2 = Mat4::orthographic(m_light2.orthoSize, m_light2.orthoSize, m_light2.nearPlane, m_light2.farPlane);
+        m_lightViewProj2 = lightView2 * lightProj2;
+    }
 }
 
 void PartitionScene::renderShadowMap(GraphicsEngine& engine) {
-    if (!m_shadowMap || !m_is3DMode) return;
+    if (!m_shadowMap || !m_is3DMode || !m_enableShadowMapping) return;
     
     auto& ctx = engine.getContext();
     auto* d3dContext = ctx.getD3DDeviceContext();
@@ -469,69 +648,108 @@ void PartitionScene::renderShadowMap(GraphicsEngine& engine) {
     // Calculate light matrices
     calculateLightViewProj();
     
-    // Render Light 1 shadow map
-    m_shadowMap->clear(d3dContext);
-    m_shadowMap->setAsRenderTarget(d3dContext);
-    m_shadowMap->setViewport(d3dContext);
-    
-    // Set light 1 matrices
-    Vec3 lightPos(0.0f, 50.0f, 0.0f);
-    Vec3 lightTarget(0.0f, 0.0f, 0.0f);
-    Vec3 lightUp(0.0f, 0.0f, 1.0f);
-    ctx.setViewMatrix(Mat4::lookAt(lightPos, lightTarget, lightUp));
-    ctx.setProjectionMatrix(Mat4::orthographic(100.0f, 100.0f, 0.1f, 200.0f));
-    
-    // Use shadow map pipeline
-    ctx.setGraphicsPipelineState(engine.getShadowMapPipeline());
-    
-    // Render 3D meshes to shadow map
-    auto mesh3DEntities = m_entityManager->getEntitiesWithComponent<Mesh3DComponent>();
-    for (auto* entity : mesh3DEntities) {
-        if (auto* meshComp = entity->getComponent<Mesh3DComponent>()) {
-            if (meshComp->isVisible()) {
-                // Set world matrix
-                Mat4 worldMatrix = Mat4::identity();
-                worldMatrix = worldMatrix * Mat4::translation(meshComp->getPosition());
-                worldMatrix = worldMatrix * Mat4::scale(meshComp->getScale());
-                ctx.setWorldMatrix(worldMatrix);
-                
-                meshComp->draw(ctx);
+    // Render Light 1 shadow map (only if enabled and shadows enabled for this light)
+    if (m_light1.enabled && m_light1Shadows) {
+        m_shadowMap->clear(d3dContext);
+        m_shadowMap->setAsRenderTarget(d3dContext);
+        m_shadowMap->setViewport(d3dContext);
+        
+        // Set light 1 matrices using configurable settings
+        Vec3 lightUp(0.0f, 0.0f, 1.0f);
+        ctx.setViewMatrix(Mat4::lookAt(m_light1.position, m_light1.target, lightUp));
+        ctx.setProjectionMatrix(Mat4::orthographic(m_light1.orthoSize, m_light1.orthoSize, m_light1.nearPlane, m_light1.farPlane));
+        
+        // Use shadow map pipeline
+        ctx.setGraphicsPipelineState(engine.getShadowMapPipeline());
+        
+        // Render 3D meshes to shadow map
+        auto mesh3DEntities = m_entityManager->getEntitiesWithComponent<Mesh3DComponent>();
+        for (auto* entity : mesh3DEntities) {
+            if (auto* meshComp = entity->getComponent<Mesh3DComponent>()) {
+                if (meshComp->isVisible()) {
+                    // Set world matrix
+                    Mat4 worldMatrix = Mat4::identity();
+                    worldMatrix = worldMatrix * Mat4::translation(meshComp->getPosition());
+                    worldMatrix = worldMatrix * Mat4::scale(meshComp->getScale());
+                    ctx.setWorldMatrix(worldMatrix);
+                    
+                    meshComp->draw(ctx);
+                }
             }
         }
+        
+        // Unbind
+        d3dContext->OMSetRenderTargets(0, nullptr, nullptr);
     }
-    
-    // Unbind
-    d3dContext->OMSetRenderTargets(0, nullptr, nullptr);
 
-    // Render Light 2 shadow map
-    m_shadowMap2->clear(d3dContext);
-    m_shadowMap2->setAsRenderTarget(d3dContext);
-    m_shadowMap2->setViewport(d3dContext);
+    // Render Light 2 shadow map (only if enabled and shadows enabled for this light)
+    if (m_light2.enabled && m_light2Shadows) {
+        m_shadowMap2->clear(d3dContext);
+        m_shadowMap2->setAsRenderTarget(d3dContext);
+        m_shadowMap2->setViewport(d3dContext);
 
-    // Set light 2 matrices
-    Vec3 lightPosB(60.0f, 60.0f, 60.0f);
-    Vec3 lightTargetB(0.0f, 0.0f, 0.0f);
-    Vec3 lightUpB(0.0f, 1.0f, 0.0f);
-    ctx.setViewMatrix(Mat4::lookAt(lightPosB, lightTargetB, lightUpB));
-    ctx.setProjectionMatrix(Mat4::orthographic(120.0f, 120.0f, 0.1f, 250.0f));
+        // Set light 2 matrices using configurable settings
+        Vec3 lightUp2(0.0f, 1.0f, 0.0f);
+        ctx.setViewMatrix(Mat4::lookAt(m_light2.position, m_light2.target, lightUp2));
+        ctx.setProjectionMatrix(Mat4::orthographic(m_light2.orthoSize, m_light2.orthoSize, m_light2.nearPlane, m_light2.farPlane));
 
-    ctx.setGraphicsPipelineState(engine.getShadowMapPipeline());
+        ctx.setGraphicsPipelineState(engine.getShadowMapPipeline());
 
-    auto mesh3DEntities2 = m_entityManager->getEntitiesWithComponent<Mesh3DComponent>();
-    for (auto* entity : mesh3DEntities2) {
-        if (auto* meshComp = entity->getComponent<Mesh3DComponent>()) {
-            if (meshComp->isVisible()) {
-                Mat4 worldMatrix = Mat4::identity();
-                worldMatrix = worldMatrix * Mat4::translation(meshComp->getPosition());
-                worldMatrix = worldMatrix * Mat4::scale(meshComp->getScale());
-                ctx.setWorldMatrix(worldMatrix);
-                meshComp->draw(ctx);
+        auto mesh3DEntities2 = m_entityManager->getEntitiesWithComponent<Mesh3DComponent>();
+        for (auto* entity : mesh3DEntities2) {
+            if (auto* meshComp = entity->getComponent<Mesh3DComponent>()) {
+                if (meshComp->isVisible()) {
+                    Mat4 worldMatrix = Mat4::identity();
+                    worldMatrix = worldMatrix * Mat4::translation(meshComp->getPosition());
+                    worldMatrix = worldMatrix * Mat4::scale(meshComp->getScale());
+                    ctx.setWorldMatrix(worldMatrix);
+                    meshComp->draw(ctx);
+                }
             }
         }
-    }
 
-    // Unbind
-    d3dContext->OMSetRenderTargets(0, nullptr, nullptr);
+        // Unbind
+        d3dContext->OMSetRenderTargets(0, nullptr, nullptr);
+    }
+}
+
+void PartitionScene::recreateShadowMaps() {
+    if (!m_is3DMode) return;
+    
+    auto& device = m_entityManager->findEntity("LineRenderer")->getComponent<LineRenderer>()->getDevice();
+    GraphicsResourceDesc gDesc = device.getGraphicsResourceDesc();
+    
+    // Recreate shadow maps with new size
+    m_shadowMap = std::make_unique<ShadowMap>(gDesc, m_shadowMapSize, m_shadowMapSize);
+    m_shadowMap2 = std::make_unique<ShadowMap>(gDesc, m_shadowMapSize, m_shadowMapSize);
+    
+    // Recreate shadow sampler with better filtering for soft shadows
+    createShadowSampler(device.getD3DDevice());
+}
+
+void PartitionScene::createShadowSampler(ID3D11Device* device) {
+    D3D11_SAMPLER_DESC samplerDesc = {};
+    
+    if (m_softShadows) {
+        // Use linear filtering for soft shadows
+        samplerDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
+    } else {
+        // Use point filtering for hard shadows
+        samplerDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_POINT;
+    }
+    
+    samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+    samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+    samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+    samplerDesc.ComparisonFunc = D3D11_COMPARISON_LESS_EQUAL;
+    samplerDesc.BorderColor[0] = 1.0f;
+    samplerDesc.BorderColor[1] = 1.0f;
+    samplerDesc.BorderColor[2] = 1.0f;
+    samplerDesc.BorderColor[3] = 1.0f;
+    samplerDesc.MinLOD = 0;
+    samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+    
+    device->CreateSamplerState(&samplerDesc, m_shadowSampler.GetAddressOf());
 }
 
 void PartitionScene::renderShadowMapDebug(GraphicsEngine& engine) {
@@ -627,3 +845,32 @@ void PartitionScene::renderShadowMapDebug(GraphicsEngine& engine) {
     ID3D11ShaderResourceView* nullSRV = nullptr;
     d3dContext->PSSetShaderResources(0, 1, &nullSRV);
 }
+
+void PartitionScene::createOrUpdateUnitSquare() {
+    if (!m_entityManager) return;
+    
+    // Remove existing unit square if it exists
+    if (!m_unitSquareEntityName.empty()) {
+        m_entityManager->removeEntity(m_unitSquareEntityName);
+        m_unitSquareEntityName = "";
+    }
+    
+    // Create new unit square entity
+    auto& unitSquareEntity = m_entityManager->createEntity("UnitSquare");
+    m_unitSquareEntityName = "UnitSquare";
+    
+    // Create a simple unit square mesh (1x1 cube)
+    auto& device = m_entityManager->findEntity("LineRenderer")->getComponent<LineRenderer>()->getDevice();
+    auto unitSquareMesh = Mesh::CreateCube(device, 1.0f);
+    
+    if (unitSquareMesh) {
+        auto& meshComp = unitSquareEntity.addComponent<Mesh3DComponent>(unitSquareMesh);
+        meshComp.setPosition(Vec3(0.0f, 0.0f, 0.0f));
+        meshComp.setScale(Vec3(1.0f, 1.0f, 1.0f));
+        meshComp.setVisible(true);
+        
+        // Set material for unit square
+        meshComp.setMaterial(Vec3(0.8f, 0.8f, 0.8f), 32.0f, 0.3f); // Gray material
+    }
+}
+

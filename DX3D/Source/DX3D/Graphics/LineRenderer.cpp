@@ -61,6 +61,7 @@ void LineRenderer::setCamera(const Camera2D* camera) {
 }
 void LineRenderer::clear() {
     m_lines.clear();
+    m_lines3D.clear();
     m_vertices.clear();
     m_indices.clear();
     m_bufferDirty = true;
@@ -72,8 +73,14 @@ void LineRenderer::updateBuffer() {
     m_vertices.clear();
     m_indices.clear();
     
+    // Process 2D lines
     for (const auto& line : m_lines) {
         generateLineVertices(line);
+    }
+    
+    // Process 3D lines
+    for (const auto& line : m_lines3D) {
+        generateLine3DVertices(line);
     }
     
     if (!m_vertices.empty()) {
@@ -103,7 +110,7 @@ void LineRenderer::updateBuffer() {
 }
 
 void LineRenderer::draw(DeviceContext& ctx) {
-    if (!m_visible || m_lines.empty()) return;
+    if (!m_visible || (m_lines.empty() && m_lines3D.empty())) return;
 
     updateBuffer();
 
@@ -182,4 +189,111 @@ void LineRenderer::generateLineVertices(const Line& line) {
 void LineRenderer::createBuffers() {
     // Don't create empty buffers - wait until we have actual data
     // This method is kept for compatibility but does nothing
+}
+
+// 3D Line methods
+void LineRenderer::addLine3D(const Vec3& start, const Vec3& end, const Vec4& color, float thickness) {
+    Line3D line;
+    line.start = start;
+    line.end = end;
+    line.color = color;
+    line.thickness = thickness;
+    m_lines3D.push_back(line);
+    m_bufferDirty = true;
+}
+
+void LineRenderer::addLine3D(const Line3D& line) {
+    m_lines3D.push_back(line);
+    m_bufferDirty = true;
+}
+
+void LineRenderer::addBox3D(const Vec3& center, const Vec3& size, const Vec4& color, float thickness) {
+    Vec3 halfSize = size * 0.5f;
+    Vec3 min = center - halfSize;
+    Vec3 max = center + halfSize;
+    
+    // Create 12 edges of a box
+    // Bottom face (4 edges)
+    addLine3D(Vec3(min.x, min.y, min.z), Vec3(max.x, min.y, min.z), color, thickness);
+    addLine3D(Vec3(max.x, min.y, min.z), Vec3(max.x, min.y, max.z), color, thickness);
+    addLine3D(Vec3(max.x, min.y, max.z), Vec3(min.x, min.y, max.z), color, thickness);
+    addLine3D(Vec3(min.x, min.y, max.z), Vec3(min.x, min.y, min.z), color, thickness);
+    
+    // Top face (4 edges)
+    addLine3D(Vec3(min.x, max.y, min.z), Vec3(max.x, max.y, min.z), color, thickness);
+    addLine3D(Vec3(max.x, max.y, min.z), Vec3(max.x, max.y, max.z), color, thickness);
+    addLine3D(Vec3(max.x, max.y, max.z), Vec3(min.x, max.y, max.z), color, thickness);
+    addLine3D(Vec3(min.x, max.y, max.z), Vec3(min.x, max.y, min.z), color, thickness);
+    
+    // Vertical edges (4 edges)
+    addLine3D(Vec3(min.x, min.y, min.z), Vec3(min.x, max.y, min.z), color, thickness);
+    addLine3D(Vec3(max.x, min.y, min.z), Vec3(max.x, max.y, min.z), color, thickness);
+    addLine3D(Vec3(max.x, min.y, max.z), Vec3(max.x, max.y, max.z), color, thickness);
+    addLine3D(Vec3(min.x, min.y, max.z), Vec3(min.x, max.y, max.z), color, thickness);
+}
+
+void LineRenderer::generateLine3DVertices(const Line3D& line) {
+    Vec3 direction = line.end - line.start;
+    float length = sqrt(direction.x * direction.x + direction.y * direction.y + direction.z * direction.z);
+    if (length < 0.001f) return; // Skip zero-length lines
+    
+    Vec3 normalized = direction / length;
+    
+    // For very thin lines, use a simpler approach to avoid rendering artifacts
+    if (line.thickness < 0.5f) {
+        // Use a minimal perpendicular vector for thin lines
+        Vec3 up = Vec3(0.0f, 1.0f, 0.0f);
+        if (abs(normalized.y) > 0.9f) {
+            up = Vec3(1.0f, 0.0f, 0.0f);
+        }
+        
+        Vec3 right = normalized.cross(up).normalized();
+        Vec3 perpendicular = right * (line.thickness * 0.5f);
+        
+        ui32 startIndex = static_cast<ui32>(m_vertices.size());
+        
+        // Create a minimal quad for thin lines
+        m_vertices.push_back({ line.start - perpendicular, Vec3(0, 0, 1), Vec2(0, 0), line.color });
+        m_vertices.push_back({ line.start + perpendicular, Vec3(0, 0, 1), Vec2(0, 1), line.color });
+        m_vertices.push_back({ line.end + perpendicular, Vec3(0, 0, 1), Vec2(1, 1), line.color });
+        m_vertices.push_back({ line.end - perpendicular, Vec3(0, 0, 1), Vec2(1, 0), line.color });
+        
+        // Create indices for two triangles
+        m_indices.push_back(startIndex);
+        m_indices.push_back(startIndex + 1);
+        m_indices.push_back(startIndex + 2);
+        
+        m_indices.push_back(startIndex);
+        m_indices.push_back(startIndex + 2);
+        m_indices.push_back(startIndex + 3);
+    } else {
+        // For thicker lines, use the original approach
+        Vec3 up = Vec3(0.0f, 1.0f, 0.0f);
+        if (abs(normalized.y) > 0.9f) {
+            up = Vec3(1.0f, 0.0f, 0.0f);
+        }
+        
+        Vec3 right = normalized.cross(up).normalized();
+        Vec3 forward = right.cross(normalized).normalized();
+        
+        Vec3 perpendicular1 = right * (line.thickness * 0.5f);
+        Vec3 perpendicular2 = forward * (line.thickness * 0.5f);
+        
+        ui32 startIndex = static_cast<ui32>(m_vertices.size());
+        
+        // Create a quad for the 3D line
+        m_vertices.push_back({ line.start - perpendicular1 - perpendicular2, Vec3(0, 0, 1), Vec2(0, 0), line.color });
+        m_vertices.push_back({ line.start + perpendicular1 - perpendicular2, Vec3(0, 0, 1), Vec2(0, 1), line.color });
+        m_vertices.push_back({ line.end + perpendicular1 - perpendicular2, Vec3(0, 0, 1), Vec2(1, 1), line.color });
+        m_vertices.push_back({ line.end - perpendicular1 - perpendicular2, Vec3(0, 0, 1), Vec2(1, 0), line.color });
+        
+        // Create indices for two triangles
+        m_indices.push_back(startIndex);
+        m_indices.push_back(startIndex + 1);
+        m_indices.push_back(startIndex + 2);
+        
+        m_indices.push_back(startIndex);
+        m_indices.push_back(startIndex + 2);
+        m_indices.push_back(startIndex + 3);
+    }
 }

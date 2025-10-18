@@ -19,6 +19,13 @@ namespace dx3d {
         float thickness;
     };
 
+    struct Line3D {
+        Vec3 start;
+        Vec3 end;
+        Vec4 color;
+        float thickness;
+    };
+
     class LineRenderer {
     public:
         LineRenderer(GraphicsDevice& device);
@@ -29,6 +36,11 @@ namespace dx3d {
         void addLine(const Line& line);
         void addRect(const Vec2& position, const Vec2& size, const Vec4& color = Color::WHITE, float thickness = 1.0f);
         void addCircle(const Vec2& center, float radius, const Vec4& color = Color::WHITE, float thickness = 1.0f, int segments = 16);
+        
+        // Add 3D lines to be rendered
+        void addLine3D(const Vec3& start, const Vec3& end, const Vec4& color = Color::WHITE, float thickness = 1.0f);
+        void addLine3D(const Line3D& line);
+        void addBox3D(const Vec3& center, const Vec3& size, const Vec4& color = Color::WHITE, float thickness = 1.0f);
 
         // Clear all lines
         void clear();
@@ -62,10 +74,14 @@ namespace dx3d {
 
         // Get device reference
         GraphicsDevice& getDevice() { return m_device; }
+        
+        // Set line pipeline for optimal rendering
+        void setLinePipeline(GraphicsPipelineState* pipeline) { m_linePipeline = pipeline; }
 
     private:
         GraphicsDevice& m_device;
         std::vector<Line> m_lines;
+        std::vector<Line3D> m_lines3D;
         std::vector<Vertex> m_vertices;
         std::vector<ui32> m_indices;
 
@@ -80,9 +96,11 @@ namespace dx3d {
         Mat4 m_viewMatrix;
         Mat4 m_projMatrix;
         const Camera2D* m_camera = nullptr;
+        GraphicsPipelineState* m_linePipeline = nullptr;  // Dedicated line pipeline
 
         // Helper methods
         void generateLineVertices(const Line& line);
+        void generateLine3DVertices(const Line3D& line);
         void createBuffers();
     };
 
