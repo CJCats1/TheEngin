@@ -191,10 +191,9 @@ namespace dx3d {
 		auto nodeEntities = entityManager.getEntitiesWithComponent<NodeComponent>();
 		auto beamEntities = entityManager.getEntitiesWithComponent<BeamComponent>();
 
-		// First, clear external forces and calculate forces for all nodes
+		// First, calculate forces for all nodes (don't clear external forces yet)
 		for (auto* nodeEntity : nodeEntities) {
 			if (auto* node = nodeEntity->getComponent<NodeComponent>()) {
-				node->clearExternalForces(); // Clear external forces from previous frame
 				node->calculateForces(beamEntities);
 
 				// Update sprite position if it exists
@@ -215,6 +214,13 @@ namespace dx3d {
 					Vec2 pos = node->getPosition();
 					sprite->setPosition(pos.x, pos.y, 0.0f);
 				}
+			}
+		}
+
+		// Finally, clear external forces after physics update
+		for (auto* nodeEntity : nodeEntities) {
+			if (auto* node = nodeEntity->getComponent<NodeComponent>()) {
+				node->clearExternalForces(); // Clear external forces after they've been used
 			}
 		}
 	}
@@ -268,7 +274,7 @@ namespace dx3d {
 					// Fallback if mesh dimensions aren't available
 					sprite->setPosition(center.x, center.y, 0.0f);
 					sprite->setRotationZ(angleRad);
-					sprite->setScale(length, thickness, 1.0f);
+					sprite->setScale(length, clamp(thickness, 10, 500), 1.0f);
 				}
 			}
 		}

@@ -92,9 +92,6 @@ namespace dx3d
         float calculateRotationFromNodes(const std::vector<Vec2>& nodePositions, const std::string& tetriminoPrefix);
         float calculateAngularVelocityFromNodes(const std::vector<Vec2>& nodePositions, const std::vector<Vec2>& nodeVelocities, const Vec2& centerOfMass);
         void applyAngularImpulseToFrame(Entity* nodeEntity, const Vec2& nodePosition, const Vec2& impulse);
-        float calculateSpringBasedRotation(const std::string& tetriminoPrefix, const std::vector<Vec2>& nodePositions, const Vec2& centerOfMass);
-        float calculateSpringForceImbalance(const std::string& tetriminoPrefix);
-        float calculateSimpleSpringRotation(const std::string& tetriminoPrefix);
     private:
         LineRenderer* m_lineRenderer = nullptr;
         bool m_showFrameDebug = false;
@@ -102,8 +99,6 @@ namespace dx3d
         // Debug physics parameters
         float m_debugFrameGravity = 0.1f;
         float m_debugNodeGravityColliding = 0.2f;
-        float m_debugSpringRotationStrength = 0.5f;
-        float m_debugAngularDamping = 0.95f;
         float m_debugCollisionThreshold = 0.8f;
 
 
@@ -130,8 +125,6 @@ namespace dx3d
         void createBoundaryWalls();
         void createDebugToggleButton();
         void createGameOverPanel();
-        void createDebugControls();
-        void updateDebugControls();
 
         // Collision detection
         void updateCollisions();

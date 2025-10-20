@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <DX3D/Game/Scenes/BridgeScene.h>
 #include <DX3D/Game/Scenes/SpiderSolitaireScene.h>
 #include <DX3D/Game/Scenes/PhysicsTetrisScene.h>
+#include <DX3D/Game/Scenes/JellyTetrisReduxScene.h>
 #include <DX3D/Game/Scenes/PartitionScene.h>
 #include <DX3D/Game/Scenes/ThreeDTestScene.h>
 #include <DX3D/Game/Scenes/MarbleMazeScene.h>
@@ -215,10 +216,11 @@ void dx3d::Game::onInternalUpdate()
             case SceneType::BridgeScene: currentIndex = 1; break;
             case SceneType::SpiderSolitaireScene: currentIndex = 2; break;
             case SceneType::PhysicsTetrisScene: currentIndex = 3; break;
-            case SceneType::PartitionScene: currentIndex = 4; break;
-            case SceneType::ThreeDTestScene: currentIndex = 5; break;
-            case SceneType::MarbleMazeScene: currentIndex = 6; break;
-            case SceneType::FlipFluidSimulationScene: currentIndex = 7; break;
+            case SceneType::JellyTetrisReduxScene: currentIndex = 4; break;
+            case SceneType::PartitionScene: currentIndex = 5; break;
+            case SceneType::ThreeDTestScene: currentIndex = 6; break;
+            case SceneType::MarbleMazeScene: currentIndex = 7; break;
+            case SceneType::FlipFluidSimulationScene: currentIndex = 8; break;
             default: break;
             }
 
@@ -227,13 +229,14 @@ void dx3d::Game::onInternalUpdate()
                 "BridgeScene",
                 "SpiderSolitaireScene",
                 "PhysicsTetrisScene",
+                "JellyTetrisReduxScene",
                 "PartitionScene",
                 "ThreeDTestScene",
                 "MarbleMazeScene",
                 "FlipFluidSimulationScene"
             };
 
-            if (ImGui::ListBox("##SceneList", &currentIndex, items, IM_ARRAYSIZE(items), 8))
+            if (ImGui::ListBox("##SceneList", &currentIndex, items, IM_ARRAYSIZE(items), 9))
             {
                 // Switch scene when selection changes
                 switch (currentIndex)
@@ -242,14 +245,15 @@ void dx3d::Game::onInternalUpdate()
                 case 1: setScene(std::make_unique<dx3d::BridgeScene>()); m_currentSceneType = SceneType::BridgeScene; break;
                 case 2: setScene(std::make_unique<dx3d::SpiderSolitaireScene>()); m_currentSceneType = SceneType::SpiderSolitaireScene; break;
                 case 3: setScene(std::make_unique<dx3d::PhysicsTetrisScene>()); m_currentSceneType = SceneType::PhysicsTetrisScene; break;
-                case 4: setScene(std::make_unique<dx3d::PartitionScene>()); m_currentSceneType = SceneType::PartitionScene; break;
-                case 5: setScene(std::make_unique<dx3d::ThreeDTestScene>()); m_currentSceneType = SceneType::ThreeDTestScene; break;
-                case 6: setScene(std::make_unique<dx3d::MarbleMazeScene>()); m_currentSceneType = SceneType::MarbleMazeScene; break;
-                case 7: setScene(std::make_unique<dx3d::FlipFluidSimulationScene>()); m_currentSceneType = SceneType::FlipFluidSimulationScene; break;
+                case 4: setScene(std::make_unique<dx3d::JellyTetrisReduxScene>()); m_currentSceneType = SceneType::JellyTetrisReduxScene; break;
+                case 5: setScene(std::make_unique<dx3d::PartitionScene>()); m_currentSceneType = SceneType::PartitionScene; break;
+                case 6: setScene(std::make_unique<dx3d::ThreeDTestScene>()); m_currentSceneType = SceneType::ThreeDTestScene; break;
+                case 7: setScene(std::make_unique<dx3d::MarbleMazeScene>()); m_currentSceneType = SceneType::MarbleMazeScene; break;
+                case 8: setScene(std::make_unique<dx3d::FlipFluidSimulationScene>()); m_currentSceneType = SceneType::FlipFluidSimulationScene; break;
                 default: break;
                 }
             }
-            ImGui::TextDisabled("Hotkeys: 1-8 switch scenes");
+            ImGui::TextDisabled("Hotkeys: 1-9 switch scenes");
         }
         ImGui::End();
     }

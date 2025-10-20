@@ -94,11 +94,11 @@ namespace dx3d {
         bool getIsBroken() const { return m_isBroken; }
         void setBroken(bool broken) { m_isBroken = broken; }
 
-        // Constants
+        // Constants - reduced to prevent explosions
         static constexpr float MASS_PER_LENGTH = 0.01f;
-        static constexpr float STIFFNESS = 2500.0f;
-        static constexpr float FORCE_BEAM_MAX = 2500.0f;
-        static constexpr float GRAVITY = -9.81f * 10.0f; // Scale for your world units
+        static constexpr float STIFFNESS = 1000.0f; // Reduced from 2500
+        static constexpr float FORCE_BEAM_MAX = 1000.0f; // Reduced from 2500
+        static constexpr float GRAVITY = -9.81f * 5.0f; // Reduced from 10.0f
 		Entity* getNode1() const { return m_node1Entity; }
 		Entity* getNode2() const { return m_node2Entity; }
     private:
