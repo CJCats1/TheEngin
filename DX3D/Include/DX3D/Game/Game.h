@@ -26,6 +26,8 @@ SOFTWARE.*/
 #include <DX3D/Core/Base.h>
 #include <DX3D/Core/Core.h>
 #include <chrono>
+#include <memory>
+#include <string>
 
 // Forward declarations
 namespace dx3d {
@@ -33,7 +35,7 @@ namespace dx3d {
 }
 namespace dx3d
 {
-    enum class SceneType { None, TestScene, BridgeScene, SpiderSolitaireScene, PhysicsTetrisScene, JellyTetrisReduxScene, PartitionScene, ThreeDTestScene, MarbleMazeScene, FlipFluidSimulationScene
+    enum class SceneType { None, TestScene, BridgeScene, SpiderSolitaireScene, PhysicsTetrisScene, JellyTetrisReduxScene, PartitionScene, ThreeDTestScene, FlipFluidSimulationScene, SPHFluidSimulationScene, CloudScene, PowderScene
 	};
 	class Scene;
 	class TestScene; // Forward declaration

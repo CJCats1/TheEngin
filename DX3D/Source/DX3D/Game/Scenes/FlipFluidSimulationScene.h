@@ -7,6 +7,8 @@
 #include <DX3D/Core/Input.h>
 #include <DX3D/Graphics/LineRenderer.h>
 #include <DX3D/Graphics/Mesh.h>
+#include <DX3D/Components/FirmGuyComponent.h>
+#include <DX3D/Components/FirmGuySystem.h>
 #include <vector>
 #include <memory>
 #include <string>
@@ -16,6 +18,7 @@
 
 namespace dx3d
 {
+    class Texture2D;
     // Simple 2D FLIP fluid simulation scene
     // Particles are rendered using node.png; boundaries use beam.png
     class FlipFluidSimulationScene : public Scene
@@ -56,6 +59,13 @@ namespace dx3d
         // Rotated box helpers
         Vec2 worldToBoxLocal(const Vec2& p) const;
         Vec2 boxLocalToWorld(const Vec2& p) const;
+
+        // FirmGuy interactive ball
+        void createBall();
+        void updateBallSpring(float dt, const Vec2& target);
+        void enforceBallOnParticles();
+        void applyBallBuoyancy();
+        float calculateFluidDensityAt(const Vec2& worldPos);
 
         // FLIP pipeline
         void stepFLIP(float dt);
@@ -179,6 +189,9 @@ namespace dx3d
         std::string m_metaballQuadEntity = "MetaballQuad";
         bool m_metaballQuadCreated = false;
 
+        // Sprites-mode particle texture (node.png)
+        std::shared_ptr<Texture2D> m_nodeTexture;
+
         // Mouse interaction
         enum class MouseTool { Add, Force, Pickup };
         MouseTool m_mouseTool = MouseTool::Add;
@@ -206,6 +219,7 @@ namespace dx3d
         float m_colorSpeedThreshold = 200.0f; // legacy
         float m_colorSpeedMin = 0.0f;     // speed for darkest blue
         float m_colorSpeedMax = 400.0f;   // speed for white spray
+        bool  m_debugColor = false;       // toggle for blue->green->red debug gradient
 
         // Multithreading
         int   m_threadCount = 1; // default single-thread; enable in UI if beneficial
@@ -247,11 +261,28 @@ namespace dx3d
         Vec2  m_boxHalf   = Vec2(m_domainWidth * 0.5f, m_domainHeight * 0.5f);
         float m_boxAngle  = 0.0f; // radians
         
-        // Boundary visualization offsets
-        float m_boundaryLeftOffset = -10.0f;
-        float m_boundaryRightOffset = 10.0f;
-        float m_boundaryBottomOffset = -10.0f;
-        float m_boundaryTopOffset = 10.0f;
+        // Boundary visualization offsets (Left/Bottom = -15, Right/Top = 15)
+        float m_boundaryLeftOffset = -15.0f;
+        float m_boundaryRightOffset = 15.0f;
+        float m_boundaryBottomOffset = -15.0f;
+        float m_boundaryTopOffset = 15.0f;
+
+        // Interactive FirmGuy ball parameters
+        std::string m_ballEntityName = "FluidBall";
+        bool m_ballEnabled = false;
+        float m_ballRadius = 18.0f;
+        float m_ballMass = 3.0f;
+        float m_ballRestitution = 0.35f;
+        float m_ballFriction = 0.98f;
+        // Spring to mouse (RMB)
+        bool m_ballSpringActive = false;
+        float m_ballSpringK = 120.0f;      // spring stiffness
+        float m_ballSpringDamping = 12.0f; // damping factor
+        
+        // Buoyancy parameters
+        float m_ballBuoyancyStrength = 10000.0f;  // buoyancy force multiplier (much stronger)
+        float m_ballBuoyancyDamping = 0.95f;     // velocity damping in fluid
+        bool m_ballBuoyancyEnabled = true;
         
         // Marching squares fluid surface - DISABLED
         bool m_showFluidSurface = false; // Disabled to prevent freezing

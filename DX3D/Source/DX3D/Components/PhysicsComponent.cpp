@@ -103,7 +103,7 @@ namespace dx3d {
 	}
 
 	Vec2 BeamComponent::getForceAtNode(const NodeComponent& node) const {
-		if (!m_node1Entity || !m_node2Entity || m_length0 <= 0.0f) {
+		if (!m_node1Entity || !m_node2Entity || m_length0 <= 0.0f || !m_enabled) {
 			return Vec2(0.0f, 0.0f);
 		}
 
@@ -115,26 +115,39 @@ namespace dx3d {
 
 		// Calculate current beam vector and displacement
 		Vec2 currentLength = node1->getPosition() - node2->getPosition();
-		Vec2 displacement = currentLength.normalized() * (currentLength.length() - m_length0);
+		float restLength = m_length0 * m_restLengthMultiplier;
+		Vec2 displacement = currentLength.normalized() * (currentLength.length() - restLength);
 
-		// Calculate forces
-		Vec2 forceBeam = displacement * STIFFNESS;
+		// Calculate forces using configurable parameters
+		Vec2 forceBeam = displacement * m_stiffness;
 		Vec2 forceGravity = Vec2(0.0f, m_mass * GRAVITY);
 
+		// Apply damping force (opposite to velocity)
+		Vec2 relativeVelocity = node1->getVelocity() - node2->getVelocity();
+		Vec2 dampingForce = relativeVelocity * -m_damping;
+
+		// Clamp force to maximum
+		float forceMagnitude = forceBeam.length();
+		if (forceMagnitude > m_maxForce) {
+			forceBeam = forceBeam.normalized() * m_maxForce;
+		}
+
 		// Update stress visualization (cast away const for this calculation)
-		const_cast<BeamComponent*>(this)->m_colorForceFactor = forceBeam.length() / FORCE_BEAM_MAX;
+		const_cast<BeamComponent*>(this)->m_colorForceFactor = forceMagnitude / m_maxForce;
 		if (m_colorForceFactor >= 1.0f) {
 			const_cast<BeamComponent*>(this)->m_colorForceFactor = 1.0f;
 			const_cast<BeamComponent*>(this)->m_isBroken = true;
-
 		}
+
+		// Add damping to the spring force
+		Vec2 totalForce = forceBeam + dampingForce;
 
 		// Return force based on which node is being queried
 		if (node1 == &node) {
-			return Vec2(-forceBeam.x, -forceBeam.y) + Vec2(forceGravity.x * 0.5f, forceGravity.y * 0.5f);
+			return Vec2(-totalForce.x, -totalForce.y) + Vec2(forceGravity.x * 0.5f, forceGravity.y * 0.5f);
 		}
 		else if (node2 == &node) {
-			return forceBeam + Vec2(forceGravity.x * 0.5f, forceGravity.y * 0.5f);
+			return totalForce + Vec2(forceGravity.x * 0.5f, forceGravity.y * 0.5f);
 		}
 
 		return Vec2(0.0f, 0.0f);

@@ -93,6 +93,19 @@ namespace dx3d {
         // Breaking check
         bool getIsBroken() const { return m_isBroken; }
         void setBroken(bool broken) { m_isBroken = broken; }
+        
+        // Spring configuration
+        void setStiffness(float stiffness) { m_stiffness = stiffness; }
+        void setDamping(float damping) { m_damping = damping; }
+        void setMaxForce(float maxForce) { m_maxForce = maxForce; }
+        void setRestLengthMultiplier(float multiplier) { m_restLengthMultiplier = multiplier; }
+        void setEnabled(bool enabled) { m_enabled = enabled; }
+        
+        float getStiffness() const { return m_stiffness; }
+        float getDamping() const { return m_damping; }
+        float getMaxForce() const { return m_maxForce; }
+        float getRestLengthMultiplier() const { return m_restLengthMultiplier; }
+        bool getEnabled() const { return m_enabled; }
 
         // Constants - reduced to prevent explosions
         static constexpr float MASS_PER_LENGTH = 0.01f;
@@ -111,6 +124,13 @@ namespace dx3d {
         float m_colorForceFactor = 0.0f;
         bool m_isBroken = false;
         static constexpr float m_thickness = 22.0f;
+        
+        // Configurable spring parameters
+        float m_stiffness = STIFFNESS;
+        float m_damping = 80.0f;
+        float m_maxForce = FORCE_BEAM_MAX;
+        float m_restLengthMultiplier = 1.0f;
+        bool m_enabled = true;
     };
 
     // System to update all physics nodes and beams

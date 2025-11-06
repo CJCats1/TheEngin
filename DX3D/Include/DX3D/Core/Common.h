@@ -23,9 +23,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
+
+// Undefine Windows macros that conflict with std::min/std::max
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
+#endif
+
 #include <DX3D/Core/Core.h>
 #include <DX3D/Core/Logger.h>
 #include <DX3D/Math/Geometry.h>
+#include <string>
+#include <vector>
 
 namespace dx3d
 {

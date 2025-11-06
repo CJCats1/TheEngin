@@ -3,6 +3,8 @@
 #include <vector>
 #include <d3d11.h>
 #include <cmath>
+#include <string>
+#include <algorithm>
 
 namespace dx3d {
     static float clamp(float value, float min, float max) {

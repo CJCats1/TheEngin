@@ -8,6 +8,7 @@
 #include <iostream>
 #include <imgui.h>
 #include <cmath>
+#include <chrono>
 
 using namespace dx3d;
 
@@ -170,6 +171,9 @@ void JellyTetrisReduxScene::spawnTetrimino(TetriminoReduxType type, Vec2 positio
     createTetriminoBeams(data, baseName, m_nextTetriminoId);
 
     m_nextTetriminoId++;
+    
+    // Mark spatial grid as dirty when new entities are added
+    m_spatialGridDirty = true;
 }
 
 std::string JellyTetrisReduxScene::createTetriminoNodes(const JellyTetriminoData& data, Vec2 basePosition, int tetriminoId) {
@@ -301,7 +305,19 @@ void JellyTetrisReduxScene::createTetriminoBeams(const JellyTetriminoData& data,
 
 
 void JellyTetrisReduxScene::update(float dt) {
+    // Update FPS counter
+    m_fpsTimer += dt;
+    m_frameCount++;
+    if (m_fpsTimer >= 1.0f) {
+        m_currentFPS = static_cast<float>(m_frameCount) / m_fpsTimer;
+        m_fpsTimer = 0.0f;
+        m_frameCount = 0;
+    }
+    
     updateCameraMovement(dt);
+    
+    // Handle node dragging
+    updateNodeDragging();
     
     // Handle tetramino input controls
     handleTetraminoInput();
@@ -313,14 +329,23 @@ void JellyTetrisReduxScene::fixedUpdate(float dt) {
         // Clamp delta time to prevent large timesteps that cause explosions
         float clampedDt = std::min(dt, 1.0f / 30.0f); // Max 30 FPS equivalent
         
+        // Time physics updates
+        auto start = std::chrono::high_resolution_clock::now();
         PhysicsSystem::updateNodes(*m_entityManager, clampedDt);
         PhysicsSystem::updateBeams(*m_entityManager, clampedDt);
+        auto physicsEnd = std::chrono::high_resolution_clock::now();
         
         // Add air resistance to reduce wiggling
         addAirResistance();
         
-        // Handle collisions with play field boundaries
-    updateCollisions();
+        // Time collision detection
+        auto collisionStart = std::chrono::high_resolution_clock::now();
+        updateCollisions();
+        auto collisionEnd = std::chrono::high_resolution_clock::now();
+        
+        // Update timing stats
+        m_physicsTime = std::chrono::duration<float, std::milli>(physicsEnd - start).count();
+        m_collisionTime = std::chrono::duration<float, std::milli>(collisionEnd - collisionStart).count();
     }
 }
 
@@ -401,6 +426,11 @@ void JellyTetrisReduxScene::renderImGui(GraphicsEngine& engine)
             ImGui::Text("O = Rotate Clockwise");
             ImGui::Separator();
             
+            ImGui::Text("Node Dragging:");
+            ImGui::Text("Left Click = Drag individual nodes");
+            ImGui::Text("Dragged nodes render on top");
+            ImGui::Separator();
+            
             ImGui::SliderFloat("Move Speed", &m_tetraminoMoveSpeed, 1.0f, 50.0f, "%.1f");
             ImGui::Text("Base movement speed");
             
@@ -460,6 +490,99 @@ void JellyTetrisReduxScene::renderImGui(GraphicsEngine& engine)
             
             ImGui::SliderFloat("Bottom Bounce Damping", &m_bottomBounceDamping, 0.0f, 1.0f, "%.2f");
             ImGui::Text("Lower = more bouncing, Higher = less bouncing");
+
+            ImGui::Separator();
+            ImGui::Text("Drag Spring Settings:");
+            ImGui::SliderFloat("Drag Stiffness", &m_dragSpringStiffness, 10.0f, 200.0f, "%.1f");
+            ImGui::SliderFloat("Drag Damping", &m_dragSpringDamping, 1.0f, 40.0f, "%.1f");
+            ImGui::SliderFloat("Drag Max Force", &m_dragMaxForce, 100.0f, 3000.0f, "%.0f");
+            
+            ImGui::Separator();
+            ImGui::Text("Collision Optimizations:");
+            ImGui::Checkbox("Enable Collisions", &m_enableCollisions);
+            ImGui::Text("Same-tetramino collisions are skipped");
+            ImGui::Text("Spatial grid reduces collision checks");
+        }
+
+        // Status
+        if (ImGui::CollapsingHeader("Status", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            if (m_isDraggingNode) {
+                ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Dragging Node: %s", m_draggedNode ? m_draggedNode->getName().c_str() : "Unknown");
+            } else {
+                ImGui::Text("No node being dragged");
+            }
+            
+            // FPS Display
+            ImGui::Text("FPS: %.1f", m_currentFPS);
+            if (m_currentFPS < 30.0f) {
+                ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "LOW FPS WARNING!");
+            } else if (m_currentFPS < 50.0f) {
+                ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Moderate FPS");
+            } else {
+                ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Good FPS");
+            }
+            
+            // Performance stats
+            if (m_entityManager) {
+                auto beamEntities = m_entityManager->getEntitiesWithComponent<BeamComponent>();
+                auto nodeEntities = m_entityManager->getEntitiesWithComponent<NodeComponent>();
+                
+                ImGui::Separator();
+                ImGui::Text("Entity Counts:");
+                ImGui::Text("Beams: %zu", beamEntities.size());
+                ImGui::Text("Nodes: %zu", nodeEntities.size());
+                ImGui::Text("Spatial Cells: %zu", m_spatialGrid.size());
+                ImGui::Text("Grid Dirty: %s", m_spatialGridDirty ? "Yes" : "No");
+                
+                // Calculate theoretical collision checks
+                size_t totalBeams = beamEntities.size();
+                size_t naiveChecks = totalBeams * (totalBeams - 1) / 2;
+                size_t spatialChecks = 0;
+                for (const auto& [key, cell] : m_spatialGrid) {
+                    size_t cellBeams = cell.beams.size();
+                    spatialChecks += cellBeams * (cellBeams - 1) / 2;
+                }
+                
+                ImGui::Separator();
+                ImGui::Text("Collision Performance:");
+                ImGui::Text("Naive Checks: %zu", naiveChecks);
+                ImGui::Text("Spatial Checks: %zu", spatialChecks);
+                if (naiveChecks > 0) {
+                    float reduction = 100.0f * (1.0f - (float)spatialChecks / (float)naiveChecks);
+                    ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Reduction: %.1f%%", reduction);
+                }
+                
+                // Show grid distribution
+                ImGui::Separator();
+                ImGui::Text("Grid Distribution:");
+                int maxBeamsInCell = 0;
+                int totalCells = 0;
+                for (const auto& [key, cell] : m_spatialGrid) {
+                    if (!cell.beams.empty()) {
+                        totalCells++;
+                        maxBeamsInCell = std::max(maxBeamsInCell, static_cast<int>(cell.beams.size()));
+                    }
+                }
+                ImGui::Text("Active Cells: %d", totalCells);
+                ImGui::Text("Max Beams/Cell: %d", maxBeamsInCell);
+                
+                // Performance timing
+                ImGui::Separator();
+                ImGui::Text("Timing (ms):");
+                ImGui::Text("Physics: %.2f", m_physicsTime);
+                ImGui::Text("Collisions: %.2f", m_collisionTime);
+                ImGui::Text("Dragging: %.2f", m_dragTime);
+                
+                float totalTime = m_physicsTime + m_collisionTime + m_dragTime;
+                ImGui::Text("Total: %.2f", totalTime);
+                
+                if (totalTime > 16.67f) { // More than 60 FPS worth
+                    ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "BOTTLENECK DETECTED!");
+                } else {
+                    ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Performance: Good");
+                }
+            }
         }
 
         // Camera
@@ -528,6 +651,9 @@ void JellyTetrisReduxScene::clearTestTetraminos() {
     
     // Reset tetrimino ID counter
     m_nextTetriminoId = 0;
+    
+    // Mark spatial grid as dirty when entities are removed
+    m_spatialGridDirty = true;
     
     std::cout << "Cleared all test tetraminos" << std::endl;
 }
@@ -629,8 +755,16 @@ void JellyTetrisReduxScene::renderIndividualSquare(DeviceContext& ctx, const Vec
 
 void JellyTetrisReduxScene::updateCollisions() {
     checkBoundaryCollisions();
-    // checkNodeCollisions(); // Temporarily disabled - using beam-based collisions
-    checkNodeBeamCollisions();
+    
+    if (!m_enableCollisions) return;
+    
+    // Update spatial grid for broadphase collision detection
+    updateSpatialGrid();
+    
+    // Use broadphase to check collisions more efficiently
+    for (const auto& [cellKey, cell] : m_spatialGrid) {
+        checkCollisionsInCell(cellKey);
+    }
 }
 
 void JellyTetrisReduxScene::checkBoundaryCollisions() {
@@ -900,16 +1034,24 @@ void JellyTetrisReduxScene::checkNodeCollisions() {
             std::string name1 = node1Entity->getName();
             std::string name2 = node2Entity->getName();
             
-            // Extract tetramino prefix (e.g., "I_0" from "I_0_Node0")
-            size_t lastUnderscore1 = name1.find_last_of('_');
-            size_t lastUnderscore2 = name2.find_last_of('_');
+            // Quick check: if names are identical, skip
+            if (name1 == name2) continue;
             
-            if (lastUnderscore1 != std::string::npos && lastUnderscore2 != std::string::npos) {
-                std::string prefix1 = name1.substr(0, lastUnderscore1);
-                std::string prefix2 = name2.substr(0, lastUnderscore2);
+            // Extract tetramino ID for faster comparison
+            // Format: "I_0_Node0" -> tetramino ID is between first and second underscore
+            size_t firstUnderscore1 = name1.find('_');
+            size_t firstUnderscore2 = name2.find('_');
+            size_t secondUnderscore1 = name1.find('_', firstUnderscore1 + 1);
+            size_t secondUnderscore2 = name2.find('_', firstUnderscore2 + 1);
+            
+            if (firstUnderscore1 != std::string::npos && secondUnderscore1 != std::string::npos &&
+                firstUnderscore2 != std::string::npos && secondUnderscore2 != std::string::npos) {
                 
-                // Skip collision if they're from the same tetramino
-                if (prefix1 == prefix2) continue;
+                std::string tetraminoId1 = name1.substr(firstUnderscore1 + 1, secondUnderscore1 - firstUnderscore1 - 1);
+                std::string tetraminoId2 = name2.substr(firstUnderscore2 + 1, secondUnderscore2 - firstUnderscore2 - 1);
+                
+                // Skip collision if same tetramino
+                if (tetraminoId1 == tetraminoId2) continue;
             }
             
             // Check for collision
@@ -1320,6 +1462,306 @@ void JellyTetrisReduxScene::resolveBeamBeamCollision(BeamComponent& beam1, BeamC
                         node2b->setVelocity(vel);
                     }
                 }
+            }
+        }
+    }
+}
+
+// Node dragging implementation
+Vec2 JellyTetrisReduxScene::screenToWorldPosition(const Vec2& screenPos) {
+    // Use cached camera reference for performance
+    if (!m_cameraCacheValid) {
+        if (auto* cameraEntity = m_entityManager->findEntity("MainCamera")) {
+            m_cachedCamera = cameraEntity->getComponent<Camera2D>();
+            m_cameraCacheValid = (m_cachedCamera != nullptr);
+        }
+    }
+    
+    if (m_cachedCamera) {
+        float screenWidth = GraphicsEngine::getWindowWidth();
+        float screenHeight = GraphicsEngine::getWindowHeight();
+
+        // Convert normalized screen coordinates to pixel coordinates
+        float pixelX = screenPos.x * screenWidth;
+        float pixelY = screenPos.y * screenHeight;
+
+        // Use the camera's built-in screenToWorld method
+        Vec2 worldPos = m_cachedCamera->screenToWorld(Vec2(pixelX, pixelY));
+        
+        // The camera's screenToWorld flips Y, so we need to flip it back
+        // to get the correct world coordinates for our game
+        return Vec2(worldPos.x, -worldPos.y);
+    }
+    return Vec2(0, 0);
+}
+
+Entity* JellyTetrisReduxScene::findNodeUnderMouse(const Vec2& worldMousePos) {
+    if (!m_entityManager) return nullptr;
+    
+    auto nodeEntities = m_entityManager->getEntitiesWithComponent<NodeComponent>();
+    
+    // Early exit if no nodes
+    if (nodeEntities.empty()) return nullptr;
+    
+    // Find the closest node to the mouse position
+    Entity* closestNode = nullptr;
+    float closestDistanceSquared = std::numeric_limits<float>::max();
+    float nodeRadiusSquared = (NODE_SIZE * 0.5f) * (NODE_SIZE * 0.5f); // Use squared distance for performance
+    
+    for (auto* nodeEntity : nodeEntities) {
+        auto* node = nodeEntity->getComponent<NodeComponent>();
+        if (!node || node->isPositionFixed()) continue;
+        
+        Vec2 nodePos = node->getPosition();
+        Vec2 diff = worldMousePos - nodePos;
+        float distanceSquared = diff.x * diff.x + diff.y * diff.y; // Avoid sqrt() call
+        
+        // Check if mouse is within node radius (using squared distance)
+        if (distanceSquared < nodeRadiusSquared && distanceSquared < closestDistanceSquared) {
+            closestNode = nodeEntity;
+            closestDistanceSquared = distanceSquared;
+        }
+    }
+    
+    return closestNode;
+}
+
+void JellyTetrisReduxScene::updateNodeDragging() {
+    if (!m_entityManager) return;
+    
+    auto& input = Input::getInstance();
+    
+    // Time dragging updates
+    auto dragStart = std::chrono::high_resolution_clock::now();
+    
+    // Early exit if no mouse interaction
+    bool mousePressed = input.wasMouseJustPressed(MouseClick::LeftMouse);
+    bool mouseReleased = input.wasMouseJustReleased(MouseClick::LeftMouse);
+    bool mouseDown = input.isMouseDown(MouseClick::LeftMouse);
+    
+    if (!mousePressed && !mouseReleased && !mouseDown && !m_isDraggingNode) {
+        return; // No mouse interaction, skip expensive calculations
+    }
+    
+    Vec2 mousePos = input.getMousePositionNDC();
+    Vec2 worldMousePos = screenToWorldPosition(mousePos);
+    
+    // Update mouse position for velocity calculation
+    Vec2 mouseDelta = worldMousePos - m_lastMousePosition;
+    m_lastMousePosition = worldMousePos;
+    
+    // Start dragging
+    if (mousePressed) {
+        Entity* clickedNode = findNodeUnderMouse(worldMousePos);
+        if (clickedNode) {
+            m_draggedNode = clickedNode;
+            m_isDraggingNode = true;
+            
+            // Cache component references for performance
+            m_cachedDraggedNode = clickedNode->getComponent<NodeComponent>();
+            m_cachedDraggedSprite = clickedNode->getComponent<SpriteComponent>();
+            
+            if (m_cachedDraggedNode) {
+                Vec2 nodePos = m_cachedDraggedNode->getPosition();
+                m_dragOffset = nodePos - worldMousePos;
+            }
+            
+            // Bring dragged node to front by adjusting Z position
+            if (m_cachedDraggedSprite) {
+                Vec3 pos = m_cachedDraggedSprite->getPosition();
+                m_cachedDraggedSprite->setPosition(pos.x, pos.y, 100.0f); // High Z value to render on top
+            }
+        }
+    }
+    
+    // Update dragging with spring-damper force towards mouse
+    if (m_isDraggingNode && m_cachedDraggedNode) {
+        Vec2 targetPos = worldMousePos + m_dragOffset;
+        Vec2 currentPos = m_cachedDraggedNode->getPosition();
+        Vec2 toTarget = targetPos - currentPos;
+        Vec2 vel = m_cachedDraggedNode->getVelocity();
+
+        // Spring-damper: F = k * x - c * v
+        Vec2 force = toTarget * m_dragSpringStiffness - vel * m_dragSpringDamping;
+
+        // Clamp force
+        float mag = force.length();
+        if (mag > m_dragMaxForce && mag > 0.0f) {
+            force = force * (m_dragMaxForce / mag);
+        }
+
+        m_cachedDraggedNode->addExternalForce(force);
+
+        // Keep dragged sprite visually on top; let physics update X/Y
+        if (m_cachedDraggedSprite) {
+            Vec3 sp = m_cachedDraggedSprite->getPosition();
+            // Optionally, nudge sprite toward node for visual sync (no snap)
+            m_cachedDraggedSprite->setPosition(currentPos.x, currentPos.y, sp.z);
+        }
+    }
+    
+    // Stop dragging
+    if (mouseReleased) {
+        if (m_isDraggingNode && m_cachedDraggedSprite) {
+            // Reset Z position to normal depth
+            Vec3 pos = m_cachedDraggedSprite->getPosition();
+            m_cachedDraggedSprite->setPosition(pos.x, pos.y, 0.0f); // Reset to normal Z
+        }
+        
+        m_isDraggingNode = false;
+        m_draggedNode = nullptr;
+        m_cachedDraggedNode = nullptr;
+        m_cachedDraggedSprite = nullptr;
+    }
+    
+    // Update drag timing
+    auto dragEnd = std::chrono::high_resolution_clock::now();
+    m_dragTime = std::chrono::duration<float, std::milli>(dragEnd - dragStart).count();
+}
+
+// Broadphase collision detection implementation
+void JellyTetrisReduxScene::updateSpatialGrid() {
+    if (!m_entityManager) return;
+    
+    // Only update grid if it's dirty or we have many entities
+    auto beamEntities = m_entityManager->getEntitiesWithComponent<BeamComponent>();
+    if (!m_spatialGridDirty && beamEntities.size() < 50) {
+        return; // Skip update for small numbers of entities
+    }
+    
+    // Clear existing grid
+    m_spatialGrid.clear();
+    
+    // Add beams to spatial grid
+    for (auto* beamEntity : beamEntities) {
+        auto* beam = beamEntity->getComponent<BeamComponent>();
+        if (!beam) continue;
+        
+        auto* node1 = beam->getNode1Entity()->getComponent<NodeComponent>();
+        auto* node2 = beam->getNode2Entity()->getComponent<NodeComponent>();
+        if (!node1 || !node2) continue;
+        
+        Vec2 pos1 = node1->getPosition();
+        Vec2 pos2 = node2->getPosition();
+        
+        // Get bounding box of beam
+        Vec2 min = Vec2(std::min(pos1.x, pos2.x), std::min(pos1.y, pos2.y));
+        Vec2 max = Vec2(std::max(pos1.x, pos2.x), std::max(pos1.y, pos2.y));
+        
+        // Add padding for collision radius
+        float padding = NODE_SIZE * 0.4f;
+        min -= Vec2(padding, padding);
+        max += Vec2(padding, padding);
+        
+        // Add beam to all cells it overlaps
+        std::vector<std::string> keys;
+        getGridKeys(min, max, keys);
+        for (const auto& key : keys) {
+            m_spatialGrid[key].beams.push_back(beamEntity);
+        }
+    }
+    
+    m_spatialGridDirty = false;
+}
+
+std::string JellyTetrisReduxScene::getGridKey(const Vec2& position) {
+    int gridX = static_cast<int>(std::floor(position.x / GRID_CELL_SIZE));
+    int gridY = static_cast<int>(std::floor(position.y / GRID_CELL_SIZE));
+    return std::to_string(gridX) + "," + std::to_string(gridY);
+}
+
+void JellyTetrisReduxScene::getGridKeys(const Vec2& min, const Vec2& max, std::vector<std::string>& keys) {
+    keys.clear();
+    
+    int minX = static_cast<int>(std::floor(min.x / GRID_CELL_SIZE));
+    int minY = static_cast<int>(std::floor(min.y / GRID_CELL_SIZE));
+    int maxX = static_cast<int>(std::floor(max.x / GRID_CELL_SIZE));
+    int maxY = static_cast<int>(std::floor(max.y / GRID_CELL_SIZE));
+    
+    for (int x = minX; x <= maxX; ++x) {
+        for (int y = minY; y <= maxY; ++y) {
+            keys.push_back(std::to_string(x) + "," + std::to_string(y));
+        }
+    }
+}
+
+void JellyTetrisReduxScene::checkCollisionsInCell(const std::string& cellKey) {
+    auto it = m_spatialGrid.find(cellKey);
+    if (it == m_spatialGrid.end()) return;
+    
+    const auto& cell = it->second;
+    
+    // Check beam-to-beam collisions within this cell
+    for (size_t i = 0; i < cell.beams.size(); ++i) {
+        for (size_t j = i + 1; j < cell.beams.size(); ++j) {
+            auto* beam1Entity = cell.beams[i];
+            auto* beam2Entity = cell.beams[j];
+            
+            if (!beam1Entity || !beam2Entity) continue;
+            
+            auto* beam1 = beam1Entity->getComponent<BeamComponent>();
+            auto* beam2 = beam2Entity->getComponent<BeamComponent>();
+            
+            if (!beam1 || !beam2) continue;
+            
+            // Skip if beams are from same tetramino (optimized check)
+            std::string beam1Name = beam1Entity->getName();
+            std::string beam2Name = beam2Entity->getName();
+            
+            // Quick check: if names are identical, skip
+            if (beam1Name == beam2Name) continue;
+            
+            // Extract tetramino ID from beam names for faster comparison
+            // Format: "I_0_Beam0" -> tetramino ID is between first and second underscore
+            size_t firstUnderscore1 = beam1Name.find('_');
+            size_t firstUnderscore2 = beam2Name.find('_');
+            size_t secondUnderscore1 = beam1Name.find('_', firstUnderscore1 + 1);
+            size_t secondUnderscore2 = beam2Name.find('_', firstUnderscore2 + 1);
+            
+            if (firstUnderscore1 != std::string::npos && secondUnderscore1 != std::string::npos &&
+                firstUnderscore2 != std::string::npos && secondUnderscore2 != std::string::npos) {
+                
+                std::string tetraminoId1 = beam1Name.substr(firstUnderscore1 + 1, secondUnderscore1 - firstUnderscore1 - 1);
+                std::string tetraminoId2 = beam2Name.substr(firstUnderscore2 + 1, secondUnderscore2 - firstUnderscore2 - 1);
+                
+                // Skip collision if same tetramino
+                if (tetraminoId1 == tetraminoId2) continue;
+            }
+            
+            // Get beam endpoints
+            auto* node1aEntity = beam1->getNode1Entity();
+            auto* node1bEntity = beam1->getNode2Entity();
+            auto* node2aEntity = beam2->getNode1Entity();
+            auto* node2bEntity = beam2->getNode2Entity();
+            
+            if (!node1aEntity || !node1bEntity || !node2aEntity || !node2bEntity) continue;
+            
+            auto* node1a = node1aEntity->getComponent<NodeComponent>();
+            auto* node1b = node1bEntity->getComponent<NodeComponent>();
+            auto* node2a = node2aEntity->getComponent<NodeComponent>();
+            auto* node2b = node2bEntity->getComponent<NodeComponent>();
+            
+            if (!node1a || !node1b || !node2a || !node2b) continue;
+            
+            Vec2 beam1Start = node1a->getPosition();
+            Vec2 beam1End = node1b->getPosition();
+            Vec2 beam2Start = node2a->getPosition();
+            Vec2 beam2End = node2b->getPosition();
+            
+            // Check for beam-to-beam collision
+            try {
+                float distance = distanceLineSegmentToLineSegment(beam1Start, beam1End, beam2Start, beam2End);
+                
+                if (!std::isfinite(distance)) continue;
+                
+                float beamRadius = NODE_SIZE * 0.2f;
+                float collisionRadius = beamRadius * 2.0f;
+                
+                if (distance < collisionRadius && distance >= 0.0f) {
+                    resolveBeamBeamCollision(*beam1, *beam2);
+                }
+            } catch (...) {
+                continue;
             }
         }
     }

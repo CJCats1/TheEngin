@@ -28,6 +28,10 @@ void Mesh3DComponent::draw(DeviceContext& ctx) const {
     // Set material properties
     ctx.setMaterial(m_materialColor, m_shininess, m_roughness);
     
+    // Set alpha/transparency using tint
+    Vec4 tintWithAlpha(m_materialColor.x, m_materialColor.y, m_materialColor.z, m_alpha);
+    ctx.setTint(tintWithAlpha);
+    
     // Draw the mesh
     m_mesh->draw(ctx);
 }

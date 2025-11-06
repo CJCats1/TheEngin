@@ -114,6 +114,11 @@ namespace dx3d
         void handleTetraminoInput();
         Entity* getMostRecentTetramino();
         
+        // Node dragging functionality
+        void updateNodeDragging();
+        Entity* findNodeUnderMouse(const Vec2& worldMousePos);
+        Vec2 screenToWorldPosition(const Vec2& screenPos);
+        
         // Physics parameters for ImGui controls
         float m_airResistance = 0.995f;
         float m_collisionRestitution = 0.1f;
@@ -125,6 +130,56 @@ namespace dx3d
         float m_tetraminoForceMultiplier = 20.0f; // Reduced to prevent explosions
         float m_tetraminoRotationSpeed = 2.0f; // Rotation speed
         float m_tetraminoRotationForceMultiplier = 1.0f; // Rotation force strength
+        
+        // Node dragging state
+        Entity* m_draggedNode = nullptr;
+        bool m_isDraggingNode = false;
+        Vec2 m_dragOffset;
+        Vec2 m_lastMousePosition;
+        // Spring dragging params
+        float m_dragSpringStiffness = 60.0f; // k
+        float m_dragSpringDamping = 10.0f;   // c
+        float m_dragMaxForce = 800.0f;       // clamp force
+        
+        // Cached references for performance
+        Camera2D* m_cachedCamera = nullptr;
+        bool m_cameraCacheValid = false;
+        
+        // Cached component references for dragged node
+        NodeComponent* m_cachedDraggedNode = nullptr;
+        SpriteComponent* m_cachedDraggedSprite = nullptr;
+        
+        // FPS tracking
+        float m_fpsTimer = 0.0f;
+        int m_frameCount = 0;
+        float m_currentFPS = 0.0f;
+        
+        // Performance timing
+        float m_collisionTime = 0.0f;
+        float m_physicsTime = 0.0f;
+        float m_dragTime = 0.0f;
+        
+        // Broadphase collision detection
+        struct SpatialCell {
+            std::vector<Entity*> beams;
+            std::vector<Entity*> nodes;
+        };
+        
+        // Spatial grid for broadphase collision detection
+        static constexpr float GRID_CELL_SIZE = 50.0f; // Smaller cells for better distribution
+        std::unordered_map<std::string, SpatialCell> m_spatialGrid;
+        bool m_spatialGridDirty = true;
+        
+        // Collision optimization settings
+        bool m_enableCollisions = true;
+        int m_maxCollisionChecksPerFrame = 1000; // Limit collision checks per frame
+        int m_collisionCheckCounter = 0;
+        
+        // Broadphase methods
+        void updateSpatialGrid();
+        std::string getGridKey(const Vec2& position);
+        void getGridKeys(const Vec2& min, const Vec2& max, std::vector<std::string>& keys);
+        void checkCollisionsInCell(const std::string& cellKey);
 
         // Play field constants
         static constexpr float PLAY_FIELD_WIDTH = 300.0f;

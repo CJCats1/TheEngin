@@ -3,6 +3,8 @@
 #include <unordered_map>
 #include <memory>
 #include <typeindex>
+#include <vector>
+#include <algorithm>
 
 namespace dx3d {
     using EntityId = std::size_t;

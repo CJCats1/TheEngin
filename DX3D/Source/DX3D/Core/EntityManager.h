@@ -3,6 +3,8 @@
 #include <vector>
 #include <unordered_map>
 #include <memory>
+#include <string>
+#include <algorithm>
 
 namespace dx3d {
     class EntityManager {

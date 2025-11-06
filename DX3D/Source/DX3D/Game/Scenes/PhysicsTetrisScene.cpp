@@ -4,6 +4,7 @@
 #include <DX3D/Graphics/SwapChain.h>
 #include <DX3D/Graphics/Camera.h>
 #include <DX3D/Components/PhysicsComponent.h>
+#include <DX3D/Components/SoftGuyComponent.h>
 #include <DX3D/Core/Input.h>
 #include <iostream>
 #include <set>
@@ -12,11 +13,7 @@
 #include <imgui.h>
 
 using namespace dx3d;
-void PhysicsTetrisScene::createTetriminoFrame(const std::string& baseName, Vec2 position, int tetriminoId) {
-    std::string frameName = baseName + "_Frame";
-    auto& frameEntity = m_entityManager->createEntity(frameName);
-    frameEntity.addComponent<FrameComponent>(position, 0.0f);
-}
+
 void PhysicsTetrisScene::load(GraphicsEngine& engine) {
     auto& device = engine.getGraphicsDevice();
     m_graphicsDevice = &device;
@@ -47,10 +44,16 @@ void PhysicsTetrisScene::load(GraphicsEngine& engine) {
     // Initialize game systems
     initializeTetriminoTemplates();
     createPlayField();
-    // createBoundaryWalls(); // Removed - no more boundary wall nodes
+    createFirmGuyBoundaries();
 
     // Spawn first tetrimino
     spawnNextTetrimino();
+}
+
+void PhysicsTetrisScene::createTetriminoFrame(const std::string& baseName, Vec2 position, int tetriminoId) {
+    std::string frameName = baseName + "_Frame";
+    auto& frameEntity = m_entityManager->createEntity(frameName);
+    frameEntity.addComponent<FrameComponent>(position, 0.0f);
 }
 
 Vec2 PhysicsTetrisScene::calculateCenterOfMass(const TetriminoData& data) {
@@ -206,61 +209,62 @@ void PhysicsTetrisScene::createPlayField() {
     bottomSprite.setTint(Vec4(0.3f, 0.3f, 0.3f, 0.8f));
 }
 
-void PhysicsTetrisScene::createBoundaryWalls() {
-    // Create invisible physics nodes that act as walls for collision
-    // Left wall nodes
-    for (int i = 0; i <= GRID_HEIGHT; i++) {
-        float y = -PLAY_FIELD_HEIGHT / 2 + i * CELL_SIZE;
-        std::string nodeName = "LeftWall_" + std::to_string(i);
-
-        auto& wallNode = m_entityManager->createEntity(nodeName);
-        wallNode.addComponent<NodeComponent>(Vec2(-PLAY_FIELD_WIDTH / 2 - NODE_SIZE, y), true);
-
-        // Add invisible sprite for collision detection
-        auto& sprite = wallNode.addComponent<SpriteComponent>(
-            *m_graphicsDevice,
-            L"DX3D/Assets/Textures/node.png",
-            NODE_SIZE, NODE_SIZE
-        );
-        sprite.setPosition(-PLAY_FIELD_WIDTH / 2 - NODE_SIZE, y, 0.0f);
-        sprite.setTint(Vec4(1.0f, 1.0f, 1.0f, 0.0f)); // Invisible
-    }
-
-    // Right wall nodes
-    for (int i = 0; i <= GRID_HEIGHT; i++) {
-        float y = -PLAY_FIELD_HEIGHT / 2 + i * CELL_SIZE;
-        std::string nodeName = "RightWall_" + std::to_string(i);
-
-        auto& wallNode = m_entityManager->createEntity(nodeName);
-        wallNode.addComponent<NodeComponent>(Vec2(PLAY_FIELD_WIDTH / 2 + NODE_SIZE, y), true);
-
-        // Add invisible sprite for collision detection
-        auto& sprite = wallNode.addComponent<SpriteComponent>(
-            *m_graphicsDevice,
-            L"DX3D/Assets/Textures/node.png",
-            NODE_SIZE, NODE_SIZE
-        );
-        sprite.setPosition(PLAY_FIELD_WIDTH / 2 + NODE_SIZE, y, 0.0f);
-        sprite.setTint(Vec4(1.0f, 1.0f, 1.0f, 0.0f)); // Invisible
-    }
-
-    // Bottom wall nodes
-    for (int i = 0; i <= GRID_WIDTH; i++) {
-        float x = -PLAY_FIELD_WIDTH / 2 + i * CELL_SIZE;
-        std::string nodeName = "BottomWall_" + std::to_string(i);
-
-        auto& wallNode = m_entityManager->createEntity(nodeName);
-        wallNode.addComponent<NodeComponent>(Vec2(x, -PLAY_FIELD_HEIGHT / 2 - NODE_SIZE), true);
-
-        // Add invisible sprite for collision detection
-        auto& sprite = wallNode.addComponent<SpriteComponent>(
-            *m_graphicsDevice,
-            L"DX3D/Assets/Textures/node.png",
-            NODE_SIZE, NODE_SIZE
-        );
-        sprite.setPosition(x, -PLAY_FIELD_HEIGHT / 2 - NODE_SIZE, 0.0f);
-        sprite.setTint(Vec4(1.0f, 1.0f, 1.0f, 0.0f)); // Invisible
-    }
+void PhysicsTetrisScene::createFirmGuyBoundaries() {
+    // Create firm guy boundaries for left, right, and bottom walls
+    
+    // Left wall
+    auto& leftWall = m_entityManager->createEntity("LeftFirmGuyWall");
+    auto& leftFirmGuy = leftWall.addComponent<FirmGuyComponent>();
+    leftFirmGuy.setRectangle(Vec2(WALL_THICKNESS / 2, PLAY_FIELD_HEIGHT / 2));
+    leftFirmGuy.setPosition(Vec2(-PLAY_FIELD_WIDTH / 2 - WALL_THICKNESS / 2, 0.0f));
+    leftFirmGuy.setStatic(true);
+    leftFirmGuy.setRestitution(0.8f);
+    leftFirmGuy.setFriction(0.9f);
+    
+    // Add visual sprite for left wall
+    auto& leftSprite = leftWall.addComponent<SpriteComponent>(
+        *m_graphicsDevice,
+        L"DX3D/Assets/Textures/beam.png",
+        WALL_THICKNESS, PLAY_FIELD_HEIGHT
+    );
+    leftSprite.setPosition(-PLAY_FIELD_WIDTH / 2 - WALL_THICKNESS / 2, 0.0f, 0.0f);
+    leftSprite.setTint(Vec4(0.3f, 0.3f, 0.3f, 0.8f));
+    
+    // Right wall
+    auto& rightWall = m_entityManager->createEntity("RightFirmGuyWall");
+    auto& rightFirmGuy = rightWall.addComponent<FirmGuyComponent>();
+    rightFirmGuy.setRectangle(Vec2(WALL_THICKNESS / 2, PLAY_FIELD_HEIGHT / 2));
+    rightFirmGuy.setPosition(Vec2(PLAY_FIELD_WIDTH / 2 + WALL_THICKNESS / 2, 0.0f));
+    rightFirmGuy.setStatic(true);
+    rightFirmGuy.setRestitution(0.8f);
+    rightFirmGuy.setFriction(0.9f);
+    
+    // Add visual sprite for right wall
+    auto& rightSprite = rightWall.addComponent<SpriteComponent>(
+        *m_graphicsDevice,
+        L"DX3D/Assets/Textures/beam.png",
+        WALL_THICKNESS, PLAY_FIELD_HEIGHT
+    );
+    rightSprite.setPosition(PLAY_FIELD_WIDTH / 2 + WALL_THICKNESS / 2, 0.0f, 0.0f);
+    rightSprite.setTint(Vec4(0.3f, 0.3f, 0.3f, 0.8f));
+    
+    // Bottom wall
+    auto& bottomWall = m_entityManager->createEntity("BottomFirmGuyWall");
+    auto& bottomFirmGuy = bottomWall.addComponent<FirmGuyComponent>();
+    bottomFirmGuy.setRectangle(Vec2(PLAY_FIELD_WIDTH / 2, WALL_THICKNESS / 2));
+    bottomFirmGuy.setPosition(Vec2(0.0f, -PLAY_FIELD_HEIGHT / 2 - WALL_THICKNESS / 2));
+    bottomFirmGuy.setStatic(true);
+    bottomFirmGuy.setRestitution(0.8f);
+    bottomFirmGuy.setFriction(0.9f);
+    
+    // Add visual sprite for bottom wall
+    auto& bottomSprite = bottomWall.addComponent<SpriteComponent>(
+        *m_graphicsDevice,
+        L"DX3D/Assets/Textures/beam.png",
+        PLAY_FIELD_WIDTH, WALL_THICKNESS
+    );
+    bottomSprite.setPosition(0.0f, -PLAY_FIELD_HEIGHT / 2 - WALL_THICKNESS / 2, 0.0f);
+    bottomSprite.setTint(Vec4(0.3f, 0.3f, 0.3f, 0.8f));
 }
 
 void PhysicsTetrisScene::createDebugToggleButton() {
@@ -445,7 +449,6 @@ void PhysicsTetrisScene::update(float dt) {
     // Check for completed lines after pieces have settled
     checkAndClearLines();
 
-    updateCollisions();
     updateUI();
 
     // Update frame debug visualization
@@ -811,9 +814,54 @@ void PhysicsTetrisScene::render(GraphicsEngine& engine, SwapChain& swapChain) {
 }
 
 void PhysicsTetrisScene::fixedUpdate(float dt) {
-    // Update physics systems with frame-based stabilization
-    updateFrameBasedPhysics(dt);
-    PhysicsSystem::updateBeams(*m_entityManager, dt);
+    // Apply spring configuration first
+    applySpringConfiguration();
+    
+    // Update firm guy physics system (handles boundaries and collisions)
+    FirmGuySystem::update(*m_entityManager, dt);
+    
+    // Update soft guy physics system (handles soft body physics)
+    SoftGuySystem::update(*m_entityManager, dt);
+    
+    // Update frames with gravity (frames move, nodes follow via springs)
+    auto frameEntities = m_entityManager->getEntitiesWithComponent<FrameComponent>();
+    for (auto* frameEntity : frameEntities) {
+        auto* frame = frameEntity->getComponent<FrameComponent>();
+        if (frame) {
+            // Apply gravity to frame
+            Vec2 frameVelocity = frame->getVelocity();
+            frameVelocity.y -= GRAVITY_ACCELERATION * dt;
+            frame->setVelocity(frameVelocity);
+            
+            // Update frame position
+            Vec2 framePos = frame->getPosition();
+            framePos += frameVelocity * dt;
+            frame->setPosition(framePos);
+        }
+    }
+    
+    // Apply frame-to-node spring forces
+    applyFrameToNodeForces(dt);
+    
+    // Handle collisions between nodes and firm guy boundaries
+    updateFirmGuyCollisions();
+    
+    // Update node positions
+    auto nodeEntities = m_entityManager->getEntitiesWithComponent<NodeComponent>();
+    for (auto* nodeEntity : nodeEntities) {
+        auto* node = nodeEntity->getComponent<NodeComponent>();
+        if (node && !node->isPositionFixed()) {
+            Vec2 position = node->getPosition();
+            Vec2 velocity = node->getVelocity();
+            position += velocity * dt;
+            node->setPosition(position);
+            
+            // Update sprite position
+            if (auto* sprite = nodeEntity->getComponent<SpriteComponent>()) {
+                sprite->setPosition(position.x, position.y, 0.0f);
+            }
+        }
+    }
 }
 
 void PhysicsTetrisScene::renderImGui(GraphicsEngine& engine)
@@ -860,15 +908,39 @@ void PhysicsTetrisScene::renderImGui(GraphicsEngine& engine)
             }
         }
 
-        // Tuning
-        if (ImGui::CollapsingHeader("Tuning", ImGuiTreeNodeFlags_DefaultOpen))
+        // Spring Configuration
+        if (ImGui::CollapsingHeader("Spring Configuration", ImGuiTreeNodeFlags_DefaultOpen))
         {
-            ImGui::Text("Frame Gravity");
-            ImGui::SliderFloat("##fg", &m_debugFrameGravity, -1.0f, 1.0f, "%.3f");
-            ImGui::Text("Node Gravity (Colliding)");
-            ImGui::SliderFloat("##ng", &m_debugNodeGravityColliding, -1.0f, 1.0f, "%.3f");
-            ImGui::Text("Collision Threshold");
-            ImGui::SliderFloat("##ct", &m_debugCollisionThreshold, 0.1f, 2.0f, "%.3f");
+            ImGui::Checkbox("Enable Springs", &m_springsEnabled);
+            
+            if (m_springsEnabled) {
+                ImGui::Text("Spring Stiffness");
+                ImGui::SliderFloat("##stiffness", &m_springStiffness, 100.0f, 20000.0f, "%.0f");
+                
+                ImGui::Text("Spring Damping");
+                ImGui::SliderFloat("##damping", &m_springDamping, 0.0f, 500.0f, "%.1f");
+                
+                if (ImGui::Button("Reset to Defaults", ImVec2(-FLT_MIN, 0))) {
+                    m_springStiffness = 5000.0f;
+                    m_springDamping = 80.0f;
+                }
+                
+                ImGui::Text("Presets:");
+                if (ImGui::Button("Rigid", ImVec2(80, 0))) {
+                    m_springStiffness = 20000.0f;
+                    m_springDamping = 200.0f;
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Soft", ImVec2(80, 0))) {
+                    m_springStiffness = 1000.0f;
+                    m_springDamping = 20.0f;
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Bouncy", ImVec2(80, 0))) {
+                    m_springStiffness = 8000.0f;
+                    m_springDamping = 10.0f;
+                }
+            }
         }
     }
     ImGui::End();
@@ -886,288 +958,6 @@ void PhysicsTetrisScene::renderImGui(GraphicsEngine& engine)
     }
 }
 
-void PhysicsTetrisScene::updateFrameBasedPhysics(float dt) {
-    auto nodeEntities = m_entityManager->getEntitiesWithComponent<NodeComponent>();
-    auto beamEntities = m_entityManager->getEntitiesWithComponent<BeamComponent>();
-    auto frameEntities = m_entityManager->getEntitiesWithComponent<FrameComponent>();
-
-    // Update frame positions and rotations based on node positions
-    for (auto* frameEntity : frameEntities) {
-        auto* frame = frameEntity->getComponent<FrameComponent>();
-        if (!frame) continue;
-
-        std::string frameName = frameEntity->getName();
-        std::string tetriminoPrefix = frameName.substr(0, frameName.find("_Frame"));
-
-        Vec2 averagePos(0.0f, 0.f);
-        Vec2 averageVelocity(0.0f, 0.0f);
-        int nodeCount = 0;
-        std::vector<Vec2> nodePositions;
-        std::vector<Vec2> nodeVelocities;
-
-        // Calculate center of mass for this tetrimino
-        for (auto* nodeEntity : nodeEntities) {
-            if (nodeEntity->getName().find(tetriminoPrefix) != std::string::npos &&
-                nodeEntity->getName().find("_Node") != std::string::npos) {
-
-                auto* node = nodeEntity->getComponent<NodeComponent>();
-                if (node && !node->isPositionFixed()) {
-                    Vec2 nodePos = node->getPosition();
-                    Vec2 nodeVel = node->getVelocity();
-                    
-                    averagePos += nodePos;
-                    averageVelocity += nodeVel;
-                    nodePositions.push_back(nodePos);
-                    nodeVelocities.push_back(nodeVel);
-                    nodeCount++;
-                }
-            }
-        }
-
-        if (nodeCount > 0) {
-            averagePos *= (1.0f / nodeCount);
-            averageVelocity *= (1.0f / nodeCount);
-
-            // Apply physics to frames for non-active tetriminos
-            bool isActiveTetrimino = (tetriminoPrefix.find("_" + std::to_string(m_currentTetriminoId)) != std::string::npos);
-            
-            if (!isActiveTetrimino) {
-                // Apply very slight gravity to frames so whole pieces fall slightly
-                Vec2 currentFramePos = frame->getPosition();
-                Vec2 frameVelocity = frame->getVelocity();
-                
-                // Apply very small gravity to frames
-                frameVelocity.y -= GRAVITY_ACCELERATION * dt * m_debugFrameGravity; // Debug frame gravity
-                
-                // Update frame position based on velocity
-                Vec2 newFramePos = currentFramePos + frameVelocity * dt;
-                
-                // Apply boundary constraints to frame
-                float leftBound = -PLAY_FIELD_WIDTH / 2 + FRAME_BOUNDARY_PADDING;
-                float rightBound = PLAY_FIELD_WIDTH / 2 - FRAME_BOUNDARY_PADDING;
-                float bottomBound = -PLAY_FIELD_HEIGHT / 2 + NODE_SIZE / 2;
-                float topBound = PLAY_FIELD_HEIGHT / 2 + NODE_SIZE;
-                
-                // Constrain frame position to play field
-                if (newFramePos.x < leftBound) {
-                    newFramePos.x = leftBound;
-                    frameVelocity.x = -frameVelocity.x * BOUNDARY_BOUNCE;
-                }
-                else if (newFramePos.x > rightBound) {
-                    newFramePos.x = rightBound;
-                    frameVelocity.x = -frameVelocity.x * BOUNDARY_BOUNCE;
-                }
-                
-                if (newFramePos.y < bottomBound) {
-                    newFramePos.y = bottomBound;
-                    frameVelocity.y = -frameVelocity.y * BOUNDARY_BOUNCE;
-                }
-                else if (newFramePos.y > topBound) {
-                    newFramePos.y = topBound;
-                    frameVelocity.y = 0.0f;
-                }
-                
-                frame->setPosition(newFramePos);
-                
-                // Apply velocity damping to prevent clumping and excessive movement
-                frameVelocity *= 0.95f; // Light damping to prevent excessive bouncing
-                frame->setVelocity(frameVelocity);
-                
-                // Keep current rotation - no rotation changes for non-active tetriminos
-                // This prevents instability from unwanted rotation
-                
-                // Removed rotation behavior for non-active tetriminos to prevent instability
-            } else {
-                // For active tetriminos, update frame position based on average node positions
-            Vec2 currentPos = frame->getPosition();
-            Vec2 targetPos = averagePos;
-            frame->setPosition(currentPos + (targetPos - currentPos) * 0.2f);
-            }
-        }
-    }
-
-    // Apply physics to individual nodes (gravity, collision, frame forces)
-    for (auto* nodeEntity : nodeEntities) {
-        auto* node = nodeEntity->getComponent<NodeComponent>();
-        if (!node || node->isPositionFixed()) continue;
-
-        // Find the frame for this node
-        std::string nodeName = nodeEntity->getName();
-        if (nodeName.find("_Node") == std::string::npos) continue;
-
-        std::string tetriminoPrefix = nodeName.substr(0, nodeName.find("_Node"));
-        std::string frameName = tetriminoPrefix + "_Frame";
-        auto* frameEntity = m_entityManager->findEntity(frameName);
-
-        bool isActiveTetrimino = (tetriminoPrefix.find("_" + std::to_string(m_currentTetriminoId)) != std::string::npos);
-
-        // Check if this node is colliding with something
-        bool isColliding = false;
-        Vec2 nodePos = node->getPosition();
-        
-        // Check collision with other nodes (more precise collision detection)
-        for (auto* otherNodeEntity : nodeEntities) {
-            if (otherNodeEntity == nodeEntity) continue;
-            auto* otherNode = otherNodeEntity->getComponent<NodeComponent>();
-            if (!otherNode || otherNode->isPositionFixed()) continue;
-            
-            Vec2 otherPos = otherNode->getPosition();
-            float distance = (nodePos - otherPos).length();
-            if (distance < NODE_SIZE * m_debugCollisionThreshold) { // Debug collision threshold
-                isColliding = true;
-                break;
-            }
-        }
-        
-        // Check collision with ground
-        if (nodePos.y <= -PLAY_FIELD_HEIGHT / 2 + NODE_SIZE) {
-            isColliding = true;
-        }
-
-        // Apply gravity to ALL nodes - full gravity normally, small downward force when colliding
-        Vec2 velocity = node->getVelocity();
-        if (isColliding) {
-            velocity.y -= GRAVITY_ACCELERATION * dt * m_debugNodeGravityColliding; // Debug gravity when colliding
-        } else {
-            velocity.y -= GRAVITY_ACCELERATION * dt; // Full gravity when not colliding
-        }
-        node->setVelocity(velocity);
-
-        if (frameEntity) {
-            auto* frame = frameEntity->getComponent<FrameComponent>();
-            if (frame) {
-                Vec2 framePos = frame->getPosition();
-
-                // For active tetriminos, apply drop movement to frame
-                if (isActiveTetrimino) {
-                Vec2 dropMovement(0.0f, -9.8f*dt);
-                Vec2 newPos = framePos + dropMovement;
-                frame->setPosition(newPos);
-                }
-
-                // Extract node index to get original offset
-                std::string nodeIndexStr = nodeName.substr(nodeName.find("_Node") + 5);
-                int nodeIndex = std::stoi(nodeIndexStr);
-
-                // Find the original offset for this node
-                Vec2 originalOffset(0.0f, 0.0f);
-                std::string tetriminoType = tetriminoPrefix.substr(0, tetriminoPrefix.find("_"));
-
-                for (const auto& tetrimino : m_tetriminoTemplates) {
-                    if (tetrimino.name == tetriminoType && nodeIndex < tetrimino.nodeOffsets.size()) {
-                        originalOffset = tetrimino.nodeOffsets[nodeIndex];
-                        break;
-                    }
-                }
-
-                // Calculate target position based on frame
-                framePos = frame->getPosition();
-                float frameRot = frame->getRotation();
-                Vec2 rotatedOffset = Vec2(
-                    originalOffset.x * cosf(frameRot) - originalOffset.y * sinf(frameRot),
-                    originalOffset.x * sinf(frameRot) + originalOffset.y * cosf(frameRot)
-                );
-                Vec2 targetPos = framePos + rotatedOffset;
-
-                // Apply frame attraction force
-                Vec2 currentPos = node->getPosition();
-                Vec2 displacement = targetPos - currentPos;
-                float distance = displacement.length();
-
-                if (distance > 0.1f) {
-                    // Strong forces to maintain tetrimino shape
-                    float frameStiffness = isActiveTetrimino ? 5000.0f : 3000.0f; // Stronger for non-active
-                    float dampingCoeff = isActiveTetrimino ? 80.0f : 60.0f; // Less damping for spring-back
-
-                    Vec2 frameForce = displacement * frameStiffness;
-
-                    // Apply damping
-                    Vec2 nodeVelocity = node->getVelocity();
-                    Vec2 dampingForce = nodeVelocity * -dampingCoeff;
-
-                    // Combine forces
-                    Vec2 totalForce = frameForce + dampingForce;
-
-                    // Apply the force
-                    float massFactor = isActiveTetrimino ? 0.02f : 0.015f;
-                    Vec2 acceleration = totalForce * massFactor;
-                    node->setVelocity(nodeVelocity + acceleration * dt);
-                }
-            }
-        }
-    }
-
-    // Apply gravity to orphaned nodes (nodes without frames)
-    applyGravityToAllOrphanedNodes();
-
-    // Enhanced collision detection BEFORE position update
-    updateCollisions();
-
-    // Update node positions with boundary constraints
-    for (auto* nodeEntity : nodeEntities) {
-        auto* node = nodeEntity->getComponent<NodeComponent>();
-        if (node && !node->isPositionFixed()) {
-            Vec2 velocity = node->getVelocity();
-
-
-            // Apply more damping to non-active pieces
-            std::string nodeName = nodeEntity->getName();
-            bool isActiveTetrimino = false;
-            if (m_hasActiveTetrimino && m_currentTetriminoId >= 0) {
-                std::string currentPrefix = "";
-                for (const auto& tetrimino : m_tetriminoTemplates) {
-                    std::string testName = tetrimino.name + "_" + std::to_string(m_currentTetriminoId);
-                    if (nodeName.find(testName + "_Node") != std::string::npos) {
-                        isActiveTetrimino = true;
-                        break;
-                    }
-                }
-            }
-
-            float dampingFactor = isActiveTetrimino ? DAMPING_FACTOR_ACTIVE : DAMPING_FACTOR_LOCKED;
-            velocity *= dampingFactor;
-            node->setVelocity(velocity);
-
-            // Update position
-            Vec2 position = node->getPosition();
-            Vec2 newPosition = position + velocity * dt;
-
-            // Boundary constraints to prevent phasing through walls
-            float leftBound = -PLAY_FIELD_WIDTH / 2 + NODE_BOUNDARY_PADDING;
-            float rightBound = PLAY_FIELD_WIDTH / 2 - NODE_BOUNDARY_PADDING;
-            float bottomBound = -PLAY_FIELD_HEIGHT / 2 + NODE_SIZE / 2;
-            float topBound = PLAY_FIELD_HEIGHT / 2 + NODE_SIZE;
-
-            // Hard boundary constraints
-            if (newPosition.x < leftBound) {
-                newPosition.x = leftBound;
-                velocity.x = -velocity.x * BOUNDARY_BOUNCE;
-            }
-            else if (newPosition.x > rightBound) {
-                newPosition.x = rightBound;
-                velocity.x = -velocity.x * BOUNDARY_BOUNCE;
-            }
-
-            if (newPosition.y < bottomBound) {
-                newPosition.y = bottomBound;
-                velocity.y = -velocity.y * BOUNDARY_BOUNCE;
-            }
-            else if (newPosition.y > topBound) {
-                newPosition.y = topBound;
-                velocity.y = 0.0f;
-            }
-
-            node->setPosition(newPosition);
-            node->setVelocity(velocity);
-
-            // Update sprite position
-            if (auto* sprite = nodeEntity->getComponent<SpriteComponent>()) {
-                sprite->setPosition(newPosition.x, newPosition.y, 0.0f);
-            }
-        }
-    }
-
-}
 
 void PhysicsTetrisScene::handleTetriminoInput(float dt) {
     if (m_currentTetriminoId < 0 || !m_hasActiveTetrimino) return;
@@ -2125,8 +1915,200 @@ void PhysicsTetrisScene::applyAngularImpulseToFrame(Entity* nodeEntity, const Ve
     // Non-active tetriminos should remain stable without rotation
 }
 
+void PhysicsTetrisScene::applySpringConfiguration() {
+    auto beamEntities = m_entityManager->getEntitiesWithComponent<BeamComponent>();
+    
+    for (auto* beamEntity : beamEntities) {
+        auto* beam = beamEntity->getComponent<BeamComponent>();
+        if (beam) {
+            beam->setStiffness(m_springStiffness);
+            beam->setDamping(m_springDamping);
+            beam->setEnabled(m_springsEnabled);
+        }
+    }
+}
 
+void PhysicsTetrisScene::applyFrameToNodeForces(float dt) {
+    if (!m_springsEnabled) return;
+    
+    auto frameEntities = m_entityManager->getEntitiesWithComponent<FrameComponent>();
+    auto nodeEntities = m_entityManager->getEntitiesWithComponent<NodeComponent>();
+    
+    for (auto* frameEntity : frameEntities) {
+        auto* frame = frameEntity->getComponent<FrameComponent>();
+        if (!frame) continue;
+        
+        std::string frameName = frameEntity->getName();
+        std::string tetriminoPrefix = frameName.substr(0, frameName.find("_Frame"));
+        Vec2 framePos = frame->getPosition();
+        float frameRot = frame->getRotation();
+        
+        // Find all nodes belonging to this frame
+        for (auto* nodeEntity : nodeEntities) {
+            if (nodeEntity->getName().find(tetriminoPrefix) != std::string::npos &&
+                nodeEntity->getName().find("_Node") != std::string::npos) {
+                
+                auto* node = nodeEntity->getComponent<NodeComponent>();
+                if (!node || node->isPositionFixed()) continue;
+                
+                // Extract node index to get original offset
+                std::string nodeName = nodeEntity->getName();
+                std::string nodeIndexStr = nodeName.substr(nodeName.find("_Node") + 5);
+                int nodeIndex = std::stoi(nodeIndexStr);
+                
+                // Find the original offset for this node
+                Vec2 originalOffset(0.0f, 0.0f);
+                std::string tetriminoType = tetriminoPrefix.substr(0, tetriminoPrefix.find("_"));
+                
+                for (const auto& tetrimino : m_tetriminoTemplates) {
+                    if (tetrimino.name == tetriminoType && nodeIndex < tetrimino.nodeOffsets.size()) {
+                        originalOffset = tetrimino.nodeOffsets[nodeIndex];
+                        break;
+                    }
+                }
+                
+                // Calculate target position based on frame
+                Vec2 rotatedOffset = Vec2(
+                    originalOffset.x * cosf(frameRot) - originalOffset.y * sinf(frameRot),
+                    originalOffset.x * sinf(frameRot) + originalOffset.y * cosf(frameRot)
+                );
+                Vec2 targetPos = framePos + rotatedOffset;
+                
+                // Apply spring force to pull node toward target position
+                Vec2 currentPos = node->getPosition();
+                Vec2 displacement = targetPos - currentPos;
+                float distance = displacement.length();
+                
+                if (distance > 0.1f) {
+                    Vec2 springForce = displacement * m_springStiffness;
+                    
+                    // Apply damping
+                    Vec2 nodeVelocity = node->getVelocity();
+                    Vec2 dampingForce = nodeVelocity * -m_springDamping;
+                    
+                    // Combine forces
+                    Vec2 totalForce = springForce + dampingForce;
+                    
+                    // Apply the force
+                    Vec2 acceleration = totalForce * 0.02f; // Mass factor
+                    node->setVelocity(nodeVelocity + acceleration * dt);
+                }
+            }
+        }
+    }
+}
 
+void PhysicsTetrisScene::updateFirmGuyCollisions() {
+    auto nodeEntities = m_entityManager->getEntitiesWithComponent<NodeComponent>();
+    auto frameEntities = m_entityManager->getEntitiesWithComponent<FrameComponent>();
+    auto firmGuyEntities = m_entityManager->getEntitiesWithComponent<FirmGuyComponent>();
+    
+    // Handle node collisions with firm guy boundaries
+    for (auto* nodeEntity : nodeEntities) {
+        auto* node = nodeEntity->getComponent<NodeComponent>();
+        if (!node || node->isPositionFixed()) continue;
+        
+        // Skip wall nodes
+        std::string nodeName = nodeEntity->getName();
+        if (nodeName.find("Wall") != std::string::npos) continue;
+        
+        Vec2 nodePos = node->getPosition();
+        float nodeRadius = NODE_SIZE * 0.5f;
+        
+        for (auto* firmGuyEntity : firmGuyEntities) {
+            auto* firmGuy = firmGuyEntity->getComponent<FirmGuyComponent>();
+            if (!firmGuy || !firmGuy->isStatic()) continue;
+            
+            Vec2 firmGuyPos = firmGuy->getPosition();
+            
+            if (firmGuy->getShape() == FirmGuyShape::Rectangle) {
+                Vec2 halfExtents = firmGuy->getHalfExtents();
+                
+                // Check if node is inside the rectangle
+                float dx = nodePos.x - firmGuyPos.x;
+                float dy = nodePos.y - firmGuyPos.y;
+                
+                if (std::abs(dx) < halfExtents.x + nodeRadius && 
+                    std::abs(dy) < halfExtents.y + nodeRadius) {
+                    
+                    // Push node out of the rectangle
+                    float overlapX = (halfExtents.x + nodeRadius) - std::abs(dx);
+                    float overlapY = (halfExtents.y + nodeRadius) - std::abs(dy);
+                    
+                    Vec2 pushDirection;
+                    if (overlapX < overlapY) {
+                        pushDirection = Vec2(dx < 0 ? -1.0f : 1.0f, 0.0f);
+                    } else {
+                        pushDirection = Vec2(0.0f, dy < 0 ? -1.0f : 1.0f);
+                    }
+                    
+                    float pushDistance = std::min(overlapX, overlapY);
+                    Vec2 newPos = nodePos + pushDirection * pushDistance;
+                    node->setPosition(newPos);
+                    
+                    // Bounce off the wall
+                    Vec2 velocity = node->getVelocity();
+                    float velocityAlongNormal = velocity.dot(pushDirection);
+                    if (velocityAlongNormal < 0) {
+                        velocity -= pushDirection * velocityAlongNormal * 1.5f;
+                        node->setVelocity(velocity);
+                    }
+                }
+            }
+        }
+    }
+    
+    // Handle frame collisions with firm guy boundaries
+    for (auto* frameEntity : frameEntities) {
+        auto* frame = frameEntity->getComponent<FrameComponent>();
+        if (!frame) continue;
+        
+        Vec2 framePos = frame->getPosition();
+        float frameRadius = 30.0f; // Approximate frame collision radius
+        
+        for (auto* firmGuyEntity : firmGuyEntities) {
+            auto* firmGuy = firmGuyEntity->getComponent<FirmGuyComponent>();
+            if (!firmGuy || !firmGuy->isStatic()) continue;
+            
+            Vec2 firmGuyPos = firmGuy->getPosition();
+            
+            if (firmGuy->getShape() == FirmGuyShape::Rectangle) {
+                Vec2 halfExtents = firmGuy->getHalfExtents();
+                
+                // Check if frame is inside the rectangle
+                float dx = framePos.x - firmGuyPos.x;
+                float dy = framePos.y - firmGuyPos.y;
+                
+                if (std::abs(dx) < halfExtents.x + frameRadius && 
+                    std::abs(dy) < halfExtents.y + frameRadius) {
+                    
+                    // Push frame out of the rectangle
+                    float overlapX = (halfExtents.x + frameRadius) - std::abs(dx);
+                    float overlapY = (halfExtents.y + frameRadius) - std::abs(dy);
+                    
+                    Vec2 pushDirection;
+                    if (overlapX < overlapY) {
+                        pushDirection = Vec2(dx < 0 ? -1.0f : 1.0f, 0.0f);
+                    } else {
+                        pushDirection = Vec2(0.0f, dy < 0 ? -1.0f : 1.0f);
+                    }
+                    
+                    float pushDistance = std::min(overlapX, overlapY);
+                    Vec2 newPos = framePos + pushDirection * pushDistance;
+                    frame->setPosition(newPos);
+                    
+                    // Bounce frame off the wall
+                    Vec2 velocity = frame->getVelocity();
+                    float velocityAlongNormal = velocity.dot(pushDirection);
+                    if (velocityAlongNormal < 0) {
+                        velocity -= pushDirection * velocityAlongNormal * 1.2f; // Slightly less bouncy for frames
+                        frame->setVelocity(velocity);
+                    }
+                }
+            }
+        }
+    }
+}
 
 void PhysicsTetrisScene::applyGravityToUnstableTetriminos() {
     auto nodeEntities = m_entityManager->getEntitiesWithComponent<NodeComponent>();
@@ -2247,4 +2229,6 @@ void PhysicsTetrisScene::renderDebugTetrimino(const std::string& tetriminoPrefix
         }
     }
 }
+
+
 

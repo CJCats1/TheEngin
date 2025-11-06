@@ -42,6 +42,10 @@ namespace dx3d {
         float getShininess() const { return m_shininess; }
         float getRoughness() const { return m_roughness; }
         
+        // Alpha/Transparency
+        void setAlpha(float alpha) { m_alpha = alpha; }
+        float getAlpha() const { return m_alpha; }
+        
         // Visibility
         void setVisible(bool visible) { m_visible = visible; }
         bool isVisible() const { return m_visible; }
@@ -57,6 +61,7 @@ namespace dx3d {
         Vec3 m_materialColor{ 1.0f, 1.0f, 1.0f };
         float m_shininess{ 64.0f };
         float m_roughness{ 0.2f };
+        float m_alpha{ 1.0f };
         bool m_visible{ true };
     };
 }

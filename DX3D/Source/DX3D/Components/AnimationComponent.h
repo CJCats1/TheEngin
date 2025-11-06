@@ -1,6 +1,8 @@
 #pragma once
 #include <DX3D/Math/Geometry.h>
 #include <functional>
+#include <string>
+#include <vector>
 
 namespace dx3d {
     class Entity;

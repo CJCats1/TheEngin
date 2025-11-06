@@ -6,6 +6,13 @@
 #include <DX3D/Graphics/GraphicsEngine.h>
 #include <iostream>
 #include <DX3D/Core/Logger.h>
+#include <algorithm>
+#include <functional>
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <thread>
+#include <chrono>
 
 namespace dx3d {
 

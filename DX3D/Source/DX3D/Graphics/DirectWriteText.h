@@ -11,6 +11,10 @@
 #include <wincodec.h>
 #include <string>
 #include <memory>
+#include <vector>
+#include <algorithm>
+#include <functional>
+#include <cmath>
 
 namespace dx3d {
 

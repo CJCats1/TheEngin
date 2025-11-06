@@ -10,6 +10,10 @@
 #include <DX3D/Graphics/DirectWriteText.h>
 #include <DX3D/Core/EntityManager.h>
 #include <DX3D/Components/PhysicsComponent.h>
+#include <DX3D/Components/FirmGuyComponent.h>
+#include <DX3D/Components/FirmGuySystem.h>
+#include <DX3D/Components/SpringGuyComponent.h>
+#include <DX3D/Components/SoftGuyComponent.h>
 #include <vector>
 #include <random>
 #include <memory>
@@ -92,14 +96,17 @@ namespace dx3d
         float calculateRotationFromNodes(const std::vector<Vec2>& nodePositions, const std::string& tetriminoPrefix);
         float calculateAngularVelocityFromNodes(const std::vector<Vec2>& nodePositions, const std::vector<Vec2>& nodeVelocities, const Vec2& centerOfMass);
         void applyAngularImpulseToFrame(Entity* nodeEntity, const Vec2& nodePosition, const Vec2& impulse);
+        void applySpringConfiguration();
+        void applyFrameToNodeForces(float dt);
+        void updateFirmGuyCollisions();
     private:
         LineRenderer* m_lineRenderer = nullptr;
         bool m_showFrameDebug = false;
         
-        // Debug physics parameters
-        float m_debugFrameGravity = 0.1f;
-        float m_debugNodeGravityColliding = 0.2f;
-        float m_debugCollisionThreshold = 0.8f;
+        // Spring configuration parameters
+        float m_springStiffness = 5000.0f;
+        float m_springDamping = 80.0f;
+        bool m_springsEnabled = true;
 
 
         // Helper functions for debug rendering
@@ -123,12 +130,12 @@ namespace dx3d
         // Play field
         void createPlayField();
         void createBoundaryWalls();
+        void createFirmGuyBoundaries();
         void createDebugToggleButton();
         void createGameOverPanel();
 
         // Collision detection
         void updateCollisions();
-        void updateFrameBasedPhysics(float dt);
         bool checkAABBCollision(const Vec2& pos1, float size1, const Vec2& pos2, float size2);
         void resolveNodeCollision(Entity* node1, Entity* node2);
 

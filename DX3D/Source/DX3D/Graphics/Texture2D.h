@@ -357,6 +357,140 @@ namespace dx3d
             return std::make_shared<Texture2D>(srv);
         }
 
+       
+        static std::shared_ptr<Texture2D> CreateNoiseTexture(ID3D11Device* device, int size = 256) {
+            std::unique_ptr<BYTE[]> pixels(new BYTE[size * size * 4]);
+            
+            for (int y = 0; y < size; ++y) {
+                for (int x = 0; x < size; ++x) {
+                    int index = (y * size + x) * 4;
+                    
+                    // Generate Perlin-like noise
+                    float noise = 0.0f;
+                    float frequency = 0.1f;
+                    float amplitude = 1.0f;
+                    
+                    for (int i = 0; i < 4; ++i) {
+                        noise += sin(x * frequency) * cos(y * frequency) * amplitude;
+                        frequency *= 2.0f;
+                        amplitude *= 0.5f;
+                    }
+                    
+                    // Normalize to 0-1
+                    noise = (noise + 1.0f) * 0.5f;
+                    noise = std::max(0.0f, std::min(1.0f, noise));
+                    
+                    BYTE noiseValue = (BYTE)(noise * 255);
+                    pixels[index] = noiseValue;     // R
+                    pixels[index + 1] = noiseValue; // G
+                    pixels[index + 2] = noiseValue; // B
+                    pixels[index + 3] = 255;        // A
+                }
+            }
+            
+            // Create texture
+            D3D11_TEXTURE2D_DESC texDesc = {};
+            texDesc.Width = size;
+            texDesc.Height = size;
+            texDesc.MipLevels = 1;
+            texDesc.ArraySize = 1;
+            texDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+            texDesc.SampleDesc.Count = 1;
+            texDesc.Usage = D3D11_USAGE_DEFAULT;
+            texDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+            
+            D3D11_SUBRESOURCE_DATA data = {};
+            data.pSysMem = pixels.get();
+            data.SysMemPitch = size * 4;
+            
+            Microsoft::WRL::ComPtr<ID3D11Texture2D> tex;
+            HRESULT hr = device->CreateTexture2D(&texDesc, &data, tex.GetAddressOf());
+            if (FAILED(hr)) return nullptr;
+            
+            Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> srv;
+            hr = device->CreateShaderResourceView(tex.Get(), nullptr, srv.GetAddressOf());
+            if (FAILED(hr)) return nullptr;
+            
+            return std::make_shared<Texture2D>(srv);
+        }
+        
+        // Create a sun texture with glow effect
+        static std::shared_ptr<Texture2D> CreateSunTexture(ID3D11Device* device, int size = 256) {
+            std::unique_ptr<BYTE[]> pixels(new BYTE[size * size * 4]);
+            
+            for (int y = 0; y < size; ++y) {
+                for (int x = 0; x < size; ++x) {
+                    int index = (y * size + x) * 4;
+                    
+                    // Calculate distance from center
+                    float centerX = size / 2.0f;
+                    float centerY = size / 2.0f;
+                    float dist = sqrt((x - centerX) * (x - centerX) + (y - centerY) * (y - centerY));
+                    float maxDist = size / 2.0f;
+                    
+                    // Create sun with bright center and soft glow
+                    float normalizedDist = dist / maxDist;
+                    
+                    // Bright white center
+                    float centerRadius = 0.15f;
+                    float glowRadius = 0.8f;
+                    
+                    float intensity = 0.0f;
+                    if (normalizedDist <= centerRadius) {
+                        // Bright white center
+                        intensity = 1.0f;
+                    } else if (normalizedDist <= glowRadius) {
+                        // Soft glow falloff
+                        float glowFactor = (glowRadius - normalizedDist) / (glowRadius - centerRadius);
+                        intensity = glowFactor * glowFactor; // Quadratic falloff for softer glow
+                    }
+                    
+                    // Add some noise for realistic sun surface
+                    float noise = (sin(x * 0.3f) * cos(y * 0.3f) + 1.0f) * 0.5f;
+                    intensity *= (0.8f + 0.2f * noise);
+                    
+                    // Clamp intensity
+                    intensity = std::max(0.0f, std::min(1.0f, intensity));
+                    
+                    // Sun color: bright white with slight yellow tint
+                    float r = intensity;
+                    float g = intensity * 0.95f; // Slight yellow tint
+                    float b = intensity * 0.8f;  // More yellow
+                    float a = intensity;
+                    
+                    pixels[index] = (BYTE)(r * 255);     // R
+                    pixels[index + 1] = (BYTE)(g * 255); // G
+                    pixels[index + 2] = (BYTE)(b * 255); // B
+                    pixels[index + 3] = (BYTE)(a * 255); // A
+                }
+            }
+            
+            // Create texture
+            D3D11_TEXTURE2D_DESC texDesc = {};
+            texDesc.Width = size;
+            texDesc.Height = size;
+            texDesc.MipLevels = 1;
+            texDesc.ArraySize = 1;
+            texDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+            texDesc.SampleDesc.Count = 1;
+            texDesc.Usage = D3D11_USAGE_DEFAULT;
+            texDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+            
+            D3D11_SUBRESOURCE_DATA data = {};
+            data.pSysMem = pixels.get();
+            data.SysMemPitch = size * 4;
+            
+            Microsoft::WRL::ComPtr<ID3D11Texture2D> tex;
+            HRESULT hr = device->CreateTexture2D(&texDesc, &data, tex.GetAddressOf());
+            if (FAILED(hr)) return nullptr;
+            
+            Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> srv;
+            hr = device->CreateShaderResourceView(tex.Get(), nullptr, srv.GetAddressOf());
+            if (FAILED(hr)) return nullptr;
+            
+            return std::make_shared<Texture2D>(srv);
+        }
+
     private:
         Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_srv;
     };
