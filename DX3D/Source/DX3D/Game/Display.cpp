@@ -24,6 +24,10 @@ SOFTWARE.*/
 
 #include <DX3D/Game/Display.h>
 #include <DX3D/Graphics/GraphicsDevice.h>
+#include <DX3D/Graphics/GraphicsEngine.h>
+#include <Windows.h>
+#include <imgui.h>
+#include <backends/imgui_impl_win32.h>
 
 dx3d::Display::Display(const DisplayDesc& desc): Window(desc.window)
 {
@@ -33,4 +37,32 @@ dx3d::Display::Display(const DisplayDesc& desc): Window(desc.window)
 dx3d::SwapChain& dx3d::Display::getSwapChain() noexcept
 {
 	return *m_swapChain;
+}
+
+LRESULT dx3d::Display::handleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	// Call base class handler first
+	LRESULT result = Window::handleMessage(hwnd, msg, wParam, lParam);
+
+	// Handle window resize for swap chain
+	if (msg == WM_SIZE && wParam != SIZE_MINIMIZED)
+	{
+		int width = LOWORD(lParam);
+		int height = HIWORD(lParam);
+		if (width > 0 && height > 0)
+		{
+			// Resize swap chain
+			m_swapChain->resize(width, height);
+			
+			// Update GraphicsEngine static window size variables
+			GraphicsEngine::setWindowWidth(static_cast<float>(width));
+			GraphicsEngine::setWindowHeight(static_cast<float>(height));
+			
+			// Update ImGui display size
+			ImGuiIO& io = ImGui::GetIO();
+			io.DisplaySize = ImVec2(static_cast<float>(width), static_cast<float>(height));
+		}
+	}
+
+	return result;
 }

@@ -237,4 +237,52 @@ namespace dx3d {
 
         std::vector<Vec2> computeConvexHull(const std::vector<Vec2>& points);
     }
+
+    // AABB (Axis-Aligned Bounding Box) for collision detection
+    struct AABB {
+        Vec2 center;      // Center point of the AABB
+        Vec2 halfSize;    // Half-extents (width/2, height/2)
+
+        AABB() : center(0.0f, 0.0f), halfSize(0.0f, 0.0f) {}
+        AABB(const Vec2& center, const Vec2& halfSize) : center(center), halfSize(halfSize) {}
+        AABB(const Vec2& center, float width, float height) 
+            : center(center), halfSize(width * 0.5f, height * 0.5f) {}
+
+        // Get min/max corners
+        Vec2 getMin() const { return center - halfSize; }
+        Vec2 getMax() const { return center + halfSize; }
+        
+        // Get width and height
+        float getWidth() const { return halfSize.x * 2.0f; }
+        float getHeight() const { return halfSize.y * 2.0f; }
+
+        // Helper methods matching Kishimoto Studios API
+        float getLeft() const { return center.x - halfSize.x; }
+        float getRight() const { return center.x + halfSize.x; }
+        float getTop() const { return center.y + halfSize.y; }      // Y increases upward
+        float getBottom() const { return center.y - halfSize.y; }
+
+        // Check if this AABB intersects with another
+        // Using exact Kishimoto Studios method: https://kishimotostudios.com/articles/aabb_collision/
+        bool intersects(const AABB& other) const {
+            // Exact same logic as the JavaScript version
+            bool AisToTheRightOfB = getLeft() > other.getRight();
+            bool AisToTheLeftOfB = getRight() < other.getLeft();
+            bool AisAboveB = getBottom() < other.getTop();
+            bool AisBelowB = getTop() > other.getBottom();
+            
+            return !(AisToTheRightOfB
+                || AisToTheLeftOfB
+                || AisAboveB
+                || AisBelowB);
+        }
+
+        // Check if a point is inside this AABB
+        bool contains(const Vec2& point) const {
+            Vec2 min = getMin();
+            Vec2 max = getMax();
+            return point.x >= min.x && point.x <= max.x &&
+                   point.y >= min.y && point.y <= max.y;
+        }
+    };
 }

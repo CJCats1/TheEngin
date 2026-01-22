@@ -35,11 +35,9 @@ namespace dx3d {
 }
 namespace dx3d
 {
-    enum class SceneType { None, TestScene, BridgeScene, SpiderSolitaireScene, PhysicsTetrisScene, JellyTetrisReduxScene, PartitionScene, ThreeDTestScene, FlipFluidSimulationScene, SPHFluidSimulationScene, CloudScene, PowderScene
-	};
+    enum class SceneType { None };
 	class Scene;
-	class TestScene; // Forward declaration
-	class ThreeDTestScene; // Forward declaration
+
 	class Game : public Base
 	{
 	public:

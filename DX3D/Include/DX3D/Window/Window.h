@@ -11,7 +11,7 @@ namespace dx3d
         virtual ~Window() override;
 
         // Called from global WndProc
-        LRESULT handleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+        virtual LRESULT handleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
         inline HWND getHandle() const { return static_cast<HWND>(m_handle); }
         inline Rect getSize() const { return m_size; }

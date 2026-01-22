@@ -1,4 +1,4 @@
-﻿/*MIT License
+/*MIT License
 
 C++ 3D Game Tutorial Series (https://github.com/PardCode/CPP-3D-Game-Tutorial-Series)
 
@@ -30,18 +30,9 @@ SOFTWARE.*/
 #include <DX3D/Core/Scene.h>
 #include <DX3D/Core/Input.h>
 #include <DX3D/Graphics/DirectWriteText.h>
-#include <DX3D/Game/Scenes/TestScene.h>
-#include <DX3D/Game/Scenes/BridgeScene.h>
-#include <DX3D/Game/Scenes/SpiderSolitaireScene.h>
-#include <DX3D/Game/Scenes/PhysicsTetrisScene.h>
-#include <DX3D/Game/Scenes/JellyTetrisReduxScene.h>
-#include <DX3D/Game/Scenes/PartitionScene.h>
-#include <DX3D/Game/Scenes/ThreeDTestScene.h>
-#include <DX3D/Game/Scenes/FlipFluidSimulationScene.h>
-#include <DX3D/Game/Scenes/SPHFluidSimulationScene.h>
-#include <DX3D/Game/Scenes/CloudScene.h>
-#include <DX3D/Game/Scenes/PowderScene.h>
+#include <DX3D/Game/Scenes/TestScenes/TestScene.h>
 #include <DX3D/Graphics/SwapChain.h>
+#include <DX3D/Core/EntityManager.h>
 
 // Define the static Game instance
 namespace dx3d {
@@ -67,8 +58,8 @@ dx3d::Game::Game(const GameDesc& desc) :
     m_display = std::make_unique<Display>(DisplayDesc{ {m_logger,desc.windowSize},m_graphicsEngine->getGraphicsDevice() });
 
     m_lastFrameTime = std::chrono::steady_clock::now();
-    setScene(std::make_unique<dx3d::BridgeScene>());
-    m_currentSceneType = SceneType::BridgeScene;
+    setScene(std::make_unique<dx3d::TestScene>());
+    m_currentSceneType = SceneType::None;
 
     // Initialize ImGui (DX11 + Win32)
     IMGUI_CHECKVERSION();
@@ -116,57 +107,6 @@ const float imguiRebuildInterval = 15.0f; // seconds
 void dx3d::Game::onInternalUpdate()
 {
     auto& input = Input::getInstance();
-    if (input.isKeyDown(Key::Num1) && m_currentSceneType != SceneType::TestScene)
-    {
-        setScene(std::make_unique<dx3d::TestScene>());
-        m_currentSceneType = SceneType::TestScene;
-    }
-    if (input.isKeyDown(Key::Num2) && m_currentSceneType != SceneType::BridgeScene)
-    {
-        setScene(std::make_unique<dx3d::BridgeScene>());
-        m_currentSceneType = SceneType::BridgeScene;
-    }
-    if (input.isKeyDown(Key::Num3) && m_currentSceneType != SceneType::SpiderSolitaireScene)
-    {
-        setScene(std::make_unique<dx3d::SpiderSolitaireScene>());
-        m_currentSceneType = SceneType::SpiderSolitaireScene;
-    }
-    if (input.isKeyDown(Key::Num4) && m_currentSceneType != SceneType::PhysicsTetrisScene)
-    {
-        setScene(std::make_unique<dx3d::PhysicsTetrisScene>());
-        m_currentSceneType = SceneType::PhysicsTetrisScene;
-    }
-
-    if (input.isKeyDown(Key::Num5) && m_currentSceneType != SceneType::PartitionScene)
-    {
-        setScene(std::make_unique<dx3d::PartitionScene>());
-        m_currentSceneType = SceneType::PartitionScene;
-    }
-    if (input.isKeyDown(Key::Num6) && m_currentSceneType != SceneType::ThreeDTestScene)
-    {
-        setScene(std::make_unique<dx3d::ThreeDTestScene>());
-        m_currentSceneType = SceneType::ThreeDTestScene;
-    }
-    if (input.isKeyDown(Key::Num8) && m_currentSceneType != SceneType::FlipFluidSimulationScene)
-    {
-        setScene(std::make_unique<dx3d::FlipFluidSimulationScene>());
-        m_currentSceneType = SceneType::FlipFluidSimulationScene;
-    }
-    if (input.isKeyDown(Key::Num9) && m_currentSceneType != SceneType::SPHFluidSimulationScene)
-    {
-        setScene(std::make_unique<dx3d::SPHFluidSimulationScene>());
-        m_currentSceneType = SceneType::SPHFluidSimulationScene;
-    }
-    if (input.isKeyDown(Key::Num0) && m_currentSceneType != SceneType::CloudScene)
-    {
-        setScene(std::make_unique<dx3d::CloudScene>());
-        m_currentSceneType = SceneType::CloudScene;
-    }
-    if (input.isKeyDown(Key::P) && m_currentSceneType != SceneType::PowderScene)
-    {
-        setScene(std::make_unique<dx3d::PowderScene>());
-        m_currentSceneType = SceneType::PowderScene;
-    }
     if (input.isKeyDown(Key::Escape))
     {
         m_isRunning = false;
@@ -185,7 +125,10 @@ void dx3d::Game::onInternalUpdate()
     while (accumulator >= fixedStep)
     {
         if (m_activeScene)
-            m_activeScene->fixedUpdate(fixedStep); // physics & logic at fixed rate
+        {
+            // Scene-specific fixed update logic
+            m_activeScene->fixedUpdate(fixedStep);
+        }
         accumulator -= fixedStep;
     }
 	//imguiRebuildDelay += frameTime;
@@ -216,64 +159,6 @@ void dx3d::Game::onInternalUpdate()
         m_activeScene->render(*m_graphicsEngine, m_display->getSwapChain());
         // Per-scene ImGui UI
         m_activeScene->renderImGui(*m_graphicsEngine);
-
-        // Global scene switcher window
-        ImGui::SetNextWindowSize(ImVec2(260, 250), ImGuiCond_FirstUseEver);
-        if (ImGui::Begin("Scenes"))
-        {
-            int currentIndex = 0;
-            switch (m_currentSceneType)
-            {
-            case SceneType::TestScene: currentIndex = 0; break;
-            case SceneType::BridgeScene: currentIndex = 1; break;
-            case SceneType::SpiderSolitaireScene: currentIndex = 2; break;
-            case SceneType::PhysicsTetrisScene: currentIndex = 3; break;
-            case SceneType::JellyTetrisReduxScene: currentIndex = 4; break;
-            case SceneType::PartitionScene: currentIndex = 5; break;
-            case SceneType::ThreeDTestScene: currentIndex = 6; break;
-            case SceneType::FlipFluidSimulationScene: currentIndex = 7; break;
-            case SceneType::SPHFluidSimulationScene: currentIndex = 8; break;
-            case SceneType::CloudScene: currentIndex = 9; break;
-            case SceneType::PowderScene: currentIndex = 10; break;
-            default: break;
-            }
-
-            const char* items[] = {
-                "TestScene",
-                "BridgeScene",
-                "SpiderSolitaireScene",
-                "PhysicsTetrisScene",
-                "JellyTetrisReduxScene",
-                "PartitionScene",
-                "ThreeDTestScene",
-                "FlipFluidSimulationScene",
-                "SPHFluidSimulationScene",
-                "CloudScene",
-                "PowderScene"
-            };
-
-            if (ImGui::ListBox("##SceneList", &currentIndex, items, IM_ARRAYSIZE(items), 10))
-            {
-                // Switch scene when selection changes
-                switch (currentIndex)
-                {
-                case 0: setScene(std::make_unique<dx3d::TestScene>()); m_currentSceneType = SceneType::TestScene; break;
-                case 1: setScene(std::make_unique<dx3d::BridgeScene>()); m_currentSceneType = SceneType::BridgeScene; break;
-                case 2: setScene(std::make_unique<dx3d::SpiderSolitaireScene>()); m_currentSceneType = SceneType::SpiderSolitaireScene; break;
-                case 3: setScene(std::make_unique<dx3d::PhysicsTetrisScene>()); m_currentSceneType = SceneType::PhysicsTetrisScene; break;
-                case 4: setScene(std::make_unique<dx3d::JellyTetrisReduxScene>()); m_currentSceneType = SceneType::JellyTetrisReduxScene; break;
-                case 5: setScene(std::make_unique<dx3d::PartitionScene>()); m_currentSceneType = SceneType::PartitionScene; break;
-                case 6: setScene(std::make_unique<dx3d::ThreeDTestScene>()); m_currentSceneType = SceneType::ThreeDTestScene; break;
-                case 7: setScene(std::make_unique<dx3d::FlipFluidSimulationScene>()); m_currentSceneType = SceneType::FlipFluidSimulationScene; break;
-                case 8: setScene(std::make_unique<dx3d::SPHFluidSimulationScene>()); m_currentSceneType = SceneType::SPHFluidSimulationScene; break;
-                case 9: setScene(std::make_unique<dx3d::CloudScene>()); m_currentSceneType = SceneType::CloudScene; break;
-                case 10: setScene(std::make_unique<dx3d::PowderScene>()); m_currentSceneType = SceneType::PowderScene; break;
-                default: break;
-                }
-            }
-            ImGui::TextDisabled("Hotkeys: 1-9, 0, P switch scenes");
-        }
-        ImGui::End();
     }
     else
     {

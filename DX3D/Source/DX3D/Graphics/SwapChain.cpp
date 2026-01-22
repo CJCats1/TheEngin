@@ -35,6 +35,30 @@ void dx3d::SwapChain::present(bool vsync)
 		"Present failed.");
 }
 
+void dx3d::SwapChain::resize(int width, int height)
+{
+	if (width <= 0 || height <= 0)
+		return;
+
+	// Release existing render target view before resizing
+	m_rtv.Reset();
+	m_depthBuffer.Reset();
+	m_dsv.Reset();
+
+	// Resize the swap chain buffers
+	DX3DGraphicsLogThrowOnFail(
+		m_swapChain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0),
+		"ResizeBuffers failed."
+	);
+
+	// Update size
+	m_size.width = width;
+	m_size.height = height;
+
+	// Reload buffers with new size
+	reloadBuffers();
+}
+
 void dx3d::SwapChain::reloadBuffers()
 {
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> buffer{};

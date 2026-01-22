@@ -4,6 +4,7 @@
 #include <imgui.h>
 #include <backends/imgui_impl_win32.h>
 #include <stdexcept>
+#include <string>
 
 namespace dx3d {
     // Store a pointer to the current Window instance (simple, single-window case)
@@ -36,6 +37,38 @@ dx3d::Window::Window(const WindowDesc& desc) : Base(desc.base), m_size(desc.size
             wc.lpfnWndProc = &WindowProcedure;
             wc.style = CS_HREDRAW | CS_VREDRAW;
             wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+            
+            // Load the application icon
+            // Get the executable directory
+            wchar_t exePath[MAX_PATH];
+            GetModuleFileNameW(nullptr, exePath, MAX_PATH);
+            std::wstring exeDir = exePath;
+            size_t lastSlash = exeDir.find_last_of(L"\\/");
+            if (lastSlash != std::wstring::npos) {
+                exeDir = exeDir.substr(0, lastSlash + 1);
+            }
+            
+            // Construct path to icon (relative to executable: ../../DX3D/Assets/Textures/CheckEngine.ico)
+            std::wstring iconPath = exeDir + L"..\\..\\DX3D\\Assets\\Textures\\CheckEngine.ico";
+            
+            // Load large icon (32x32 or system default)
+            HICON hIcon = (HICON)LoadImageW(nullptr, iconPath.c_str(), IMAGE_ICON, 
+                GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON), 
+                LR_LOADFROMFILE);
+            // Load small icon (16x16)
+            HICON hIconSm = (HICON)LoadImageW(nullptr, iconPath.c_str(), IMAGE_ICON,
+                GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON),
+                LR_LOADFROMFILE);
+            
+            if (hIcon && hIconSm) {
+                wc.hIcon = hIcon;
+                wc.hIconSm = hIconSm;
+            } else {
+                // Fallback to default if icon loading fails
+                wc.hIcon = LoadIcon(nullptr, IDI_APPLICATION);
+                wc.hIconSm = LoadIcon(nullptr, IDI_APPLICATION);
+            }
+            
             return RegisterClassEx(&wc);
         };
 
@@ -45,11 +78,11 @@ dx3d::Window::Window(const WindowDesc& desc) : Base(desc.base), m_size(desc.size
         DX3DLogThrowError("RegisterClassEx failed.");
 
     RECT rc{ 0,0,m_size.width, m_size.height };
-    AdjustWindowRect(&rc, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU, false);
+    AdjustWindowRect(&rc, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX, false);
 
     m_handle = CreateWindowEx(
         0, MAKEINTATOM(windowClassId), L"TheEngine",
-        WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_VISIBLE,
+        WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_VISIBLE,
         CW_USEDEFAULT, CW_USEDEFAULT,
         rc.right - rc.left, rc.bottom - rc.top,
         nullptr, nullptr, GetModuleHandle(nullptr), nullptr);

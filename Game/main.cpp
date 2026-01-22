@@ -23,9 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include <DX3D/All.h>
-#include <DX3D/Game/Scenes/TestScene.h>
-#include <DX3D/Game/Scenes/BridgeScene.h>
 #include <DX3D/Graphics/GraphicsEngine.h>
+#include <windows.h>
 
 int main()
 {
@@ -37,20 +36,24 @@ int main()
 
 		game.run();
 	}
-	catch (const std::runtime_error&)
+	catch (const std::runtime_error& e)
 	{
+		MessageBoxA(nullptr, e.what(), "Runtime Error", MB_OK | MB_ICONERROR);
 		return EXIT_FAILURE;
 	}
-	catch (const std::invalid_argument&)
+	catch (const std::invalid_argument& e)
 	{
+		MessageBoxA(nullptr, e.what(), "Invalid Argument Error", MB_OK | MB_ICONERROR);
 		return EXIT_FAILURE;
 	}
-	catch (const std::exception&)
+	catch (const std::exception& e)
 	{
+		MessageBoxA(nullptr, e.what(), "Exception", MB_OK | MB_ICONERROR);
 		return EXIT_FAILURE;
 	}
 	catch (...)
 	{
+		MessageBoxA(nullptr, "Unknown exception occurred", "Unknown Error", MB_OK | MB_ICONERROR);
 		return EXIT_FAILURE;
 	}
 	return EXIT_SUCCESS;

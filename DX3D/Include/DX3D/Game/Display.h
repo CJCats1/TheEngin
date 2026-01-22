@@ -24,6 +24,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <DX3D/Window/Window.h>
+#include <DX3D/Graphics/SwapChain.h>
 
 namespace dx3d
 {
@@ -33,6 +34,7 @@ namespace dx3d
 		explicit Display(const DisplayDesc& desc);
 
 		SwapChain& getSwapChain() noexcept;
+		LRESULT handleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) override;
 
 	private:
 		SwapChainPtr m_swapChain{};

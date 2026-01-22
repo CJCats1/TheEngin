@@ -115,8 +115,16 @@ void LineRenderer::draw(DeviceContext& ctx) {
     updateBuffer();
 
     if (m_vertexBuffer && !m_vertices.empty()) {
+        // Set line pipeline if available, otherwise use default pipeline
+        // (The scene should have set the default pipeline, but we ensure line pipeline is used if available)
+        if (m_linePipeline) {
+            ctx.setGraphicsPipelineState(*m_linePipeline);
+        }
+        
         // Ensure tint is neutral so per-vertex colors are not darkened
         ctx.setTint(Vec4(1.0f, 1.0f, 1.0f, 1.0f));
+        // Lines are generated in world space; ensure no leftover world transform
+        ctx.setWorldMatrix(Mat4::identity());
         // Only set camera matrices if we have a camera assigned
         // Otherwise, use the matrices already set by the scene
         if (m_camera) {
@@ -133,9 +141,8 @@ void LineRenderer::draw(DeviceContext& ctx) {
 
         if (m_indexBuffer) {
             ctx.setIndexBuffer(*m_indexBuffer);
-            ctx.drawIndexedLineList(static_cast<ui32>(m_indices.size()), 0);
-        }
-        else {
+            ctx.drawIndexedTriangleList(static_cast<ui32>(m_indices.size()), 0);
+        } else {
             ctx.drawTriangleList(static_cast<ui32>(m_vertices.size()), 0);
         }
     }

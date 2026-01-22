@@ -10,6 +10,7 @@ namespace dx3d
 		IDXGISwapChain* getD3DSwapChain() const noexcept { return m_swapChain.Get(); }
 
 		void present(bool vsync = false);
+		void resize(int width, int height);
 	private:
 		void reloadBuffers();
 	private:

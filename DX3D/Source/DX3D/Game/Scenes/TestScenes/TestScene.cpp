@@ -1,0 +1,652 @@
+#include <DX3D/Game/Scenes/TestScenes/TestScene.h>
+#include <DX3D/Graphics/GraphicsEngine.h>
+#include <DX3D/Graphics/SwapChain.h>
+#include <DX3D/Graphics/Camera.h>
+#include <DX3D/Graphics/LineRenderer.h>
+#include <DX3D/Graphics/SpriteComponent.h>
+#include <DX3D/Graphics/Texture2D.h>
+#include <DX3D/Graphics/DirectWriteText.h>
+#include <DX3D/Physics/PhysicsSystem.h>
+#include <DX3D/Physics/PhysicsSystem.inl>
+#include <DX3D/Core/Input.h>
+#include <DX3D/Core/Entity.h>
+#include <DX3D/Core/EntityManager.h>
+#include <imgui.h>
+#include <cmath>
+#include <sstream>
+
+using namespace dx3d;
+using namespace dx3d::physics;
+
+void TestScene::load(GraphicsEngine& engine) {
+    // Initialize Entity manager
+    m_entityManager = std::make_unique<EntityManager>();
+    m_graphicsDevice = &engine.getGraphicsDevice();
+
+    // Create camera entity
+    auto& cameraEntity = m_entityManager->createEntity("MainCamera");
+    float screenWidth = GraphicsEngine::getWindowWidth();
+    float screenHeight = GraphicsEngine::getWindowHeight();
+    auto& camera = cameraEntity.addComponent<Camera2D>(screenWidth, screenHeight);
+    camera.setPosition(0.0f, 0.0f);
+    camera.setZoom(1.0f);
+
+    auto& device = engine.getGraphicsDevice();
+
+    m_nodeTexture = Texture2D::LoadTexture2D(device.getD3DDevice(), L"DX3D/Assets/Textures/node.png");
+    if (!m_nodeTexture) {
+        m_nodeTexture = Texture2D::CreateDebugTexture(device.getD3DDevice());
+    }
+
+    auto& lineEntity = m_entityManager->createEntity("DebugLines");
+    m_lineRenderer = &lineEntity.addComponent<LineRenderer>(device);
+    m_lineRenderer->enableScreenSpace(false);
+    m_lineRenderer->enableLocalPositioning(false);
+    m_lineRenderer->setPosition(0.0f, 0.0f);
+    m_lineRenderer->setVisible(true);
+    m_lineRenderer->setCamera(&camera);
+    if (auto* linePipeline = engine.getLinePipeline()) {
+        m_lineRenderer->setLinePipeline(linePipeline);
+    }
+
+    m_backgroundTime = 0.0f;
+    m_backgroundTexture = Texture2D::LoadTexture2D(device.getD3DDevice(), L"DX3D/Assets/Textures/cat.jpg");
+    if (!m_backgroundTexture) {
+        m_backgroundTexture = Texture2D::CreateDebugTexture(device.getD3DDevice());
+    }
+    float backgroundWidth = screenWidth * 0.7f;
+    float backgroundHeight = screenHeight * 0.7f;
+    m_backgroundEntity = &m_entityManager->createEntity("BackgroundSprite");
+    auto& backgroundSprite = m_backgroundEntity->addComponent<SpriteComponent>(device, m_backgroundTexture,
+        backgroundWidth, backgroundHeight);
+    backgroundSprite.setPosition(0.0f, 0.0f, 0.0f);
+    backgroundSprite.setTint(Vec4(1.0f, 1.0f, 1.0f, 0.0f));
+    createOriginNodeSprite();
+
+    if (!TextSystem::isInitialized()) {
+        TextSystem::initialize(device);
+    }
+    if (TextSystem::isInitialized()) {
+        m_screenText = std::make_unique<TextComponent>(device, TextSystem::getRenderer(),
+            L"DirectWrite Text Demo", 18.0f);
+        m_screenText->setScreenPosition(0.09f, 0.93f);
+        m_screenText->setColor(Vec4(0.9f, 0.95f, 1.0f, 1.0f));
+
+        m_worldText = std::make_unique<TextComponent>(device, TextSystem::getRenderer(),
+            L"Player", 16.0f);
+        m_worldText->setColor(Vec4(1.0f, 0.85f, 0.2f, 1.0f));
+        m_worldText->setPosition(m_playerBox.pos.x, m_playerBox.pos.y + 14.0f, 0.0f);
+    }
+
+    // Initialize player AABB (movable)
+    m_playerBox = AABB(Vec2(0.0f, 0.0f), Vec2(5.0f, 5.0f)); // center at origin, 10x10 box
+    m_playerVelocity = Vec2(0.0f, 0.0f);
+
+    m_beamTexture = Texture2D::LoadTexture2D(device.getD3DDevice(), L"DX3D/Assets/Textures/beam.png");
+    if (!m_beamTexture) {
+        m_beamTexture = Texture2D::CreateDebugTexture(device.getD3DDevice());
+    }
+
+    // Create player sprite - exact size of AABB, colored green
+    Vec2 playerSize = m_playerBox.half * 2.0f;
+    m_playerEntity = &m_entityManager->createEntity("PlayerAABB");
+    auto& playerSprite = m_playerEntity->addComponent<SpriteComponent>(device, m_beamTexture,
+        playerSize.x, playerSize.y);
+    playerSprite.setPosition(m_playerBox.pos.x, m_playerBox.pos.y, 0.0f);
+    playerSprite.setTint(Vec4(0.0f, 1.0f, 0.0f, 1.0f));
+    createOriginNodeSprite();
+
+    // Create static obstacle AABBs
+    m_staticBoxes.clear();
+    m_staticBoxes.push_back(AABB(Vec2(150.0f, 0.0f), Vec2(8.0f, 8.0f)));      // Right obstacle
+    m_staticBoxes.push_back(AABB(Vec2(-150.0f, 0.0f), Vec2(8.0f, 8.0f)));     // Left obstacle
+    m_staticBoxes.push_back(AABB(Vec2(0.0f, 150.0f), Vec2(8.0f, 8.0f)));      // Top obstacle
+    m_staticBoxes.push_back(AABB(Vec2(0.0f, -150.0f), Vec2(8.0f, 8.0f)));    // Bottom obstacle
+    m_staticBoxes.push_back(AABB(Vec2(100.0f, 100.0f), Vec2(6.0f, 6.0f)));   // Diagonal obstacle
+    m_staticBoxes.push_back(AABB(Vec2(-100.0f, -100.0f), Vec2(6.0f, 6.0f))); // Diagonal obstacle
+    
+    // Add long static platform at the bottom
+    m_staticBoxes.push_back(AABB(Vec2(0.0f, -200.0f), Vec2(100.0f, 5.0f))); // Long platform at bottom
+
+    // Create sprites for static boxes - exact size of each AABB, colored red
+    m_staticBoxEntities.clear();
+    for (size_t i = 0; i < m_staticBoxes.size(); ++i) {
+        const auto& box = m_staticBoxes[i];
+        Vec2 boxSize = box.half * 2.0f;
+        auto& entity = m_entityManager->createEntity("StaticAABB_" + std::to_string(i));
+        auto& sprite = entity.addComponent<SpriteComponent>(device, m_beamTexture, boxSize.x, boxSize.y);
+        sprite.setPosition(box.pos.x, box.pos.y, 0.0f);
+        sprite.setTint(Vec4(1.0f, 0.0f, 0.0f, 1.0f));
+        m_staticBoxEntities.push_back(&entity);
+        createOriginNodeSprite();
+    }
+
+    // Create dynamic AABBs with gravity (spawned at top, will fall)
+    m_dynamicBoxes.clear();
+    m_dynamicVelocities.clear();
+    m_dynamicMasses.clear();
+    m_dynamicFrictions.clear();
+    m_dynamicRestitutions.clear();
+    m_dynamicBoxes.push_back(AABB(Vec2(-50.0f, 100.0f), Vec2(5.0f, 5.0f)));   // Dynamic box 1
+    m_dynamicBoxes.push_back(AABB(Vec2(0.0f, 120.0f), Vec2(6.0f, 6.0f)));    // Dynamic box 2
+    m_dynamicBoxes.push_back(AABB(Vec2(50.0f, 110.0f), Vec2(4.0f, 4.0f)));   // Dynamic box 3
+    m_dynamicBoxes.push_back(AABB(Vec2(-30.0f, 130.0f), Vec2(7.0f, 7.0f)));  // Dynamic box 4
+    m_dynamicBoxes.push_back(AABB(Vec2(30.0f, 125.0f), Vec2(5.5f, 5.5f)));   // Dynamic box 5
+
+    // Initialize velocities to zero (gravity will accelerate them)
+    for (size_t i = 0; i < m_dynamicBoxes.size(); ++i) {
+        m_dynamicVelocities.push_back(Vec2(0.0f, 0.0f));
+    }
+
+    // Initialize masses (heavier boxes are harder to push)
+    m_dynamicMasses = { 6.0f, 8.0f, 5.0f, 10.0f, 7.0f };
+    if (m_dynamicMasses.size() != m_dynamicBoxes.size()) {
+        m_dynamicMasses.resize(m_dynamicBoxes.size(), 6.0f);
+    }
+
+    // Initialize frictions for dynamics (lower = more slippery)
+    m_dynamicFrictions = { 0.15f, 0.2f, 0.12f, 0.25f, 0.18f };
+    if (m_dynamicFrictions.size() != m_dynamicBoxes.size()) {
+        m_dynamicFrictions.resize(m_dynamicBoxes.size(), 0.18f);
+    }
+
+    // Initialize restitutions for dynamics (lower = less bouncy)
+    m_dynamicRestitutions = { 0.05f, 0.1f, 0.08f, 0.12f, 0.06f };
+    if (m_dynamicRestitutions.size() != m_dynamicBoxes.size()) {
+        m_dynamicRestitutions.resize(m_dynamicBoxes.size(), 0.08f);
+    }
+
+    // Create sprites for dynamic boxes - exact size of each AABB, colored blue
+    m_dynamicBoxEntities.clear();
+    for (size_t i = 0; i < m_dynamicBoxes.size(); ++i) {
+        const auto& box = m_dynamicBoxes[i];
+        Vec2 boxSize = box.half * 2.0f;
+        auto& entity = m_entityManager->createEntity("DynamicAABB_" + std::to_string(i));
+        auto& sprite = entity.addComponent<SpriteComponent>(device, m_beamTexture, boxSize.x, boxSize.y);
+        sprite.setPosition(box.pos.x, box.pos.y, 0.0f);
+        sprite.setTint(Vec4(0.0f, 0.5f, 1.0f, 1.0f));
+        m_dynamicBoxEntities.push_back(&entity);
+        createOriginNodeSprite();
+    }
+
+    // Initialize a couple of circles
+    m_circles.clear();
+    m_circles.push_back({ Vec2(-80.0f, 80.0f), 8.0f, Vec2(0.0f, 0.0f), 6.0f, 0.18f, 0.1f });
+    m_circles.push_back({ Vec2(80.0f, 90.0f), 10.0f, Vec2(0.0f, 0.0f), 8.0f, 0.2f, 0.12f });
+    m_circleTexture = Texture2D::LoadTexture2D(device.getD3DDevice(), L"DX3D/Assets/Textures/node.png");
+    if (!m_circleTexture) {
+        m_circleTexture = Texture2D::CreateDebugTexture(device.getD3DDevice());
+    }
+    m_circleEntities.clear();
+    for (size_t i = 0; i < m_circles.size(); ++i) {
+        const auto& circle = m_circles[i];
+        auto& entity = m_entityManager->createEntity("Circle_" + std::to_string(i));
+        auto& sprite = entity.addComponent<SpriteComponent>(*m_graphicsDevice, m_circleTexture,
+            circle.radius * 2.0f, circle.radius * 2.0f);
+        sprite.setPosition(circle.pos.x, circle.pos.y, 0.0f);
+        sprite.setTint(Vec4(1.0f, 1.0f, 1.0f, 1.0f));
+        m_circleEntities.push_back(&entity);
+        createOriginNodeSprite();
+    }
+}
+
+void TestScene::reset(GraphicsEngine& engine) {
+    m_spawnMode = SpawnMode::Aabb;
+    m_springDynamicActive = false;
+    m_springDynamicIndex = -1;
+    m_springCircleActive = false;
+    m_springCircleIndex = -1;
+    m_springTarget = Vec2(0.0f, 0.0f);
+    load(engine);
+}
+
+void TestScene::update(float dt) {
+    // Update camera movement
+    updateCameraMovement(dt);
+    
+    // Update player movement
+    updatePlayerMovement(dt);
+
+    if (m_backgroundEntity) {
+        if (auto* sprite = m_backgroundEntity->getComponent<SpriteComponent>()) {
+            m_backgroundTime += dt;
+            float scale = 1.0f + 0.05f * std::sin(m_backgroundTime * 1.3f);
+            float rotation = 0.15f * std::sin(m_backgroundTime * 0.7f);
+            sprite->setScale2D(scale);
+            sprite->setRotationZ(rotation);
+        }
+    }
+
+    if (m_showTextDemo && (m_screenText || m_worldText)) {
+        m_textUpdateTimer += dt;
+        if (m_textUpdateTimer >= m_textUpdateInterval) {
+            m_textUpdateTimer = 0.0f;
+            if (m_screenText) {
+                std::wostringstream ss;
+                ss.setf(std::ios::fixed);
+                ss.precision(1);
+                ss << L"DirectWrite Text Demo\n";
+                ss << L"Player (" << m_playerBox.pos.x << L", " << m_playerBox.pos.y << L")\n";
+                ss << L"Vel (" << m_playerVelocity.x << L", " << m_playerVelocity.y << L")";
+                m_screenText->setText(ss.str());
+            }
+            if (m_worldText) {
+                m_worldText->setText(L"Player");
+                m_worldText->setPosition(m_playerBox.pos.x, m_playerBox.pos.y + 14.0f, 0.0f);
+            }
+        }
+    }
+}
+
+void TestScene::fixedUpdate(float dt) {
+    // Spring update - affects velocities, physics system handles collisions
+    if (m_springDynamicActive && m_springDynamicIndex >= 0
+        && static_cast<size_t>(m_springDynamicIndex) < m_dynamicBoxes.size()) {
+        size_t idx = static_cast<size_t>(m_springDynamicIndex);
+        Vec2 displacement = m_springTarget - m_dynamicBoxes[idx].pos;
+        Vec2 acceleration = displacement * m_springK - m_dynamicVelocities[idx] * m_springDamping;
+        m_dynamicVelocities[idx] += acceleration * dt;
+    }
+    if (m_springCircleActive && m_springCircleIndex >= 0
+        && static_cast<size_t>(m_springCircleIndex) < m_circles.size()) {
+        size_t idx = static_cast<size_t>(m_springCircleIndex);
+        Vec2 displacement = m_springTarget - m_circles[idx].pos;
+        Vec2 acceleration = displacement * m_springK - m_circles[idx].velocity * m_springDamping;
+        m_circles[idx].velocity += acceleration * dt;
+    }
+
+    dx3d::physics::WorldStepConfig config{
+        m_playerBox,
+        m_playerVelocity,
+        m_staticBoxes,
+        m_dynamicBoxes,
+        m_dynamicVelocities,
+        m_dynamicMasses,
+        m_dynamicFrictions,
+        m_dynamicRestitutions,
+        m_circles,
+        m_gravity,
+        m_staticFriction,
+        m_staticRestitution,
+        m_playerFrictionStatic,
+        m_playerFrictionDynamic,
+        m_playerRestitution,
+        m_playerPushMass
+    };
+    dx3d::physics::PhysicsSystem::stepWorld(config, dt);
+
+    if (m_lineRenderer) {
+        m_lineRenderer->clear();
+        if (m_showDebugLines) {
+            const float velocityScale = 0.08f;
+            const float normalScale = 12.0f;
+            const float contactThreshold = 1.5f;
+            const Vec4 velocityColor(0.2f, 0.9f, 1.0f, 1.0f);
+            const Vec4 normalColor(1.0f, 0.9f, 0.2f, 1.0f);
+
+            auto addVelocity = [&](const Vec2& pos, const Vec2& vel) {
+                Vec2 end = pos + vel * velocityScale;
+                m_lineRenderer->addLine(pos, end, velocityColor, 1.5f);
+            };
+
+            auto computeContactNormal = [&](const dx3d::physics::AABB& a,
+                                            const dx3d::physics::AABB& b,
+                                            Vec2& outNormal,
+                                            Vec2& outPoint) -> bool {
+                float dx = b.pos.x - a.pos.x;
+                float px = (b.half.x + a.half.x) - std::abs(dx);
+                float dy = b.pos.y - a.pos.y;
+                float py = (b.half.y + a.half.y) - std::abs(dy);
+                if (px < -contactThreshold || py < -contactThreshold) {
+                    return false;
+                }
+                if (px < py) {
+                    float sx = (dx < 0.0f) ? -1.0f : 1.0f;
+                    outNormal = Vec2(sx, 0.0f);
+                    outPoint = Vec2(a.pos.x + a.half.x * sx, b.pos.y);
+                } else {
+                    float sy = (dy < 0.0f) ? -1.0f : 1.0f;
+                    outNormal = Vec2(0.0f, sy);
+                    outPoint = Vec2(b.pos.x, a.pos.y + a.half.y * sy);
+                }
+                return true;
+            };
+
+            auto addNormal = [&](const Vec2& point, const Vec2& normal) {
+                m_lineRenderer->addLine(point, point + normal * normalScale, normalColor, 2.0f);
+            };
+
+            addVelocity(m_playerBox.pos, m_playerVelocity);
+            for (size_t i = 0; i < m_dynamicBoxes.size(); ++i) {
+                addVelocity(m_dynamicBoxes[i].pos, m_dynamicVelocities[i]);
+            }
+            for (const auto& circle : m_circles) {
+                addVelocity(circle.pos, circle.velocity);
+            }
+
+            for (const auto& staticBox : m_staticBoxes) {
+                Vec2 normal;
+                Vec2 point;
+                if (computeContactNormal(m_playerBox, staticBox, normal, point)) {
+                    addNormal(point, normal);
+                }
+            }
+            for (size_t i = 0; i < m_dynamicBoxes.size(); ++i) {
+                for (const auto& staticBox : m_staticBoxes) {
+                    Vec2 normal;
+                    Vec2 point;
+                    if (computeContactNormal(m_dynamicBoxes[i], staticBox, normal, point)) {
+                        addNormal(point, normal);
+                    }
+                }
+            }
+            for (size_t i = 0; i < m_dynamicBoxes.size(); ++i) {
+                for (size_t j = i + 1; j < m_dynamicBoxes.size(); ++j) {
+                    Vec2 normal;
+                    Vec2 point;
+                    if (computeContactNormal(m_dynamicBoxes[i], m_dynamicBoxes[j], normal, point)) {
+                        addNormal(point, normal);
+                    }
+                }
+            }
+            for (const auto& staticBox : m_staticBoxes) {
+                for (const auto& circle : m_circles) {
+                    auto hit = staticBox.intersectCircle(circle.pos, circle.radius);
+                    if (hit) {
+                        addNormal(hit->pos, hit->normal);
+                    }
+                }
+            }
+        }
+    }
+
+    if (m_playerEntity) {
+        if (auto* sprite = m_playerEntity->getComponent<SpriteComponent>()) {
+            sprite->setPosition(m_playerBox.pos.x, m_playerBox.pos.y, 0.0f);
+        }
+    }
+    for (size_t i = 0; i < m_dynamicBoxes.size() && i < m_dynamicBoxEntities.size(); ++i) {
+        if (auto* sprite = m_dynamicBoxEntities[i]->getComponent<SpriteComponent>()) {
+            sprite->setPosition(m_dynamicBoxes[i].pos.x, m_dynamicBoxes[i].pos.y, 0.0f);
+        }
+    }
+
+    for (size_t i = 0; i < m_circles.size() && i < m_circleEntities.size(); ++i) {
+        if (auto* sprite = m_circleEntities[i]->getComponent<SpriteComponent>()) {
+            sprite->setPosition(m_circles[i].pos.x, m_circles[i].pos.y, 0.0f);
+        }
+    }
+}
+
+void TestScene::updateCameraMovement(float dt) {
+    auto* cameraEntity = m_entityManager->findEntity("MainCamera");
+    if (!cameraEntity) return;
+
+    auto* camera = cameraEntity->getComponent<Camera2D>();
+    if (!camera) return;
+
+    auto& input = Input::getInstance();
+
+    float baseSpeed = 300.0f;
+    float fastSpeed = 600.0f;
+    float zoomSpeed = 2.0f;
+
+    float currentSpeed = input.isKeyDown(Key::Shift) ? fastSpeed : baseSpeed;
+
+    Vec2 moveDelta(0.0f, 0.0f);
+    if (input.isKeyDown(Key::W)) moveDelta.y += currentSpeed * dt;
+    if (input.isKeyDown(Key::S)) moveDelta.y -= currentSpeed * dt;
+    if (input.isKeyDown(Key::A)) moveDelta.x -= currentSpeed * dt;
+    if (input.isKeyDown(Key::D)) moveDelta.x += currentSpeed * dt;
+
+    if (moveDelta.x != 0.0f || moveDelta.y != 0.0f) {
+        camera->move(moveDelta);
+    }
+
+    float zoomDelta = 0.0f;
+    if (input.isKeyDown(Key::Q)) zoomDelta -= zoomSpeed * dt;
+    if (input.isKeyDown(Key::E)) zoomDelta += zoomSpeed * dt;
+
+    if (zoomDelta != 0.0f) {
+        camera->zoom(zoomDelta);
+    }
+
+    if (input.isKeyDown(Key::Space)) {
+        camera->setPosition(0.0f, 0.0f);
+        camera->setZoom(1.0f);
+    }
+}
+
+void TestScene::render(GraphicsEngine& engine, SwapChain& swapChain) {
+    auto& ctx = engine.getContext();
+    float screenWidth = GraphicsEngine::getWindowWidth();
+    float screenHeight = GraphicsEngine::getWindowHeight();
+
+    // ---------- PASS 1: world-space sprites using default pipeline ----------
+    ctx.setGraphicsPipelineState(engine.getDefaultPipeline());
+    // set camera matrices
+    if (auto* cameraEntity = m_entityManager->findEntity("MainCamera")) {
+        if (auto* camera = cameraEntity->getComponent<Camera2D>()) {
+            // Update camera screen size if window was resized
+            camera->setScreenSize(screenWidth, screenHeight);
+            ctx.setViewMatrix(camera->getViewMatrix());
+            ctx.setProjectionMatrix(camera->getProjectionMatrix());
+            if (m_lineRenderer) {
+                m_lineRenderer->setCamera(camera);
+            }
+        }
+    }
+
+    // Render background sprite first
+    if (m_backgroundEntity) {
+        if (auto* sprite = m_backgroundEntity->getComponent<SpriteComponent>()) {
+            sprite->draw(ctx);
+        }
+    }
+
+    // Render AABB sprites
+    if (m_playerEntity) {
+        if (auto* sprite = m_playerEntity->getComponent<SpriteComponent>()) {
+            sprite->draw(ctx);
+        }
+    }
+    for (size_t i = 0; i < m_staticBoxEntities.size(); ++i) {
+        if (auto* sprite = m_staticBoxEntities[i]->getComponent<SpriteComponent>()) {
+            sprite->draw(ctx);
+        }
+    }
+    for (size_t i = 0; i < m_dynamicBoxEntities.size(); ++i) {
+        if (auto* sprite = m_dynamicBoxEntities[i]->getComponent<SpriteComponent>()) {
+            sprite->draw(ctx);
+        }
+    }
+
+    // Render circles using sprites (alpha-friendly)
+    for (size_t i = 0; i < m_circleEntities.size(); ++i) {
+        if (auto* sprite = m_circleEntities[i]->getComponent<SpriteComponent>()) {
+            sprite->draw(ctx);
+        }
+    }
+
+    if (m_showTextDemo) {
+        if (m_worldText) {
+            m_worldText->draw(ctx);
+        }
+        if (m_screenText) {
+            m_screenText->draw(ctx);
+        }
+    }
+
+    if (m_lineRenderer && m_showDebugLines) {
+        m_lineRenderer->draw(ctx);
+    }
+    
+    // frame begin/end handled centrally
+    // Note: renderImGui is called by Game::onInternalUpdate(), not here
+}
+
+void TestScene::updatePlayerMovement(float dt) {
+    auto& input = Input::getInstance();
+    
+    float moveSpeed = 200.0f;
+    Vec2 moveInput(0.0f, 0.0f);
+    
+    // Arrow keys for player movement (WASD is for camera)
+    if (input.isKeyDown(Key::Up)) {
+        moveInput.y += moveSpeed;
+    }
+    if (input.isKeyDown(Key::Down)) {
+        moveInput.y -= moveSpeed;
+    }
+    if (input.isKeyDown(Key::Left)) {
+        moveInput.x -= moveSpeed;
+    }
+    if (input.isKeyDown(Key::Right)) {
+        moveInput.x += moveSpeed;
+    }
+    
+    // Spring move dynamic AABB or circle toward mouse when LMB is held
+    if (input.isMouseDown(MouseClick::LeftMouse)) {
+        auto* cameraEntity = m_entityManager->findEntity("MainCamera");
+        auto* camera = cameraEntity ? cameraEntity->getComponent<Camera2D>() : nullptr;
+        if (camera) {
+            Vec2 mouseScreen = input.getMousePositionClient();
+            m_springTarget = camera->screenToWorld(mouseScreen);
+
+            if (!m_springDynamicActive && !m_springCircleActive) {
+                m_springCircleIndex = -1;
+                for (size_t i = 0; i < m_circles.size(); ++i) {
+                    Vec2 toMouse = m_springTarget - m_circles[i].pos;
+                    float distSq = toMouse.x * toMouse.x + toMouse.y * toMouse.y;
+                    float radius = m_circles[i].radius;
+                    if (distSq <= radius * radius) {
+                        m_springCircleIndex = static_cast<int>(i);
+                        break;
+                    }
+                }
+                m_springCircleActive = (m_springCircleIndex >= 0);
+            }
+
+            if (!m_springCircleActive && !m_springDynamicActive) {
+                m_springDynamicIndex = -1;
+                for (size_t i = 0; i < m_dynamicBoxes.size(); ++i) {
+                    if (m_dynamicBoxes[i].intersectPoint(m_springTarget)) {
+                        m_springDynamicIndex = static_cast<int>(i);
+                        break;
+                    }
+                }
+                m_springDynamicActive = (m_springDynamicIndex >= 0);
+            }
+        }
+    } else {
+        m_springDynamicActive = false;
+        m_springDynamicIndex = -1;
+        m_springCircleActive = false;
+        m_springCircleIndex = -1;
+    }
+
+    // Update player velocity from keys
+    m_playerVelocity = moveInput;
+
+    if (input.wasMouseJustPressed(MouseClick::RightMouse)) {
+        auto* cameraEntity = m_entityManager->findEntity("MainCamera");
+        auto* camera = cameraEntity ? cameraEntity->getComponent<Camera2D>() : nullptr;
+        if (camera && m_graphicsDevice) {
+            Vec2 mouseScreen = input.getMousePositionClient();
+            Vec2 worldPos = camera->screenToWorld(mouseScreen);
+            if (m_spawnMode == SpawnMode::Circle) {
+                CircleBody circle;
+                circle.pos = worldPos;
+                circle.radius = 8.0f;
+                circle.velocity = Vec2(0.0f, 0.0f);
+                circle.mass = 6.0f;
+                circle.friction = 0.18f;
+                circle.restitution = 0.1f;
+                m_circles.push_back(circle);
+                auto& entity = m_entityManager->createEntity("Circle_spawn_" + std::to_string(m_circleEntities.size()));
+                auto& sprite = entity.addComponent<SpriteComponent>(*m_graphicsDevice, m_circleTexture,
+                    circle.radius * 2.0f, circle.radius * 2.0f);
+                sprite.setPosition(circle.pos.x, circle.pos.y, 0.0f);
+                sprite.setTint(Vec4(1.0f, 1.0f, 1.0f, 1.0f));
+                m_circleEntities.push_back(&entity);
+                createOriginNodeSprite();
+            } else {
+                Vec2 halfSize(5.0f, 5.0f);
+
+                m_dynamicBoxes.push_back(dx3d::physics::AABB(worldPos, halfSize));
+                m_dynamicVelocities.push_back(Vec2(0.0f, 0.0f));
+                m_dynamicMasses.push_back(6.0f);
+                m_dynamicFrictions.push_back(0.18f);
+                m_dynamicRestitutions.push_back(0.08f);
+
+                Vec2 boxSize = halfSize * 2.0f;
+                auto& entity = m_entityManager->createEntity("DynamicAABB_spawn_" + std::to_string(m_dynamicBoxEntities.size()));
+                auto& sprite = entity.addComponent<SpriteComponent>(*m_graphicsDevice, m_beamTexture,
+                    boxSize.x, boxSize.y);
+                sprite.setPosition(worldPos.x, worldPos.y, 0.0f);
+                sprite.setTint(Vec4(0.0f, 0.5f, 1.0f, 1.0f));
+                m_dynamicBoxEntities.push_back(&entity);
+                createOriginNodeSprite();
+            }
+        }
+    }
+    
+    // Reset player position with R key
+    if (input.isKeyDown(Key::R)) {
+        m_playerBox.pos = Vec2(0.0f, 0.0f);
+        m_playerVelocity = Vec2(0.0f, 0.0f);
+    }
+}
+
+
+void TestScene::renderImGui(GraphicsEngine& engine) {
+    ImGui::Begin("Test Scene");
+    ImGui::Text("Test Scene - AABB Physics Demo");
+    if (ImGui::Button("Reset Scene")) {
+        reset(engine);
+    }
+    ImGui::Separator();
+    const char* spawnLabel = (m_spawnMode == SpawnMode::Circle) ? "Spawn: Circle" : "Spawn: AABB";
+    if (ImGui::Button(spawnLabel)) {
+        m_spawnMode = (m_spawnMode == SpawnMode::Aabb) ? SpawnMode::Circle : SpawnMode::Aabb;
+    }
+    ImGui::SameLine();
+    ImGui::Text("RMB to spawn");
+    ImGui::Separator();
+    const char* debugLabel = m_showDebugLines ? "Debug Lines: On" : "Debug Lines: Off";
+    if (ImGui::Button(debugLabel)) {
+        m_showDebugLines = !m_showDebugLines;
+    }
+    ImGui::Separator();
+    const char* textLabel = m_showTextDemo ? "Text Demo: On" : "Text Demo: Off";
+    if (ImGui::Button(textLabel)) {
+        m_showTextDemo = !m_showTextDemo;
+    }
+    ImGui::Separator();
+    ImGui::Text("Camera Controls:");
+    ImGui::Text("WASD - Move camera");
+    ImGui::Text("Q/E - Zoom");
+    ImGui::Text("Space - Reset camera");
+    ImGui::Separator();
+    ImGui::Text("Player Controls:");
+    ImGui::Text("Arrow Keys - Move player box");
+    ImGui::Text("R - Reset player position");
+    ImGui::Separator();
+    ImGui::Text("Player Position: (%.1f, %.1f)", m_playerBox.pos.x, m_playerBox.pos.y);
+    ImGui::Text("Player Velocity: (%.1f, %.1f)", m_playerVelocity.x, m_playerVelocity.y);
+    ImGui::Text("Static Obstacles: %d", (int)m_staticBoxes.size());
+    ImGui::Text("Dynamic Objects: %d", (int)m_dynamicBoxes.size());
+    ImGui::Text("Gravity: %.1f", m_gravity);
+    ImGui::End();
+}
+
+void TestScene::createOriginNodeSprite() {
+    if (!m_entityManager || !m_graphicsDevice) return;
+    if (!m_nodeTexture) {
+        m_nodeTexture = Texture2D::CreateDebugTexture(m_graphicsDevice->getD3DDevice());
+    }
+    auto& entity = m_entityManager->createEntity("DebugNode_" + std::to_string(m_debugNodeCounter++));
+    auto& sprite = entity.addComponent<SpriteComponent>(*m_graphicsDevice, m_nodeTexture, 1.0f, 1.0f);
+    sprite.setPosition(0.0f, 0.0f, 0.0f);
+    sprite.setTint(Vec4(1.0f, 1.0f, 1.0f, 0.0f));
+}

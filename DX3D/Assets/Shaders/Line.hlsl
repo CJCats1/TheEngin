@@ -8,6 +8,7 @@
 
 cbuffer TransformBuffer : register(b0)
 {
+    row_major matrix worldMatrix;
     row_major matrix viewMatrix;
     row_major matrix projectionMatrix;
 };
@@ -37,7 +38,7 @@ VSOutput VSMain(VSInput input)
     VSOutput output;
     
     // Transform position through view and projection matrices
-    float4 worldPos = float4(input.position, 1.0f);
+    float4 worldPos = mul(float4(input.position, 1.0f), worldMatrix);
     float4 viewPos = mul(worldPos, viewMatrix);
     output.position = mul(viewPos, projectionMatrix);
     
