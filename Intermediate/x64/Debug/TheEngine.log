@@ -1,17 +1,132 @@
 ﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(538,5): warning MSB8028: The intermediate directory (Intermediate\x64\Debug\) contains files shared from another project (DirectXGame.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+  Installing vcpkg dependencies to D:\TheEngine\TheEngine\vcpkg_installed\x64-windows\
+  "C:\vcpkg\vcpkg.exe" install  --x-wait-for-lock --triplet "x64-windows" --vcpkg-root "C:\vcpkg\\" "--x-manifest-root=D:\TheEngine\TheEngine\\" "--x-install-root=D:\TheEngine\TheEngine\vcpkg_installed\x64-windows\\" 
+  Detecting compiler hash for triplet x64-windows...
+  Compiler found: C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/cl.exe
+  The following packages are already installed:
+    * egl-registry:x64-windows@2025-05-27
+      glad[core,loader]:x64-windows@0.1.36
+      glfw3:x64-windows@3.4#1
+      glm:x64-windows@1.0.3
+    * opengl-registry:x64-windows@2025-10-23
+    * vcpkg-cmake:x64-windows@2024-04-23
+    * vcpkg-cmake-config:x64-windows@2024-05-23
+  glad provides CMake targets:
+  
+    # this is heuristically generated, and may not be correct
+    find_package(glad CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE glad::glad)
+  
+  glfw3 provides CMake targets:
+  
+    # this is heuristically generated, and may not be correct
+    find_package(glfw3 CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE glfw)
+  
+  glfw3 provides pkg-config modules:
+  
+    # A multi-platform library for OpenGL, window and input
+    glfw3
+  
+  The package glm provides CMake targets:
+  
+      find_package(glm CONFIG REQUIRED)
+      target_link_libraries(main PRIVATE glm::glm)
+  
+      # Or use the header-only version
+      find_package(glm CONFIG REQUIRED)
+      target_link_libraries(main PRIVATE glm::glm-header-only)
+  
+  All requested installations completed successfully in: 916 us
+  Input.cpp
+  Logger.cpp
+  Scene.cpp
+D:\TheEngine\TheEngine\DX3D\Include\Libraries\imgui-docking\imconfig.h(18,9): warning C4005: 'IMGUI_IMPL_OPENGL_LOADER_GLAD': macro redefinition
+  (compiling source file 'DX3D/Source/DX3D/Core/Scene.cpp')
+      D:\TheEngine\TheEngine\DX3D\Include\Libraries\imgui-docking\imconfig.h(18,9):
+      'IMGUI_IMPL_OPENGL_LOADER_GLAD' previously declared on the command line
+  
+  Display.cpp
+D:\TheEngine\TheEngine\DX3D\Include\Libraries\imgui-docking\imconfig.h(18,9): warning C4005: 'IMGUI_IMPL_OPENGL_LOADER_GLAD': macro redefinition
+  (compiling source file 'DX3D/Source/DX3D/Game/Display.cpp')
+      D:\TheEngine\TheEngine\DX3D\Include\Libraries\imgui-docking\imconfig.h(18,9):
+      'IMGUI_IMPL_OPENGL_LOADER_GLAD' previously declared on the command line
+  
+  Game.cpp
+D:\TheEngine\TheEngine\DX3D\Include\Libraries\imgui-docking\imconfig.h(18,9): warning C4005: 'IMGUI_IMPL_OPENGL_LOADER_GLAD': macro redefinition
+  (compiling source file 'DX3D/Source/DX3D/Game/Game.cpp')
+      D:\TheEngine\TheEngine\DX3D\Include\Libraries\imgui-docking\imconfig.h(18,9):
+      'IMGUI_IMPL_OPENGL_LOADER_GLAD' previously declared on the command line
+  
+  SceneHelper.cpp
+  TestScene.cpp
+D:\TheEngine\TheEngine\DX3D\Include\Libraries\imgui-docking\imconfig.h(18,9): warning C4005: 'IMGUI_IMPL_OPENGL_LOADER_GLAD': macro redefinition
+  (compiling source file 'DX3D/Source/DX3D/Game/Scenes/TestScenes/TestScene.cpp')
+      D:\TheEngine\TheEngine\DX3D\Include\Libraries\imgui-docking\imconfig.h(18,9):
+      'IMGUI_IMPL_OPENGL_LOADER_GLAD' previously declared on the command line
+  
+  Win32Game.cpp
+  RenderBackendFactory.cpp
+  DeviceContext.cpp
+  DirectWriteText.cpp
+D:\TheEngine\TheEngine\DX3D\Include\Libraries\imgui-docking\imconfig.h(18,9): warning C4005: 'IMGUI_IMPL_OPENGL_LOADER_GLAD': macro redefinition
+  (compiling source file 'DX3D/Source/DX3D/Graphics/DirectWriteText.cpp')
+      D:\TheEngine\TheEngine\DX3D\Include\Libraries\imgui-docking\imconfig.h(18,9):
+      'IMGUI_IMPL_OPENGL_LOADER_GLAD' previously declared on the command line
+  
+  DirectX11RenderBackend.cpp
+D:\TheEngine\TheEngine\DX3D\Include\Libraries\imgui-docking\imconfig.h(18,9): warning C4005: 'IMGUI_IMPL_OPENGL_LOADER_GLAD': macro redefinition
+  (compiling source file 'DX3D/Source/DX3D/Graphics/DirectX11/DirectX11RenderBackend.cpp')
+      D:\TheEngine\TheEngine\DX3D\Include\Libraries\imgui-docking\imconfig.h(18,9):
+      'IMGUI_IMPL_OPENGL_LOADER_GLAD' previously declared on the command line
+  
+  FBXLoader.cpp
+  GraphicsDevice.cpp
+  GraphicsEngine.cpp
+D:\TheEngine\TheEngine\DX3D\Source\DX3D\Graphics\GraphicsEngine.cpp(374,59): warning C4244: 'argument': conversion from 'dx3d::i32' to 'float', possible loss of data
+D:\TheEngine\TheEngine\DX3D\Source\DX3D\Graphics\GraphicsEngine.cpp(374,32): warning C4244: 'argument': conversion from 'dx3d::i32' to 'float', possible loss of data
+  GraphicsPipelineState.cpp
+  LineRenderer.cpp
+  Mesh.cpp
+  OpenGLContext.cpp
+  OpenGLDevice.cpp
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\shared\minwindef.h(130,9): warning C4005: 'APIENTRY': macro redefinition
+  (compiling source file 'DX3D/Source/DX3D/Graphics/OpenGL/OpenGLDevice.cpp')
+      D:\TheEngine\TheEngine\vcpkg_installed\x64-windows\x64-windows\include\glad\glad.h(32,9):
+      see previous definition of 'APIENTRY'
+  
+  Generating Code...
+  Compiling...
+  OpenGLRenderBackend.cpp
+D:\TheEngine\TheEngine\DX3D\Include\Libraries\imgui-docking\imconfig.h(18,9): warning C4005: 'IMGUI_IMPL_OPENGL_LOADER_GLAD': macro redefinition
+  (compiling source file 'DX3D/Source/DX3D/Graphics/OpenGL/OpenGLRenderBackend.cpp')
+      D:\TheEngine\TheEngine\DX3D\Include\Libraries\imgui-docking\imconfig.h(18,9):
+      'IMGUI_IMPL_OPENGL_LOADER_GLAD' previously declared on the command line
+  
   OpenGLSwapChain.cpp
 D:\TheEngine\TheEngine\DX3D\Include\Libraries\imgui-docking\imconfig.h(18,9): warning C4005: 'IMGUI_IMPL_OPENGL_LOADER_GLAD': macro redefinition
   (compiling source file 'DX3D/Source/DX3D/Graphics/OpenGL/OpenGLSwapChain.cpp')
       D:\TheEngine\TheEngine\DX3D\Include\Libraries\imgui-docking\imconfig.h(18,9):
       'IMGUI_IMPL_OPENGL_LOADER_GLAD' previously declared on the command line
   
+  ShaderBinary.cpp
+  ShadowMap.cpp
+  SkyboxRenderer.cpp
+  SpriteComponent.cpp
+  SwapChain.cpp
+  VertexBuffer.cpp
+  VertexShaderSignature.cpp
+  DefaultMathBackend.cpp
+  MathBackend.cpp
   Win32Window.cpp
 D:\TheEngine\TheEngine\DX3D\Include\Libraries\imgui-docking\imconfig.h(18,9): warning C4005: 'IMGUI_IMPL_OPENGL_LOADER_GLAD': macro redefinition
   (compiling source file 'DX3D/Source/DX3D/Window/Win32/Win32Window.cpp')
       D:\TheEngine\TheEngine\DX3D\Include\Libraries\imgui-docking\imconfig.h(18,9):
       'IMGUI_IMPL_OPENGL_LOADER_GLAD' previously declared on the command line
   
+  main.cpp
   Generating Code...
+  LINK : Bin\x64\Debug\TheEngine.exe not found or not built by the last incremental link; performing full link
   TheEngine.vcxproj -> D:\TheEngine\TheEngine\Bin\x64\Debug\TheEngine.exe
   'pwsh.exe' is not recognized as an internal or external command,
   operable program or batch file.

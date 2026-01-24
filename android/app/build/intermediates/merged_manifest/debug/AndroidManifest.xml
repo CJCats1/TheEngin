@@ -12,8 +12,7 @@
         android:debuggable="true"
         android:extractNativeLibs="false"
         android:hasCode="false"
-        android:label="TheEngine"
-        android:testOnly="true" >
+        android:label="TheEngine" >
         <activity
             android:name="android.app.NativeActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"

@@ -1,4 +1,4 @@
-﻿/*MIT License
+/*MIT License
 
 C++ 3D Game Tutorial Series (https://github.com/PardCode/CPP-3D-Game-Tutorial-Series)
 
@@ -24,6 +24,9 @@ SOFTWARE.*/
 
 #include <DX3D/Core/Logger.h>
 #include <iostream>
+#if defined(DX3D_PLATFORM_ANDROID)
+#include <android/log.h>
+#endif
 
 dx3d::Logger::Logger(LogLevel logLevel): m_logLevel(logLevel)
 {
@@ -64,5 +67,12 @@ void dx3d::Logger::log(LogLevel level, const char* message) const
 	};
 
 	if (level > m_logLevel) return;
+#if defined(DX3D_PLATFORM_ANDROID)
+	int priority = ANDROID_LOG_INFO;
+	if (level == LogLevel::Warning) priority = ANDROID_LOG_WARN;
+	if (level == LogLevel::Error) priority = ANDROID_LOG_ERROR;
+	__android_log_print(priority, "DX3D", "[%s] %s", logLevelToString(level), message);
+#else
 	std::clog << "[DX3D " << logLevelToString(level) << "]: " << message << "\n";
+#endif
 }

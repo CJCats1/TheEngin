@@ -15,37 +15,36 @@
 13        android:extractNativeLibs="false"
 14        android:hasCode="false"
 14-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:5:9-32
-15        android:label="TheEngine"
+15        android:label="TheEngine" >
 15-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:4:9-34
-16        android:testOnly="true" >
-17        <activity
-17-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:7:9-19:20
-18            android:name="android.app.NativeActivity"
-18-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:8:13-54
-19            android:configChanges="orientation|screenSize|keyboardHidden"
-19-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:11:13-74
-20            android:exported="true"
-20-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:10:13-36
-21            android:label="TheEngine" >
-21-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:9:13-38
-22            <meta-data
-22-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:12:13-14:45
-23                android:name="android.app.lib_name"
-23-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:13:17-52
-24                android:value="TheEngine" />
-24-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:14:17-42
-25
-26            <intent-filter>
-26-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:15:13-18:29
-27                <action android:name="android.intent.action.MAIN" />
-27-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:16:17-69
-27-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:16:25-66
-28
-29                <category android:name="android.intent.category.LAUNCHER" />
-29-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:17:17-77
-29-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:17:27-74
-30            </intent-filter>
-31        </activity>
-32    </application>
-33
-34</manifest>
+16        <activity
+16-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:7:9-19:20
+17            android:name="android.app.NativeActivity"
+17-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:8:13-54
+18            android:configChanges="orientation|screenSize|keyboardHidden"
+18-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:11:13-74
+19            android:exported="true"
+19-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:10:13-36
+20            android:label="TheEngine" >
+20-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:9:13-38
+21            <meta-data
+21-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:12:13-14:45
+22                android:name="android.app.lib_name"
+22-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:13:17-52
+23                android:value="TheEngine" />
+23-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:14:17-42
+24
+25            <intent-filter>
+25-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:15:13-18:29
+26                <action android:name="android.intent.action.MAIN" />
+26-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:16:17-69
+26-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:16:25-66
+27
+28                <category android:name="android.intent.category.LAUNCHER" />
+28-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:17:17-77
+28-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:17:27-74
+29            </intent-filter>
+30        </activity>
+31    </application>
+32
+33</manifest>

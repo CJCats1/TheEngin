@@ -1,3 +1,4 @@
+#if defined(_WIN32)
 #include <DX3D/Game/Game.h>
 #include <Windows.h>
 
@@ -20,3 +21,4 @@ void dx3d::Game::run()
 		onInternalUpdate();
 	}
 }
+#endif

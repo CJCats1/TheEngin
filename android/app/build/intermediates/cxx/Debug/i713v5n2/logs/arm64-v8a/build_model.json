@@ -139,7 +139,6 @@
         "rootBuildGradleFolder": "D:\\TheEngine\\TheEngine\\android",
         "sdkFolder": "C:\\Users\\cjrea\\AppData\\Local\\Android\\Sdk",
         "isBuildOnlyTargetAbiEnabled": true,
-        "ideBuildTargetAbi": "x86_64,arm64-v8a",
         "isCmakeBuildCohabitationEnabled": false,
         "isPrefabEnabled": false
       },

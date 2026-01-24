@@ -1,5 +1,7 @@
 #include <DX3D/Core/Input.h>
+#if defined(_WIN32)
 #include <Windows.h>
+#endif
 
 using namespace dx3d;
 
@@ -153,6 +155,7 @@ bool Input::wasMouseJustReleased(MouseClick button) const
 
 Vec2 Input::getMousePosition() const
 {
+#if defined(_WIN32)
     POINT cursorPos;
     GetCursorPos(&cursorPos);
 
@@ -164,16 +167,24 @@ Vec2 Input::getMousePosition() const
 
     // Fallback to screen coordinates
     return Vec2((float)cursorPos.x, (float)cursorPos.y);
+#else
+    return m_mousePosition;
+#endif
 }
 
 Vec2 Input::getMousePositionScreen() const
 {
+#if defined(_WIN32)
     POINT cursorPos;
     GetCursorPos(&cursorPos);
     return Vec2((float)cursorPos.x, (float)cursorPos.y);
+#else
+    return m_mousePosition;
+#endif
 }
 Vec2 Input::getMousePositionClient() const
 {
+#if defined(_WIN32)
     POINT cursorPos;
     GetCursorPos(&cursorPos);
 
@@ -183,10 +194,14 @@ Vec2 Input::getMousePositionClient() const
     }
 
     return Vec2((float)cursorPos.x, (float)cursorPos.y); // fallback
+#else
+    return m_mousePosition;
+#endif
 }
 
 Vec2 Input::getMousePositionNDC() const
 {
+#if defined(_WIN32)
     Vec2 clientPos = getMousePositionClient();
 
     RECT rect;
@@ -202,4 +217,12 @@ Vec2 Input::getMousePositionNDC() const
     v = 1.0f - v;   // flip Y so top=1, bottom=0
 
     return Vec2(u, v);
+#else
+    return Vec2(0.0f, 0.0f);
+#endif
+}
+
+void Input::setMousePosition(const Vec2& position)
+{
+    m_mousePosition = position;
 }

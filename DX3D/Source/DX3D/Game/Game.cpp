@@ -36,6 +36,7 @@ SOFTWARE.*/
 #include <DX3D/Graphics/DirectWriteText.h>
 #endif
 #include <DX3D/Game/Scenes/TestScenes/TestScene.h>
+#include <DX3D/Game/Scenes/TestScenes/ThreeDTestScene.h>
 #include <DX3D/Core/EntityManager.h>
 
 // Define the static Game instance
@@ -82,7 +83,11 @@ dx3d::Game::Game(const GameDesc& desc) :
     m_graphicsEngine->initializePipelines();
 
     m_lastFrameTime = std::chrono::steady_clock::now();
+#if defined(DX3D_PLATFORM_ANDROID)
+    setScene(std::make_unique<dx3d::ThreeDTestScene>());
+#else
     setScene(std::make_unique<dx3d::TestScene>());
+#endif
     m_currentSceneType = SceneType::None;
 
     // Initialize ImGui (DX11 + Win32)

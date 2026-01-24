@@ -15,6 +15,25 @@ void ThreeDTestScene::load(GraphicsEngine& engine)
     m_devicePtr = &device;
     m_cube = Mesh::CreateCube(device, 1.0f);
     
+    // Apply texture to cube
+    if (m_cube)
+    {
+        std::wstring cubeTexturePath = L"DX3D/Assets/Textures/cat.jpg";
+        auto cubeTexture = Texture2D::LoadTexture2D(device, cubeTexturePath.c_str());
+        if (cubeTexture)
+        {
+            m_cube->setTexture(cubeTexture);
+            #if defined(DX3D_PLATFORM_ANDROID)
+            __android_log_print(ANDROID_LOG_INFO, "ThreeDTestScene", "Cube texture set successfully");
+            #endif
+        }
+        else
+        {
+            #if defined(DX3D_PLATFORM_ANDROID)
+            __android_log_print(ANDROID_LOG_ERROR, "ThreeDTestScene", "Failed to load cube texture");
+            #endif
+        }
+    }
     
     // Use single mesh approach for now to ensure basic texture loading works
     m_model = Mesh::CreateFromOBJ(device, "D:/TheEngine/TheEngine/DX3D/Assets/models/headcrab/headcrab.obj");
