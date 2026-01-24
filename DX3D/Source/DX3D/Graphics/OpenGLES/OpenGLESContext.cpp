@@ -139,6 +139,7 @@ void OpenGLESContext::setTexture(ui32 slot, NativeGraphicsHandle srv)
 {
 #if defined(DX3D_PLATFORM_ANDROID)
 	const auto textureId = static_cast<unsigned int>(reinterpret_cast<uintptr_t>(srv));
+	__android_log_print(ANDROID_LOG_INFO, "OpenGLESContext", "setTexture slot=%u, textureId=%u", slot, textureId);
 	glActiveTexture(GL_TEXTURE0 + slot);
 	glBindTexture(GL_TEXTURE_2D, textureId);
 #else

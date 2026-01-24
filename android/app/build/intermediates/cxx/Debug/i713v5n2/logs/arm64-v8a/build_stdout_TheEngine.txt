@@ -1,3 +1,3 @@
 ninja: Entering directory `D:\TheEngine\TheEngine\android\app\.cxx\Debug\i713v5n2\arm64-v8a'
-[1/2] Building CXX object CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Game/Game.cpp.o
+[1/2] Building CXX object CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Game/Scenes/TestScenes/TestScene.cpp.o
 [2/2] Linking CXX shared library D:\TheEngine\TheEngine\android\app\build\intermediates\cxx\Debug\i713v5n2\obj\arm64-v8a\libTheEngine.so

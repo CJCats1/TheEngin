@@ -7,6 +7,9 @@
 #if defined(_WIN32)
 #include <DX3D/Graphics/DirectWriteText.h>
 #endif
+#if defined(DX3D_PLATFORM_ANDROID)
+#include <android/log.h>
+#endif
 #include <DX3D/Physics/PhysicsSystem.h>
 #include <DX3D/Physics/PhysicsSystem.inl>
 #include <DX3D/Core/Input.h>
@@ -52,6 +55,13 @@ void TestScene::load(GraphicsEngine& engine) {
 
     m_backgroundTime = 0.0f;
     m_backgroundTexture = Texture2D::LoadTexture2D(device, L"DX3D/Assets/Textures/cat.jpg");
+    #if defined(DX3D_PLATFORM_ANDROID)
+    if (m_backgroundTexture) {
+        __android_log_print(ANDROID_LOG_INFO, "TestScene", "Background texture ID: %p", m_backgroundTexture->getNativeView());
+    } else {
+        __android_log_print(ANDROID_LOG_ERROR, "TestScene", "Failed to load cat.jpg!");
+    }
+    #endif
     if (!m_backgroundTexture) {
         m_backgroundTexture = Texture2D::CreateDebugTexture(device);
     }
@@ -61,7 +71,7 @@ void TestScene::load(GraphicsEngine& engine) {
     auto& backgroundSprite = m_backgroundEntity->addComponent<SpriteComponent>(device, m_backgroundTexture,
         backgroundWidth, backgroundHeight);
     backgroundSprite.setPosition(0.0f, 0.0f, 0.0f);
-    backgroundSprite.setTint(Vec4(1.0f, 1.0f, 1.0f, 0.0f));
+    backgroundSprite.setTint(Vec4(1.0f, 1.0f, 1.0f, 1.0f)); // Make visible - was 0.0f
     createOriginNodeSprite();
 
 #if defined(_WIN32)

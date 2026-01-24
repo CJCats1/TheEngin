@@ -1,5 +1,8 @@
 #include "SpriteComponent.h"
 #include <DX3D/Graphics/GraphicsEngine.h>
+#if defined(DX3D_PLATFORM_ANDROID)
+#include <android/log.h>
+#endif
 
 using namespace dx3d;
 
@@ -56,6 +59,12 @@ void SpriteComponent::setTexture(std::shared_ptr<Texture2D> texture) {
 
 void SpriteComponent::draw(IRenderContext& ctx) const {
 	if (!isVisible() || !isValid()) return;
+#if defined(DX3D_PLATFORM_ANDROID)
+	if (m_texture) {
+		const auto textureId = static_cast<unsigned int>(reinterpret_cast<uintptr_t>(m_texture->getNativeView()));
+		__android_log_print(ANDROID_LOG_INFO, "SpriteComponent", "Drawing sprite with texture ID: %u", textureId);
+	}
+#endif
 	float screenWidth = GraphicsEngine::getWindowWidth();
 	float screenHeight = GraphicsEngine::getWindowHeight();
 	// Choose alpha/depth states used by your engine

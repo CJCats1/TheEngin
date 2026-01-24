@@ -62,3 +62,14 @@
 2003	2318	7909828912845651	D:/TheEngine/TheEngine/android/app/build/intermediates/cxx/Debug/i713v5n2/obj/arm64-v8a/libTheEngine.so	d75a04a3b786a99e
 7	1685	7909830734389325	CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Game/Game.cpp.o	c140c0fec4dbc6da
 1685	1899	7909830736277721	D:/TheEngine/TheEngine/android/app/build/intermediates/cxx/Debug/i713v5n2/obj/arm64-v8a/libTheEngine.so	d75a04a3b786a99e
+9	2500	7909831687085987	CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Game/Scenes/TestScenes/TestScene.cpp.o	14357f8f289e2d22
+2501	2754	7909831689388698	D:/TheEngine/TheEngine/android/app/build/intermediates/cxx/Debug/i713v5n2/obj/arm64-v8a/libTheEngine.so	d75a04a3b786a99e
+14	3137	7909832350018461	CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Game/Scenes/TestScenes/TestScene.cpp.o	14357f8f289e2d22
+3138	3426	7909832352640147	D:/TheEngine/TheEngine/android/app/build/intermediates/cxx/Debug/i713v5n2/obj/arm64-v8a/libTheEngine.so	d75a04a3b786a99e
+8	1152	7909832886533321	CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Graphics/OpenGLES/OpenGLESContext.cpp.o	8f0f01ecef981300
+1152	1469	7909832889298149	D:/TheEngine/TheEngine/android/app/build/intermediates/cxx/Debug/i713v5n2/obj/arm64-v8a/libTheEngine.so	d75a04a3b786a99e
+42	1386	7909836854591241	CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Graphics/SpriteComponent.cpp.o	774a82936c275a67
+20	2733	7909836867942811	CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Game/Scenes/TestScenes/TestScene.cpp.o	14357f8f289e2d22
+2733	3025	7909836870617735	D:/TheEngine/TheEngine/android/app/build/intermediates/cxx/Debug/i713v5n2/obj/arm64-v8a/libTheEngine.so	d75a04a3b786a99e
+10	2622	7909838218245597	CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Game/Scenes/TestScenes/TestScene.cpp.o	14357f8f289e2d22
+2623	2889	7909838220638690	D:/TheEngine/TheEngine/android/app/build/intermediates/cxx/Debug/i713v5n2/obj/arm64-v8a/libTheEngine.so	d75a04a3b786a99e
