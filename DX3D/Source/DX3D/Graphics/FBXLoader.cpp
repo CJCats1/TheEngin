@@ -1,13 +1,13 @@
 #include <DX3D/Graphics/FBXLoader.h>
 #include <DX3D/Graphics/Mesh.h>
 #include <DX3D/Graphics/Texture2D.h>
-#include <DX3D/Graphics/GraphicsDevice.h>
+#include <DX3D/Graphics/Abstraction/RenderDevice.h>
 #include <fstream>
 #include <iostream>
 
 namespace dx3d
 {
-    std::shared_ptr<Mesh> FBXLoader::LoadMesh(GraphicsDevice& device, const std::string& path)
+    std::shared_ptr<Mesh> FBXLoader::LoadMesh(IRenderDevice& device, const std::string& path)
     {
         
         if (!IsValidFBXFile(path)) {
@@ -23,7 +23,7 @@ namespace dx3d
         return CreateMeshFromFBXData(device, fbxMeshes[0]);
     }
 
-    std::vector<std::shared_ptr<Mesh>> FBXLoader::LoadMeshes(GraphicsDevice& device, const std::string& path)
+    std::vector<std::shared_ptr<Mesh>> FBXLoader::LoadMeshes(IRenderDevice& device, const std::string& path)
     {
         std::vector<std::shared_ptr<Mesh>> meshes;
         
@@ -154,7 +154,7 @@ namespace dx3d
         return fbxMeshes;
     }
 
-    std::shared_ptr<Mesh> FBXLoader::CreateMeshFromFBXData(GraphicsDevice& device, const FBXMesh& fbxMesh)
+    std::shared_ptr<Mesh> FBXLoader::CreateMeshFromFBXData(IRenderDevice& device, const FBXMesh& fbxMesh)
     {
         if (fbxMesh.vertices.empty() || fbxMesh.indices.empty()) {
             return nullptr;
@@ -182,15 +182,15 @@ namespace dx3d
         if (!fbxMesh.diffuseTexturePath.empty()) {
             std::wstring wpath;
             wpath.assign(fbxMesh.diffuseTexturePath.begin(), fbxMesh.diffuseTexturePath.end());
-            auto texture = Texture2D::LoadTexture2D(device.getD3DDevice(), wpath.c_str());
+            auto texture = Texture2D::LoadTexture2D(device, wpath.c_str());
             if (texture) {
                 mesh->setTexture(texture);
             } else {
                 // Fallback to debug texture
-                mesh->setTexture(Texture2D::CreateDebugTexture(device.getD3DDevice()));
+                mesh->setTexture(Texture2D::CreateDebugTexture(device));
             }
         } else {
-            mesh->setTexture(Texture2D::CreateDebugTexture(device.getD3DDevice()));
+            mesh->setTexture(Texture2D::CreateDebugTexture(device));
         }
 
         return mesh;

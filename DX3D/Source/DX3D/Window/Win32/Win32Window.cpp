@@ -1,4 +1,4 @@
-﻿#include <DX3D/Window/Window.h>
+#include <DX3D/Window/Window.h>
 #include <DX3D/Core/Input.h>
 #include <Windows.h>
 #include <imgui.h>
@@ -9,6 +9,39 @@
 namespace dx3d {
     // Store a pointer to the current Window instance (simple, single-window case)
     static Window* g_windowInstance = nullptr;
+}
+
+namespace
+{
+    std::wstring buildIconPath()
+    {
+        wchar_t exePath[MAX_PATH];
+        GetModuleFileNameW(nullptr, exePath, MAX_PATH);
+        std::wstring exeDir = exePath;
+        size_t lastSlash = exeDir.find_last_of(L"\\/");
+        if (lastSlash != std::wstring::npos)
+        {
+            exeDir = exeDir.substr(0, lastSlash + 1);
+        }
+        return exeDir + L"..\\..\\..\\DX3D\\Assets\\Textures\\CheckEngine.ico";
+    }
+
+    void applyWindowIcon(HWND hwnd)
+    {
+        const std::wstring iconPath = buildIconPath();
+        HICON hIcon = (HICON)LoadImageW(nullptr, iconPath.c_str(), IMAGE_ICON,
+            GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON), LR_LOADFROMFILE);
+        HICON hIconSm = (HICON)LoadImageW(nullptr, iconPath.c_str(), IMAGE_ICON,
+            GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), LR_LOADFROMFILE);
+        if (hIcon)
+        {
+            SendMessage(hwnd, WM_SETICON, ICON_BIG, (LPARAM)hIcon);
+        }
+        if (hIconSm)
+        {
+            SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)hIconSm);
+        }
+    }
 }
 
 // Forward global procedure → instance
@@ -28,6 +61,11 @@ static LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wparam, LPAR
 
 dx3d::Window::Window(const WindowDesc& desc) : Base(desc.base), m_size(desc.size)
 {
+    if (!desc.createNativeWindow)
+    {
+        m_handle = nullptr;
+        return;
+    }
     auto registerWindowClassFunction = []()
         {
             WNDCLASSEX wc{};
@@ -49,7 +87,7 @@ dx3d::Window::Window(const WindowDesc& desc) : Base(desc.base), m_size(desc.size
             }
             
             // Construct path to icon (relative to executable: ../../DX3D/Assets/Textures/CheckEngine.ico)
-            std::wstring iconPath = exeDir + L"..\\..\\DX3D\\Assets\\Textures\\CheckEngine.ico";
+            std::wstring iconPath = buildIconPath();
             
             // Load large icon (32x32 or system default)
             HICON hIcon = (HICON)LoadImageW(nullptr, iconPath.c_str(), IMAGE_ICON, 
@@ -92,6 +130,7 @@ dx3d::Window::Window(const WindowDesc& desc) : Base(desc.base), m_size(desc.size
 
     // Set global instance
     g_windowInstance = this;
+    applyWindowIcon(static_cast<HWND>(m_handle));
     Input::getInstance().setWindowHandle(static_cast<HWND>(m_handle));
     ShowWindow(static_cast<HWND>(m_handle), SW_SHOW);
 }

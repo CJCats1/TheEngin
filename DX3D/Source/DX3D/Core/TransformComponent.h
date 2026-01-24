@@ -147,8 +147,8 @@ namespace dx3d {
                 Mat4::rotationZ(m_rotation.z);
             Mat4 translationMatrix = Mat4::translation(m_position);
 
-            // Standard transform order: Scale -> Rotate -> Translate
-            m_worldMatrix = translationMatrix * rotationMatrix * scaleMatrix;
+            // Row-vector math: v * S * R * T
+            m_worldMatrix = scaleMatrix * rotationMatrix * translationMatrix;
             m_dirty = false;
         }
 
@@ -158,7 +158,8 @@ namespace dx3d {
             Mat4 rotationMatrix = Mat4::rotationZ(m_rotation.z);
             Mat4 translationMatrix = Mat4::translation(m_position);
 
-            m_worldMatrix = scaleMatrix* rotationMatrix   * translationMatrix;
+            // Match row-vector math used by shaders: v * (S * R * T)
+            m_worldMatrix = scaleMatrix * rotationMatrix * translationMatrix;
             m_dirty = false;
         }
     };

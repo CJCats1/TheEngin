@@ -8,7 +8,7 @@
 
 using namespace dx3d;
 
-std::shared_ptr<Mesh> Mesh::CreateQuadColored(GraphicsDevice& device, float w, float h)
+std::shared_ptr<Mesh> Mesh::CreateQuadColored(IRenderDevice& device, float w, float h)
 {
     const float hw = w * 0.5f, hh = h * 0.5f;
 
@@ -25,14 +25,14 @@ std::shared_ptr<Mesh> Mesh::CreateQuadColored(GraphicsDevice& device, float w, f
     m->m_indexCount = (ui32)std::size(idx);
     m->m_vb = device.createVertexBuffer({ verts, m->m_vertexCount, sizeof(Vertex) });
     m->m_ib = device.createIndexBuffer({ idx, m->m_indexCount, sizeof(ui32) });
-    auto whiteTexture = dx3d::Texture2D::CreateDebugTexture(device.getD3DDevice());
+    auto whiteTexture = dx3d::Texture2D::CreateDebugTexture(device);
     m->setTexture(whiteTexture);
     m->m_width = w;
     m->m_height = h;
     return m;
 }
 
-std::shared_ptr<Mesh> Mesh::CreateFromOBJ(GraphicsDevice& device, const std::string& path)
+std::shared_ptr<Mesh> Mesh::CreateFromOBJ(IRenderDevice& device, const std::string& path)
 {
     std::ifstream in(path);
     if (!in) return nullptr;
@@ -142,16 +142,16 @@ std::shared_ptr<Mesh> Mesh::CreateFromOBJ(GraphicsDevice& device, const std::str
         std::wstring wpath;
         const std::string full = baseDir + chosenDiffuseTexPath;
         wpath.assign(full.begin(), full.end());
-        auto tex = dx3d::Texture2D::LoadTexture2D(device.getD3DDevice(), wpath.c_str());
+        auto tex = dx3d::Texture2D::LoadTexture2D(device, wpath.c_str());
         if (tex) m->setTexture(tex);
-        else m->setTexture(dx3d::Texture2D::CreateDebugTexture(device.getD3DDevice()));
+        else m->setTexture(dx3d::Texture2D::CreateDebugTexture(device));
     } else {
-        m->setTexture(dx3d::Texture2D::CreateDebugTexture(device.getD3DDevice()));
+        m->setTexture(dx3d::Texture2D::CreateDebugTexture(device));
     }
     return m;
 }
 
-std::vector<std::shared_ptr<Mesh>> Mesh::CreateFromOBJMultiMaterial(GraphicsDevice& device, const std::string& path)
+std::vector<std::shared_ptr<Mesh>> Mesh::CreateFromOBJMultiMaterial(IRenderDevice& device, const std::string& path)
 {
     std::ifstream in(path);
     if (!in) return {};
@@ -285,14 +285,14 @@ std::vector<std::shared_ptr<Mesh>> Mesh::CreateFromOBJMultiMaterial(GraphicsDevi
             
             std::wstring wpath;
             wpath.assign(fullPath.begin(), fullPath.end());
-            auto tex = dx3d::Texture2D::LoadTexture2D(device.getD3DDevice(), wpath.c_str());
+            auto tex = dx3d::Texture2D::LoadTexture2D(device, wpath.c_str());
             if (tex) {
                 m->setTexture(tex);
             } else {
-                m->setTexture(dx3d::Texture2D::CreateDebugTexture(device.getD3DDevice()));
+                m->setTexture(dx3d::Texture2D::CreateDebugTexture(device));
             }
         } else {
-            m->setTexture(dx3d::Texture2D::CreateDebugTexture(device.getD3DDevice()));
+            m->setTexture(dx3d::Texture2D::CreateDebugTexture(device));
         }
         
         meshes.push_back(m);
@@ -301,7 +301,7 @@ std::vector<std::shared_ptr<Mesh>> Mesh::CreateFromOBJMultiMaterial(GraphicsDevi
     return meshes;
 }
 
-std::shared_ptr<Mesh> Mesh::CreateQuadSolidColored(GraphicsDevice& device, float w, float h, Vec4 Color)
+std::shared_ptr<Mesh> Mesh::CreateQuadSolidColored(IRenderDevice& device, float w, float h, Vec4 Color)
 {
     const float hw = w * 0.5f;
     const float hh = h * 0.5f;
@@ -320,13 +320,13 @@ std::shared_ptr<Mesh> Mesh::CreateQuadSolidColored(GraphicsDevice& device, float
     m->m_indexCount = (ui32)std::size(idx);
     m->m_vb = device.createVertexBuffer({ verts, m->m_vertexCount, sizeof(Vertex) });
     m->m_ib = device.createIndexBuffer({ idx, m->m_indexCount, sizeof(ui32) });
-    auto whiteTexture = dx3d::Texture2D::CreateDebugTexture(device.getD3DDevice());
+    auto whiteTexture = dx3d::Texture2D::CreateDebugTexture(device);
     m->setTexture(whiteTexture);
     m->m_width = w;
     m->m_height = h;
     return m;
 }
-std::shared_ptr<Mesh> Mesh::CreateQuadTextured(GraphicsDevice& device, float w, float h)
+std::shared_ptr<Mesh> Mesh::CreateQuadTextured(IRenderDevice& device, float w, float h)
 {
     const float hw = w * 0.5f, hh = h * 0.5f;
     const Vertex verts[] = {
@@ -348,7 +348,7 @@ std::shared_ptr<Mesh> Mesh::CreateQuadTextured(GraphicsDevice& device, float w, 
 }
 
 
-std::shared_ptr<Mesh> Mesh::CreateCube(GraphicsDevice& device, float size)
+std::shared_ptr<Mesh> Mesh::CreateCube(IRenderDevice& device, float size)
 {
     const float s = size * 0.5f;
     // 24 unique vertices (per-face normals/uvs)
@@ -400,13 +400,13 @@ std::shared_ptr<Mesh> Mesh::CreateCube(GraphicsDevice& device, float size)
     m->m_vb = device.createVertexBuffer({ verts, m->m_vertexCount, sizeof(Vertex) });
     m->m_ib = device.createIndexBuffer({ idx, m->m_indexCount, sizeof(ui32) });
     // Ensure a non-black base color by setting a default white texture
-    auto whiteTexture = dx3d::Texture2D::CreateDebugTexture(device.getD3DDevice());
+    auto whiteTexture = dx3d::Texture2D::CreateDebugTexture(device);
     m->setTexture(whiteTexture);
     m->m_width = size; m->m_height = size;
     return m;
 }
 
-std::shared_ptr<Mesh> Mesh::CreatePlane(GraphicsDevice& device, float width, float height)
+std::shared_ptr<Mesh> Mesh::CreatePlane(IRenderDevice& device, float width, float height)
 {
     const float w = width * 0.5f;
     const float h = height * 0.5f;
@@ -431,13 +431,13 @@ std::shared_ptr<Mesh> Mesh::CreatePlane(GraphicsDevice& device, float width, flo
     m->m_vb = device.createVertexBuffer({ verts, m->m_vertexCount, sizeof(Vertex) });
     m->m_ib = device.createIndexBuffer({ idx, m->m_indexCount, sizeof(ui32) });
     // Ensure a non-black base color by setting a default white texture
-    auto whiteTexture = dx3d::Texture2D::CreateDebugTexture(device.getD3DDevice());
+    auto whiteTexture = dx3d::Texture2D::CreateDebugTexture(device);
     m->setTexture(whiteTexture);
     m->m_width = width; m->m_height = height;
     return m;
 }
 
-std::shared_ptr<Mesh> Mesh::CreateSphere(GraphicsDevice& device, float radius, int segments)
+std::shared_ptr<Mesh> Mesh::CreateSphere(IRenderDevice& device, float radius, int segments)
 {
     std::vector<Vertex> vertices;
     std::vector<ui32> indices;
@@ -483,13 +483,13 @@ std::shared_ptr<Mesh> Mesh::CreateSphere(GraphicsDevice& device, float radius, i
     m->m_indexCount = (ui32)indices.size();
     m->m_vb = device.createVertexBuffer({ vertices.data(), m->m_vertexCount, sizeof(Vertex) });
     m->m_ib = device.createIndexBuffer({ indices.data(), m->m_indexCount, sizeof(ui32) });
-    auto whiteTexture = dx3d::Texture2D::CreateDebugTexture(device.getD3DDevice());
+    auto whiteTexture = dx3d::Texture2D::CreateDebugTexture(device);
     m->setTexture(whiteTexture);
     m->m_width = radius * 2.0f; m->m_height = radius * 2.0f;
     return m;
 }
 
-std::shared_ptr<Mesh> Mesh::CreateCylinder(GraphicsDevice& device, float radius, float height, int segments)
+std::shared_ptr<Mesh> Mesh::CreateCylinder(IRenderDevice& device, float radius, float height, int segments)
 {
     std::vector<Vertex> vertices;
     std::vector<ui32> indices;
@@ -553,13 +553,13 @@ std::shared_ptr<Mesh> Mesh::CreateCylinder(GraphicsDevice& device, float radius,
     m->m_indexCount = (ui32)indices.size();
     m->m_vb = device.createVertexBuffer({ vertices.data(), m->m_vertexCount, sizeof(Vertex) });
     m->m_ib = device.createIndexBuffer({ indices.data(), m->m_indexCount, sizeof(ui32) });
-    auto whiteTexture = dx3d::Texture2D::CreateDebugTexture(device.getD3DDevice());
+    auto whiteTexture = dx3d::Texture2D::CreateDebugTexture(device);
     m->setTexture(whiteTexture);
     m->m_width = radius * 2.0f; m->m_height = height;
     return m;
 }
 
-void Mesh::draw(DeviceContext& ctx) const
+void Mesh::draw(IRenderContext& ctx) const
 {
     
     ctx.setVertexBuffer(*m_vb);
@@ -568,11 +568,11 @@ void Mesh::draw(DeviceContext& ctx) const
 
     // Bind the texture if the mesh is textured
     if (m_texture) {
-        ctx.setPSShaderResource(0, m_texture->getSRV());
+        ctx.setTexture(0, m_texture->getNativeView());
     }
     
     // Always bind default sampler to prevent D3D11 warnings
-    ctx.setPSSampler(0, ctx.getDefaultSampler());
+    ctx.setSampler(0, ctx.getDefaultSamplerHandle());
 
     // Draw
     if (m_ib) {
@@ -644,7 +644,7 @@ void Mesh::updateUVCoordinates()
 // Note: These are basic implementations that can be enhanced with proper FBX parsing
 // For production use, consider integrating Assimp or Autodesk FBX SDK
 
-std::shared_ptr<Mesh> Mesh::CreateFromFBX(GraphicsDevice& device, const std::string& path)
+std::shared_ptr<Mesh> Mesh::CreateFromFBX(IRenderDevice& device, const std::string& path)
 {
     // Use the FBXLoader to load the mesh
     auto mesh = FBXLoader::LoadMesh(device, path);
@@ -657,7 +657,7 @@ std::shared_ptr<Mesh> Mesh::CreateFromFBX(GraphicsDevice& device, const std::str
     return mesh;
 }
 
-std::vector<std::shared_ptr<Mesh>> Mesh::CreateFromFBXMultiMaterial(GraphicsDevice& device, const std::string& path)
+std::vector<std::shared_ptr<Mesh>> Mesh::CreateFromFBXMultiMaterial(IRenderDevice& device, const std::string& path)
 {
     // Use the FBXLoader to load multiple meshes
     auto meshes = FBXLoader::LoadMeshes(device, path);

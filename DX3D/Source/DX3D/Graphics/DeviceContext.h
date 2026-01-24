@@ -3,10 +3,11 @@
 #include <DX3D/Math/Geometry.h>
 #include <DX3D/Graphics/GraphicsDevice.h>
 #include <DX3D/Graphics/Camera.h>
+#include <DX3D/Graphics/Abstraction/RenderContext.h>
 
 namespace dx3d
 {
-	class DeviceContext final : public GraphicsResource
+	class DeviceContext final : public GraphicsResource, public IRenderContext
 	{
 	public:
 		struct TransformData {
@@ -15,59 +16,60 @@ namespace dx3d
 			Mat4 projectionMatrix;
 		};
 		explicit DeviceContext(const GraphicsResourceDesc& gDesc);
-		void clearAndSetBackBuffer(const SwapChain& swapChain, const Vec4& color);
-		void setGraphicsPipelineState(const GraphicsPipelineState& pipeline);
-		void setVertexBuffer(const VertexBuffer& buffer);
-		void setViewportSize(const Rect& size);
-		void drawTriangleList(ui32 vertexCount, ui32 startVertexLocation);
+		void clearAndSetBackBuffer(const IRenderSwapChain& swapChain, const Vec4& color) override;
+		void setGraphicsPipelineState(const IRenderPipelineState& pipeline) override;
+		void setVertexBuffer(const IRenderVertexBuffer& buffer) override;
+		void setViewportSize(const Rect& size) override;
+		void drawTriangleList(ui32 vertexCount, ui32 startVertexLocation) override;
 
-		void setIndexBuffer(IndexBuffer& ib, DXGI_FORMAT fmt = DXGI_FORMAT_R32_UINT, ui32 offset = 0);
-		void drawIndexedTriangleList(ui32 indexCount, ui32 startIndex);
-		void drawIndexedLineList(ui32 indexCount, ui32 startIndex);
-		void setPSShaderResource(ui32 slot, ID3D11ShaderResourceView* srv);
+		void setIndexBuffer(IRenderIndexBuffer& ib, IndexFormat fmt = IndexFormat::UInt32, ui32 offset = 0) override;
+		void drawIndexedTriangleList(ui32 indexCount, ui32 startIndex) override;
+		void drawIndexedLineList(ui32 indexCount, ui32 startIndex) override;
+		void setTexture(ui32 slot, NativeGraphicsHandle srv) override;
 
-		void setWorldMatrix(const Mat4& worldMatrix);
-		void setPSSampler(ui32 slot, ID3D11SamplerState* sampler);
+		void setWorldMatrix(const Mat4& worldMatrix) override;
+		void setSampler(ui32 slot, NativeGraphicsHandle sampler) override;
 
-		void setViewMatrix(const Mat4& viewMatrix);
-		void setProjectionMatrix(const Mat4& projectionMatrix);
-		void updateTransformBuffer();
+		void setViewMatrix(const Mat4& viewMatrix) override;
+		void setProjectionMatrix(const Mat4& projectionMatrix) override;
+		void updateTransformBuffer() override;
 
-		void enableAlphaBlending();
-		void disableAlphaBlending();
-		void enableTransparentDepth();
-		void enableDefaultDepth();
-		void setScreenSpaceMatrices(float screenWidth, float screenHeight);
-		void restoreWorldSpaceMatrices(const Mat4& viewMatrix, const Mat4& projectionMatrix);
+		void enableAlphaBlending() override;
+		void disableAlphaBlending() override;
+		void enableTransparentDepth() override;
+		void enableDefaultDepth() override;
+		void setScreenSpaceMatrices(float screenWidth, float screenHeight) override;
+		void restoreWorldSpaceMatrices(const Mat4& viewMatrix, const Mat4& projectionMatrix) override;
 		TransformData getTransformData() { return m_currentTransforms; };
-		void setTint(const Vec4& tint);
+		void setTint(const Vec4& tint) override;
 
 		// Lighting (PS b2)
-		void setDirectionalLight(const Vec3& direction, const Vec3& color, float intensity, float ambient);
-		void setLights(const std::vector<Vec3>& dirs, const std::vector<Vec3>& colors, const std::vector<float>& intensities);
-		void setMaterial(const Vec3& specColor, float shininess, float ambient);
-		void setCameraPosition(const Vec3& pos);
+		void setDirectionalLight(const Vec3& direction, const Vec3& color, float intensity, float ambient) override;
+		void setLights(const std::vector<Vec3>& dirs, const std::vector<Vec3>& colors, const std::vector<float>& intensities) override;
+		void setMaterial(const Vec3& specColor, float shininess, float ambient) override;
+		void setCameraPosition(const Vec3& pos) override;
 
 		// PBR controls (PS b5)
-		void setPBR(bool enabled, const Vec3& albedo, float metallic, float roughness);
+		void setPBR(bool enabled, const Vec3& albedo, float metallic, float roughness) override;
 		// Spotlight (PS b6)
 		void setSpotlight(bool enabled, const Vec3& position, const Vec3& direction, float range,
-			float innerAngleRadians, float outerAngleRadians, const Vec3& color, float intensity);
+			float innerAngleRadians, float outerAngleRadians, const Vec3& color, float intensity) override;
 
-	void disableDepthTest();
-	void enableDepthTest();
+	void disableDepthTest() override;
+	void enableDepthTest() override;
 
 	// Utility: set a small PS constant buffer at slot 0
-	void setPSConstants0(const void* data, ui32 byteSize);
+	void setPSConstants0(const void* data, ui32 byteSize) override;
 	
 	// Shadow mapping support
-		void setShadowMap(ID3D11ShaderResourceView* shadowMap, ID3D11SamplerState* shadowSampler);
-		void setShadowMaps(ID3D11ShaderResourceView* const* shadowMaps, ui32 count, ID3D11SamplerState* shadowSampler);
-		void setShadowMatrix(const Mat4& lightViewProj);
-		void setShadowMatrices(const std::vector<Mat4>& lightViewProjMatrices);
+		void setShadowMap(NativeGraphicsHandle shadowMap, NativeGraphicsHandle shadowSampler) override;
+		void setShadowMaps(NativeGraphicsHandle const* shadowMaps, ui32 count, NativeGraphicsHandle shadowSampler) override;
+		void setShadowMatrix(const Mat4& lightViewProj) override;
+		void setShadowMatrices(const std::vector<Mat4>& lightViewProjMatrices) override;
 	
-	ID3D11SamplerState* getDefaultSampler() const { return m_defaultSampler.Get(); }
-	ID3D11DeviceContext* getD3DDeviceContext() const { return m_context.Get(); }
+	NativeGraphicsHandle getDefaultSamplerHandle() const override { return m_defaultSampler.Get(); }
+	NativeGraphicsHandle getNativeContextHandle() const noexcept override { return m_context.Get(); }
+	void clearShaderResourceBindings() override;
 
 	private:
 		Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_context{};

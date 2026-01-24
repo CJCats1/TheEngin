@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include <DX3D/Game/Game.h>
+#include <DX3D/Graphics/OpenGL/OpenGLSwapChain.h>
 #include <DX3D/Window/Window.h>
 #include <DX3D/Graphics/GraphicsEngine.h>
 #include <DX3D/Core/Logger.h>
@@ -41,8 +42,6 @@ namespace dx3d {
 // ImGui/ImPlot
 #include <imgui.h>
 #include <imgui_internal.h>
-#include <backends/imgui_impl_win32.h>
-#include <backends/imgui_impl_dx11.h>
 #include <implot.h>
 // Windows DPI functions
 #include <windows.h>
@@ -55,7 +54,13 @@ dx3d::Game::Game(const GameDesc& desc) :
     s_currentInstance = this;
 
     m_graphicsEngine = std::make_unique<GraphicsEngine>(GraphicsEngineDesc{ m_logger });
-    m_display = std::make_unique<Display>(DisplayDesc{ {m_logger,desc.windowSize},m_graphicsEngine->getGraphicsDevice() });
+    WindowDesc windowDesc{ {m_logger}, desc.windowSize };
+    if (m_graphicsEngine->getBackendType() == RenderBackendType::OpenGL)
+    {
+        windowDesc.createNativeWindow = false;
+    }
+    m_display = std::make_unique<Display>(DisplayDesc{ windowDesc, m_graphicsEngine->getGraphicsDevice() });
+    m_graphicsEngine->initializePipelines();
 
     m_lastFrameTime = std::chrono::steady_clock::now();
     setScene(std::make_unique<dx3d::TestScene>());
@@ -70,15 +75,25 @@ dx3d::Game::Game(const GameDesc& desc) :
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+    if (m_graphicsEngine->getBackendType() == RenderBackendType::OpenGL)
+    {
+        io.ConfigFlags &= ~ImGuiConfigFlags_ViewportsEnable;
+    }
 
     // Configure viewports properly
     io.ConfigViewportsNoAutoMerge = true;
     io.ConfigViewportsNoTaskBarIcon = true;
 
     ImPlot::CreateContext();
-    ImGui_ImplWin32_Init(m_display->getHandle());
-    ImGui_ImplDX11_Init(m_graphicsEngine->getGraphicsDevice().getD3DDevice(),
-        m_graphicsEngine->getContext().getD3DDeviceContext());
+    void* imguiWindowHandle = m_display->getHandle();
+    if (m_graphicsEngine->getBackendType() == RenderBackendType::OpenGL) {
+        imguiWindowHandle = m_display->getSwapChain().getNativeSwapChainHandle();
+    }
+    m_graphicsEngine->getImGuiBackend().initialize(
+        imguiWindowHandle,
+        m_graphicsEngine->getGraphicsDevice(),
+        m_graphicsEngine->getContext()
+    );
 
 
     // Apply dark style
@@ -94,8 +109,7 @@ dx3d::Game::~Game()
     
     // Shutdown ImGui/ImPlot
     ImPlot::DestroyContext();
-    ImGui_ImplDX11_Shutdown();
-    ImGui_ImplWin32_Shutdown();
+    m_graphicsEngine->getImGuiBackend().shutdown();
     ImGui::DestroyContext();
     DX3DLogInfo("Game deallocation started.");
 }
@@ -106,6 +120,13 @@ float imguiRebuildDelay = 0.0f;
 const float imguiRebuildInterval = 15.0f; // seconds
 void dx3d::Game::onInternalUpdate()
 {
+    if (m_graphicsEngine->getBackendType() == RenderBackendType::OpenGL)
+    {
+        if (auto* glSwapChain = dynamic_cast<OpenGLSwapChain*>(&m_display->getSwapChain()))
+        {
+            glSwapChain->pollInput();
+        }
+    }
     auto& input = Input::getInstance();
     if (input.isKeyDown(Key::Escape))
     {
@@ -138,8 +159,7 @@ void dx3d::Game::onInternalUpdate()
 	//	imguiRebuild = true;
     //}
     // Start ImGui frame
-    ImGui_ImplDX11_NewFrame();
-    ImGui_ImplWin32_NewFrame();
+    m_graphicsEngine->getImGuiBackend().newFrame();
 
     // CRITICAL: Ensure display size is correct every frame
     ImGuiIO& io = ImGui::GetIO();
@@ -166,23 +186,14 @@ void dx3d::Game::onInternalUpdate()
     }
 
     // Render ImGui on top
-    {
-        auto* d3dCtx = m_graphicsEngine->getContext().getD3DDeviceContext();
-        ID3D11ShaderResourceView* nullSrvs[16] = {};
-        ID3D11SamplerState* nullSamplers[16] = {};
-        d3dCtx->PSSetShaderResources(0, 16, nullSrvs);
-        d3dCtx->VSSetShaderResources(0, 16, nullSrvs);
-        d3dCtx->GSSetShaderResources(0, 16, nullSrvs);
-        d3dCtx->PSSetSamplers(0, 16, nullSamplers);
-    }
+    m_graphicsEngine->getContext().clearShaderResourceBindings();
     ImGui::Render();
-    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+    m_graphicsEngine->getImGuiBackend().renderDrawData();
 
     // Handle multi-viewport rendering for drag-out functionality
     if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
     {
-        ImGui::UpdatePlatformWindows();
-        ImGui::RenderPlatformWindowsDefault();
+        m_graphicsEngine->getImGuiBackend().renderPlatformWindows();
     }
 
     // Present after ImGui so UI is visible
@@ -204,8 +215,8 @@ void dx3d::Game::ImguiRebuild()
     io.Fonts->AddFontDefault();
 
     // Recreate backend resources for the new atlas
-    ImGui_ImplDX11_InvalidateDeviceObjects();
-    ImGui_ImplDX11_CreateDeviceObjects();
+    m_graphicsEngine->getImGuiBackend().invalidateDeviceObjects();
+    m_graphicsEngine->getImGuiBackend().createDeviceObjects();
 }
 void dx3d::Game::setScene(std::unique_ptr<Scene> scene)
 {

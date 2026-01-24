@@ -1,12 +1,15 @@
 #include <DX3D/Graphics/LineRenderer.h>
 #include <DX3D/Graphics/GraphicsDevice.h>
 #include <DX3D/Graphics/DeviceContext.h>
+#include <DX3D/Graphics/VertexBuffer.h>
+#include <DX3D/Graphics/IndexBuffer.h>
+#include <DX3D/Graphics/GraphicsPipelineState.h>
 #include <DX3D/Graphics/GraphicsEngine.h>
 #include <cmath>
 
 using namespace dx3d;
 
-LineRenderer::LineRenderer(GraphicsDevice& device) 
+LineRenderer::LineRenderer(IRenderDevice& device) 
     : m_device(device) {
 }
 
@@ -109,7 +112,7 @@ void LineRenderer::updateBuffer() {
     m_bufferDirty = false;
 }
 
-void LineRenderer::draw(DeviceContext& ctx) {
+void LineRenderer::draw(IRenderContext& ctx) {
     if (!m_visible || (m_lines.empty() && m_lines3D.empty())) return;
 
     updateBuffer();
@@ -137,7 +140,7 @@ void LineRenderer::draw(DeviceContext& ctx) {
         
         // Bind default sampler even though we don't use textures
         // This prevents D3D11 warnings about unbound samplers
-        ctx.setPSSampler(0, ctx.getDefaultSampler());
+        ctx.setSampler(0, ctx.getDefaultSamplerHandle());
 
         if (m_indexBuffer) {
             ctx.setIndexBuffer(*m_indexBuffer);

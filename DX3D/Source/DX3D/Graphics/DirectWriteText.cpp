@@ -1,9 +1,11 @@
-﻿#include "DirectWriteText.h"
+#include "DirectWriteText.h"
 #include <DX3D/Graphics/Mesh.h>
 #include <DX3D/Graphics/DeviceContext.h>
 #include <vector>
 #include <DX3D/Core/Logger.h>
 #include <DX3D/Graphics/GraphicsEngine.h>
+#include <imgui.h>
+#include <Windows.h>
 #include <iostream>
 #include <DX3D/Core/Logger.h>
 #include <algorithm>
@@ -13,14 +15,18 @@
 #include <unordered_map>
 #include <thread>
 #include <chrono>
+#include <cstdarg>
+#include <sstream>
+#include <iomanip>
 
 namespace dx3d {
 
     // Static members
     std::unique_ptr<DirectWriteRenderer> TextSystem::s_renderer = nullptr;
     bool TextSystem::s_initialized = false;
+    bool TextSystem::s_useImGuiFallback = false;
 
-    DirectWriteRenderer::DirectWriteRenderer(GraphicsDevice& device)
+    DirectWriteRenderer::DirectWriteRenderer(IRenderDevice& device)
         : m_device(device) {
     }
 
@@ -28,6 +34,11 @@ namespace dx3d {
         shutdown();
     }
     bool DirectWriteRenderer::initialize() {
+        auto* d3dDevice = static_cast<ID3D11Device*>(m_device.getNativeDeviceHandle());
+        if (!d3dDevice) {
+            std::cout << "DirectWriteRenderer: No D3D11 device (OpenGL backend). Text disabled.\n";
+            return false;
+        }
         HRESULT hr = DWriteCreateFactory(
             DWRITE_FACTORY_TYPE_SHARED,
             __uuidof(IDWriteFactory),
@@ -80,6 +91,11 @@ namespace dx3d {
     }
 
     bool DirectWriteRenderer::initializeDirect2D() {
+        auto* d3dDevice = static_cast<ID3D11Device*>(m_device.getNativeDeviceHandle());
+        if (!d3dDevice) {
+            std::cout << "Direct2D initialization skipped: No D3D11 device (OpenGL backend).\n";
+            return false;
+        }
         HRESULT hr = D2D1CreateFactory(
             D2D1_FACTORY_TYPE_SINGLE_THREADED,
             m_d2dFactory.GetAddressOf()
@@ -90,7 +106,7 @@ namespace dx3d {
         }
 
         Microsoft::WRL::ComPtr<IDXGIDevice> dxgiDevice;
-        hr = m_device.getD3DDevice()->QueryInterface(IID_PPV_ARGS(&dxgiDevice));
+        hr = d3dDevice->QueryInterface(IID_PPV_ARGS(&dxgiDevice));
         if (FAILED(hr)) {
             std::cout << "QueryInterface IDXGIDevice FAILED: 0x" << std::hex << hr << "\n";
             // Check if this is the E_NOINTERFACE error (0x80004002) which commonly occurs under RenderDoc
@@ -239,12 +255,13 @@ namespace dx3d {
         data.SysMemPitch = stride;
 
         Microsoft::WRL::ComPtr<ID3D11Texture2D> d3dTexture;
-        hr = m_device.getD3DDevice()->CreateTexture2D(&texDesc, &data, &d3dTexture);
+        auto* d3dDevice = static_cast<ID3D11Device*>(m_device.getNativeDeviceHandle());
+        hr = d3dDevice->CreateTexture2D(&texDesc, &data, &d3dTexture);
         if (FAILED(hr)) return nullptr;
 
         // Create shader resource view
         Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> srv;
-        hr = m_device.getD3DDevice()->CreateShaderResourceView(d3dTexture.Get(), nullptr, &srv);
+        hr = d3dDevice->CreateShaderResourceView(d3dTexture.Get(), nullptr, &srv);
         if (FAILED(hr)) return nullptr;
 
         return std::make_shared<Texture2D>(srv);
@@ -292,7 +309,7 @@ namespace dx3d {
     }
 
     // TextComponent implementation
-    TextComponent::TextComponent(GraphicsDevice& device, DirectWriteRenderer& textRenderer,
+    TextComponent::TextComponent(IRenderDevice& device, DirectWriteRenderer& textRenderer,
         const std::wstring& text, float fontSize)
         : m_device(device), m_textRenderer(textRenderer), m_text(text), m_fontFamily(L"Arial"),
         m_fontSize(fontSize), m_fontWeight(DWRITE_FONT_WEIGHT_NORMAL),
@@ -366,10 +383,25 @@ namespace dx3d {
     }
 
     Vec2 TextComponent::getTextSize() const {
+        if (TextSystem::isImGuiFallback())
+        {
+            if (!ImGui::GetCurrentContext())
+            {
+                return Vec2(0.0f, 0.0f);
+            }
+            const std::string textUtf8 = TextUtils::wstringToString(m_text);
+            const ImVec2 size = ImGui::CalcTextSize(textUtf8.c_str(), nullptr, false, static_cast<float>(m_maxWidth));
+            return Vec2(size.x, size.y);
+        }
         return m_textRenderer.measureText(m_text, m_fontFamily, m_fontSize, m_fontWeight, m_fontStyle, m_maxWidth);
     }
 
     void TextComponent::rebuildTexture() const {
+        if (TextSystem::isImGuiFallback())
+        {
+            m_needsRebuild = false;
+            return;
+        }
         float screenWidth = GraphicsEngine::getWindowWidth();
 
         if (m_text.empty()) {
@@ -411,8 +443,37 @@ namespace dx3d {
         m_needsRebuild = false;
     }
 
-    void TextComponent::draw(DeviceContext& ctx) const {
+    void TextComponent::draw(IRenderContext& ctx) const {
+        if (!TextSystem::isInitialized()) return;
         if (!isVisible() || m_text.empty()) return;
+
+        if (TextSystem::isImGuiFallback())
+        {
+            if (!ImGui::GetCurrentContext())
+            {
+                return;
+            }
+            const float screenWidth = GraphicsEngine::getWindowWidth();
+            const float screenHeight = GraphicsEngine::getWindowHeight();
+            float x = 0.0f;
+            float y = 0.0f;
+            if (m_useScreenSpace)
+            {
+                x = m_screenPosition.x * screenWidth;
+                y = (1.0f - m_screenPosition.y) * screenHeight;
+            }
+            else
+            {
+                const Vec3 pos = m_transform.getPosition();
+                x = pos.x + screenWidth * 0.5f;
+                y = screenHeight * 0.5f - pos.y;
+            }
+            const std::string textUtf8 = TextUtils::wstringToString(m_text);
+            const ImU32 color = ImGui::ColorConvertFloat4ToU32(ImVec4(m_color.x, m_color.y, m_color.z, m_color.w));
+            ImDrawList* drawList = ImGui::GetForegroundDrawList();
+            drawList->AddText(ImGui::GetFont(), m_fontSize, ImVec2(x, y), color, textUtf8.c_str());
+            return;
+        }
 
         // Make sure texture + mesh are built
         if (m_needsRebuild) rebuildTexture();
@@ -463,18 +524,19 @@ namespace dx3d {
     }
 
     // TextSystem implementation
-    void TextSystem::initialize(GraphicsDevice& device) {
+    void TextSystem::initialize(IRenderDevice& device) {
         std::cout << "[DEBUG] TextSystem::initialize() CALLED\n";
         if (!s_initialized) {
             s_renderer = std::make_unique<DirectWriteRenderer>(device);
             if (s_renderer->initialize()) {
                 s_initialized = true;
+                s_useImGuiFallback = false;
                 std::cout << "[DEBUG] TextSystem initialized successfully\n";
             }
             else {
-                s_renderer.reset();
-                std::cout << "[DEBUG] TextSystem FAILED to initialize - Text rendering will be disabled\n";
-                std::cout << "[DEBUG] This is expected when running under RenderDoc or other debugging tools\n";
+                s_initialized = true;
+                s_useImGuiFallback = true;
+                std::cout << "[DEBUG] TextSystem failed to init DirectWrite; using ImGui fallback\n";
             }
         }
         else {
@@ -487,6 +549,7 @@ namespace dx3d {
         if (s_initialized) {
             s_renderer.reset();
             s_initialized = false;
+            s_useImGuiFallback = false;
         }
     }
 
@@ -499,5 +562,76 @@ namespace dx3d {
 
     bool TextSystem::isInitialized() {
         return s_initialized;
+    }
+
+    bool TextSystem::isImGuiFallback() {
+        return s_useImGuiFallback;
+    }
+}
+
+namespace dx3d::TextUtils {
+    std::wstring stringToWString(const std::string& str) {
+        if (str.empty()) {
+            return L"";
+        }
+        const int required = MultiByteToWideChar(CP_UTF8, 0, str.data(),
+            static_cast<int>(str.size()), nullptr, 0);
+        if (required <= 0) {
+            return L"";
+        }
+        std::wstring result(static_cast<size_t>(required), L'\0');
+        MultiByteToWideChar(CP_UTF8, 0, str.data(), static_cast<int>(str.size()),
+            result.data(), required);
+        return result;
+    }
+
+    std::string wstringToString(const std::wstring& wstr) {
+        if (wstr.empty()) {
+            return "";
+        }
+        const int required = WideCharToMultiByte(CP_UTF8, 0, wstr.data(),
+            static_cast<int>(wstr.size()), nullptr, 0, nullptr, nullptr);
+        if (required <= 0) {
+            return "";
+        }
+        std::string result(static_cast<size_t>(required), '\0');
+        WideCharToMultiByte(CP_UTF8, 0, wstr.data(), static_cast<int>(wstr.size()),
+            result.data(), required, nullptr, nullptr);
+        return result;
+    }
+
+    std::wstring formatText(const wchar_t* format, ...) {
+        if (!format) {
+            return L"";
+        }
+        std::vector<wchar_t> buffer(256);
+        va_list args;
+        while (true) {
+            va_start(args, format);
+#if defined(_MSC_VER)
+            int written = _vsnwprintf_s(buffer.data(), buffer.size(), _TRUNCATE, format, args);
+#else
+            int written = vswprintf(buffer.data(), buffer.size(), format, args);
+#endif
+            va_end(args);
+            if (written >= 0) {
+                return std::wstring(buffer.data());
+            }
+            buffer.resize(buffer.size() * 2);
+        }
+    }
+
+    std::wstring formatNumber(float value, int decimalPlaces) {
+        std::wostringstream stream;
+        stream << std::fixed << std::setprecision(decimalPlaces) << value;
+        return stream.str();
+    }
+
+    std::wstring formatFloat(float value, int decimalPlaces) {
+        return formatNumber(value, decimalPlaces);
+    }
+
+    std::wstring formatInt(int value) {
+        return std::to_wstring(value);
     }
 }

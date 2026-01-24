@@ -1,11 +1,12 @@
 #pragma once
 #include <DX3D/Core/Common.h>
+#include <DX3D/Graphics/Abstraction/RenderResources.h>
 #include <d3d11.h>
 #include <wrl.h>
 
 namespace dx3d
 {
-    class IndexBuffer
+    class IndexBuffer : public IRenderIndexBuffer
     {
     public:
         IndexBuffer(ID3D11Buffer* buf, ui32 count, ui32 stride)
@@ -13,8 +14,8 @@ namespace dx3d
         }
 
         ID3D11Buffer* getNative() const { return m_buf.Get(); }
-        ui32 getCount() const { return m_count; }
-        ui32 getStride() const { return m_stride; }
+        ui32 getCount() const noexcept override { return m_count; }
+        ui32 getStride() const noexcept override { return m_stride; }
 
     private:
         Microsoft::WRL::ComPtr<ID3D11Buffer> m_buf;

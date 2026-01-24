@@ -1,9 +1,10 @@
 #pragma once
 #include <DX3D/Graphics/GraphicsResource.h>
+#include <DX3D/Graphics/Abstraction/RenderResources.h>
 
 namespace dx3d
 {
-	class GraphicsPipelineState final : public GraphicsResource
+	class GraphicsPipelineState final : public GraphicsResource, public IRenderPipelineState
 	{
 	public: 
 		GraphicsPipelineState(const GraphicsPipelineStateDesc& desc, const GraphicsResourceDesc& gDesc);

@@ -2,7 +2,7 @@
 
 namespace dx3d {
     class GraphicsEngine;
-    class SwapChain;
+    class IRenderSwapChain;
     class Game;
     class EntityManager;
 
@@ -15,7 +15,7 @@ namespace dx3d {
         virtual void reset(GraphicsEngine& engine) { load(engine); }
         virtual void update(float dt) = 0;
 		virtual void fixedUpdate(float dt) {}
-        virtual void render(GraphicsEngine& engine, SwapChain& swapChain) = 0;
+        virtual void render(GraphicsEngine& engine, IRenderSwapChain& swapChain) = 0;
         // ImGui hook per scene; default draws fallback content
         virtual void renderImGui(GraphicsEngine& engine);
         

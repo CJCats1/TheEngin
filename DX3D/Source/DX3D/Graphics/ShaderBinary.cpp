@@ -18,22 +18,20 @@ dx3d::ShaderBinary::ShaderBinary(const ShaderCompileDesc& desc, const GraphicsRe
 	compileFlags |= D3DCOMPILE_DEBUG;
 #endif  
 	Microsoft::WRL::ComPtr<ID3DBlob> errorBlob{};
-	DX3DGraphicsCheckShaderCompile(
-		D3DCompile(
-			desc.shaderSourceCode,
-			desc.shaderSourceCodeSize,
-			desc.shaderSourceName,
-			nullptr,
-			nullptr,
-			desc.shaderEntryPoint,
-			dx3d::GraphicsUtils::GetShaderModelTarget(desc.shaderType),
-			compileFlags,
-			0,
-			&m_blob,
-			&errorBlob
-		),
-		errorBlob.Get()
+	HRESULT hr = D3DCompile(
+		desc.shaderSourceCode,
+		desc.shaderSourceCodeSize,
+		desc.shaderSourceName,
+		nullptr,
+		nullptr,
+		desc.shaderEntryPoint,
+		dx3d::GraphicsUtils::GetShaderModelTarget(desc.shaderType),
+		compileFlags,
+		0,
+		&m_blob,
+		&errorBlob
 	);
+	dx3d::GraphicsLogUtils::CheckShaderCompile(m_logger, hr, errorBlob.Get());
 	
 	std::cout << "ShaderBinary: Shader compiled successfully" << std::endl;
 }

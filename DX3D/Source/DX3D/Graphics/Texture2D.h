@@ -5,15 +5,68 @@
 #include <wincodec.h> // For WIC
 #include <comdef.h>
 #include <iostream>
+#include <cstdint>
+#include <DX3D/Graphics/Abstraction/RenderDevice.h>
+#include <DX3D/Graphics/Abstraction/GraphicsHandles.h>
+
+#if defined(DX3D_ENABLE_OPENGL)
+#include <glad/glad.h>
+#endif
 namespace dx3d
 {
     class Texture2D {
     public:
+        enum class Backend {
+            DirectX11,
+            OpenGL
+        };
+
         Texture2D(Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> srv)
-            : m_srv(srv) {
+            : m_backend(Backend::DirectX11), m_srv(srv) {
+        }
+
+#if defined(DX3D_ENABLE_OPENGL)
+        explicit Texture2D(unsigned int glTexture)
+            : m_backend(Backend::OpenGL), m_glTexture(glTexture) {
+        }
+#endif
+
+        ~Texture2D()
+        {
+#if defined(DX3D_ENABLE_OPENGL)
+            if (m_backend == Backend::OpenGL && m_glTexture)
+            {
+                glDeleteTextures(1, &m_glTexture);
+                m_glTexture = 0;
+            }
+#endif
         }
 
         ID3D11ShaderResourceView* getSRV() const { return m_srv.Get(); }
+        NativeGraphicsHandle getNativeView() const {
+            if (m_backend == Backend::OpenGL) {
+                return reinterpret_cast<NativeGraphicsHandle>(static_cast<uintptr_t>(m_glTexture));
+            }
+            return m_srv.Get();
+        }
+
+        static std::shared_ptr<Texture2D> LoadTexture2D(IRenderDevice& device, const wchar_t* filePath)
+        {
+            auto* nativeDevice = static_cast<ID3D11Device*>(device.getNativeDeviceHandle());
+            if (nativeDevice) {
+                return LoadTexture2D(nativeDevice, filePath);
+            }
+#if defined(DX3D_ENABLE_OPENGL)
+            return LoadTexture2DOpenGL(filePath);
+#else
+            return nullptr;
+#endif
+        }
+
+        static std::shared_ptr<Texture2D> LoadTexture2D(IRenderDevice* device, const wchar_t* filePath)
+        {
+            return device ? LoadTexture2D(*device, filePath) : nullptr;
+        }
 
         static std::shared_ptr<Texture2D> LoadTexture2D(ID3D11Device* device, const wchar_t* filePath)
         {
@@ -166,6 +219,24 @@ namespace dx3d
             return std::make_shared<Texture2D>(srv);
         }
 
+        static std::shared_ptr<Texture2D> CreateDebugTexture(IRenderDevice& device)
+        {
+            auto* nativeDevice = static_cast<ID3D11Device*>(device.getNativeDeviceHandle());
+            if (nativeDevice) {
+                return CreateDebugTexture(nativeDevice);
+            }
+#if defined(DX3D_ENABLE_OPENGL)
+            return CreateDebugTextureOpenGL();
+#else
+            return nullptr;
+#endif
+        }
+
+        static std::shared_ptr<Texture2D> CreateDebugTexture(IRenderDevice* device)
+        {
+            return device ? CreateDebugTexture(*device) : nullptr;
+        }
+
         // Create a cubemap with solid colors for testing
         static std::shared_ptr<Texture2D> CreateSkyboxCubemap(ID3D11Device* device) {
             // Create a simple cubemap with solid colors
@@ -228,6 +299,17 @@ namespace dx3d
             if (FAILED(hr)) return nullptr;
 
             return std::make_shared<Texture2D>(srv);
+        }
+
+        static std::shared_ptr<Texture2D> CreateSkyboxCubemap(IRenderDevice& device)
+        {
+            auto* nativeDevice = static_cast<ID3D11Device*>(device.getNativeDeviceHandle());
+            return nativeDevice ? CreateSkyboxCubemap(nativeDevice) : nullptr;
+        }
+
+        static std::shared_ptr<Texture2D> CreateSkyboxCubemap(IRenderDevice* device)
+        {
+            return device ? CreateSkyboxCubemap(*device) : nullptr;
         }
 
         // Load cubemap from a single 4x3 cross-layout image file
@@ -357,6 +439,17 @@ namespace dx3d
             return std::make_shared<Texture2D>(srv);
         }
 
+        static std::shared_ptr<Texture2D> LoadSkyboxCubemap(IRenderDevice& device, const wchar_t* filePath)
+        {
+            auto* nativeDevice = static_cast<ID3D11Device*>(device.getNativeDeviceHandle());
+            return nativeDevice ? LoadSkyboxCubemap(nativeDevice, filePath) : nullptr;
+        }
+
+        static std::shared_ptr<Texture2D> LoadSkyboxCubemap(IRenderDevice* device, const wchar_t* filePath)
+        {
+            return device ? LoadSkyboxCubemap(*device, filePath) : nullptr;
+        }
+
        
         static std::shared_ptr<Texture2D> CreateNoiseTexture(ID3D11Device* device, int size = 256) {
             std::unique_ptr<BYTE[]> pixels(new BYTE[size * size * 4]);
@@ -412,6 +505,15 @@ namespace dx3d
             if (FAILED(hr)) return nullptr;
             
             return std::make_shared<Texture2D>(srv);
+        }
+
+        static std::shared_ptr<Texture2D> CreateNoiseTexture(IRenderDevice& device, int size = 256) {
+            auto* nativeDevice = static_cast<ID3D11Device*>(device.getNativeDeviceHandle());
+            return nativeDevice ? CreateNoiseTexture(nativeDevice, size) : nullptr;
+        }
+
+        static std::shared_ptr<Texture2D> CreateNoiseTexture(IRenderDevice* device, int size = 256) {
+            return device ? CreateNoiseTexture(*device, size) : nullptr;
         }
         
         // Create a sun texture with glow effect
@@ -491,7 +593,124 @@ namespace dx3d
             return std::make_shared<Texture2D>(srv);
         }
 
+        static std::shared_ptr<Texture2D> CreateSunTexture(IRenderDevice& device, int size = 256) {
+            auto* nativeDevice = static_cast<ID3D11Device*>(device.getNativeDeviceHandle());
+            return nativeDevice ? CreateSunTexture(nativeDevice, size) : nullptr;
+        }
+
+        static std::shared_ptr<Texture2D> CreateSunTexture(IRenderDevice* device, int size = 256) {
+            return device ? CreateSunTexture(*device, size) : nullptr;
+        }
+
     private:
+        static std::shared_ptr<Texture2D> LoadTexture2DOpenGL(const wchar_t* filePath)
+        {
+#if defined(DX3D_ENABLE_OPENGL)
+            CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+            Microsoft::WRL::ComPtr<IWICImagingFactory> wicFactory;
+            HRESULT hr = CoCreateInstance(
+                CLSID_WICImagingFactory2,
+                nullptr,
+                CLSCTX_INPROC_SERVER,
+                IID_PPV_ARGS(&wicFactory)
+            );
+            if (FAILED(hr)) return nullptr;
+
+            Microsoft::WRL::ComPtr<IWICBitmapDecoder> decoder;
+            hr = wicFactory->CreateDecoderFromFilename(
+                filePath,
+                nullptr,
+                GENERIC_READ,
+                WICDecodeMetadataCacheOnLoad,
+                &decoder
+            );
+            if (FAILED(hr)) return nullptr;
+
+            Microsoft::WRL::ComPtr<IWICBitmapFrameDecode> frame;
+            hr = decoder->GetFrame(0, &frame);
+            if (FAILED(hr)) return nullptr;
+
+            Microsoft::WRL::ComPtr<IWICFormatConverter> converter;
+            hr = wicFactory->CreateFormatConverter(&converter);
+            if (FAILED(hr)) return nullptr;
+
+            hr = converter->Initialize(
+                frame.Get(),
+                GUID_WICPixelFormat32bppRGBA,
+                WICBitmapDitherTypeNone,
+                nullptr,
+                0.0,
+                WICBitmapPaletteTypeCustom
+            );
+            if (FAILED(hr)) return nullptr;
+
+            UINT width = 0, height = 0;
+            hr = converter->GetSize(&width, &height);
+            if (FAILED(hr)) return nullptr;
+
+            const UINT stride = width * 4;
+            const UINT imageSize = stride * height;
+            std::unique_ptr<BYTE[]> pixels(new BYTE[imageSize]);
+
+            hr = converter->CopyPixels(nullptr, stride, imageSize, pixels.get());
+            if (FAILED(hr)) return nullptr;
+
+            unsigned int textureId = 0;
+            glGenTextures(1, &textureId);
+            glBindTexture(GL_TEXTURE_2D, textureId);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, static_cast<GLsizei>(width),
+                static_cast<GLsizei>(height), 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels.get());
+            glBindTexture(GL_TEXTURE_2D, 0);
+
+            return std::make_shared<Texture2D>(textureId);
+#else
+            (void)filePath;
+            return nullptr;
+#endif
+        }
+
+        static std::shared_ptr<Texture2D> CreateDebugTextureOpenGL()
+        {
+#if defined(DX3D_ENABLE_OPENGL)
+            const int size = 8;
+            const UINT width = size;
+            const UINT height = size;
+            std::unique_ptr<UINT[]> pixels(new UINT[width * height]);
+            const UINT magenta = 0xFFFF00FF;
+            const UINT black = 0xFF000000;
+
+            for (UINT y = 0; y < height; y++)
+            {
+                for (UINT x = 0; x < width; x++)
+                {
+                    bool isCyan = ((x / (size / 2)) + (y / (size / 2))) % 2 == 0;
+                    pixels[y * width + x] = isCyan ? magenta : black;
+                }
+            }
+
+            unsigned int textureId = 0;
+            glGenTextures(1, &textureId);
+            glBindTexture(GL_TEXTURE_2D, textureId);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, static_cast<GLsizei>(width),
+                static_cast<GLsizei>(height), 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels.get());
+            glBindTexture(GL_TEXTURE_2D, 0);
+
+            return std::make_shared<Texture2D>(textureId);
+#else
+            return nullptr;
+#endif
+        }
+
+        Backend m_backend{ Backend::DirectX11 };
         Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_srv;
+        unsigned int m_glTexture{};
     };
 }

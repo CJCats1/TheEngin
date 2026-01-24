@@ -6,6 +6,7 @@
 #include <DX3D/Graphics/GraphicsPipelineState.h>
 #include <DX3D/Graphics/VertexBuffer.h>
 #include <DX3D/Graphics/VertexShaderSignature.h>
+#include <DX3D/Graphics/IndexBuffer.h>
 
 using namespace dx3d;
 
@@ -81,10 +82,11 @@ IndexBufferPtr GraphicsDevice::createIndexBuffer(const IndexBufferDesc& d)
 
 	return std::make_shared<IndexBuffer>(buf.Get(), d.count, d.stride);
 }
-void dx3d::GraphicsDevice::executeCommandList(DeviceContext& context)
+void dx3d::GraphicsDevice::executeCommandList(IRenderContext& context)
 {
+	auto& dxContext = static_cast<DeviceContext&>(context);
 	Microsoft::WRL::ComPtr<ID3D11CommandList> list{};
-	DX3DGraphicsLogThrowOnFail(context.m_context->FinishCommandList(false, &list)
+	DX3DGraphicsLogThrowOnFail(dxContext.m_context->FinishCommandList(false, &list)
 		, "FinishCommandList failed");
 	m_d3dContext->ExecuteCommandList(list.Get(),false);
 }

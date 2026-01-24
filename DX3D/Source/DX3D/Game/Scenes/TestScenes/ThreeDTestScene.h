@@ -10,7 +10,7 @@ namespace dx3d {
     public:
         void load(GraphicsEngine& engine) override;
         void update(float dt) override;
-        void render(GraphicsEngine& engine, SwapChain& swapChain) override;
+        void render(GraphicsEngine& engine, IRenderSwapChain& swapChain) override;
         void renderImGui(GraphicsEngine& engine) override;
     private:
         std::shared_ptr<Mesh> m_cube;
@@ -33,7 +33,7 @@ namespace dx3d {
         // Skybox debug state
         bool m_showSkybox{ true };
         float m_skyboxSize{ 1000.0f };
-        GraphicsDevice* m_devicePtr{ nullptr };
+        IRenderDevice* m_devicePtr{ nullptr };
     };
 }
 

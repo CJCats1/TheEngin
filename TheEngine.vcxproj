@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{98e7affc-3da9-4678-9714-a2008d65be20}</ProjectGuid>
+    <RootNamespace>TheEngine</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <VcpkgEnableManifest>true</VcpkgEnableManifest>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>Bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>Intermediate\$(Platform)\$(Configuration)\</IntDir>
+    <IncludePath>DX3D/Include;DX3D/Source;DX3D/Include/Libraries/imgui-docking;DX3D/Include/Libraries/imgui-docking/backends;DX3D/Include/Libraries/implot-master;DX3D/Include/Libraries/imgui-docking/examples/libs/glfw/include;$(ProjectDir)vcpkg_installed\x64-windows\include;$(IncludePath)$(WindowsSDK_IncludePath)</IncludePath>
+  </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>DX3D/Include;DX3D/Source;DX3D/Include/Libraries/imgui-docking;DX3D/Include/Libraries/imgui-docking/backends;DX3D/Include/Libraries/implot-master;DX3D/Include/Libraries/imgui-docking/examples/libs/glfw/include;$(ProjectDir)vcpkg_installed\x64-windows\include;$(IncludePath)$(WindowsSDK_IncludePath)</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;DX3D_ENABLE_OPENGL;DX3D_USE_GLM;IMGUI_IMPL_OPENGL_LOADER_GLAD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;DX3D_ENABLE_OPENGL;DX3D_USE_GLM;IMGUI_IMPL_OPENGL_LOADER_GLAD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;NOMINMAX;DX3D_ENABLE_OPENGL;DX3D_USE_GLM;IMGUI_IMPL_OPENGL_LOADER_GLAD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MultiProcessorCompilation>false</MultiProcessorCompilation>
+      <AdditionalOptions>/FS %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;d2d1.lib
+;dwrite.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;DX3D_ENABLE_OPENGL;DX3D_USE_GLM;IMGUI_IMPL_OPENGL_LOADER_GLAD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalOptions>/FS %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;d2d1.lib;dwrite.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ResourceCompile Include="TheEngine.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="DX3D\Source\DX3D\DataStructures\AABBTree.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\DataStructures\KDTree.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\DataStructures\Octree.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\DataStructures\Quadtree.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Core\Input.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Core\Scene.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Game\Display.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Core\Base.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Game\Game.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Graphics\ShadowMap.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Graphics\SkyboxRenderer.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Graphics\OpenGL\OpenGLRenderBackend.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Graphics\OpenGL\OpenGLDevice.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Graphics\OpenGL\OpenGLContext.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Graphics\OpenGL\OpenGLSwapChain.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Math\Geometry.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Math\DefaultMathBackend.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Math\MathBackend.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Math\GLMMathBackend.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Math\Types.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Game\Scenes\TestScenes\TestScene.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Game\SceneHelper.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Physics\AABBPhysics.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Game\Win32\Win32Game.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Graphics\Camera.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Graphics\DeviceContext.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Graphics\DirectWriteText.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Graphics\FBXLoader.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Graphics\GraphicsDevice.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Graphics\GraphicsEngine.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Graphics\Abstraction\RenderBackendFactory.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Graphics\DirectX11\DirectX11RenderBackend.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Graphics\GraphicsPipelineState.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Graphics\IndexBuffer.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Graphics\LineRenderer.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Graphics\Mesh.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Graphics\ShaderBinary.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Graphics\SpriteComponent.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Graphics\SwapChain.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Graphics\Texture2D.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Graphics\VertexBuffer.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Graphics\VertexShaderSignature.cpp" />
+    <ClCompile Include="Game\main.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Window\Win32\Win32Window.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Core\Logger.cpp" />
+    <!-- ImGui core (docking branch) -->
+    <ClCompile Include="DX3D\Include\Libraries\imgui-docking\imgui.cpp" />
+    <ClCompile Include="DX3D\Include\Libraries\imgui-docking\imgui_draw.cpp" />
+    <ClCompile Include="DX3D\Include\Libraries\imgui-docking\imgui_widgets.cpp" />
+    <ClCompile Include="DX3D\Include\Libraries\imgui-docking\imgui_tables.cpp" />
+    <!-- ImGui backends -->
+    <ClCompile Include="DX3D\Include\Libraries\imgui-docking\backends\imgui_impl_win32.cpp" />
+    <ClCompile Include="DX3D\Include\Libraries\imgui-docking\backends\imgui_impl_dx11.cpp" />
+    <ClCompile Include="DX3D\Include\Libraries\imgui-docking\backends\imgui_impl_glfw.cpp" />
+    <ClCompile Include="DX3D\Include\Libraries\imgui-docking\backends\imgui_impl_opengl3.cpp" />
+    <!-- ImGui demo (needed by ImPlot demo) -->
+    <ClCompile Include="DX3D\Include\Libraries\imgui-docking\imgui_demo.cpp" />
+    <!-- ImPlot (optional) -->
+    <ClCompile Include="DX3D\Include\Libraries\implot-master\implot.cpp" />
+    <ClCompile Include="DX3D\Include\Libraries\implot-master\implot_items.cpp" />
+    <ClCompile Include="DX3D\Include\Libraries\implot-master\implot_demo.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="DX3D\Include\DX3D\Game\Display.h" />
+    <ClInclude Include="DX3D\Include\DX3D\All.h" />
+    <ClInclude Include="DX3D\Include\DX3D\Core\Base.h" />
+    <ClInclude Include="DX3D\Include\DX3D\Core\Common.h" />
+    <ClInclude Include="DX3D\Include\DX3D\Core\Core.h" />
+    <ClInclude Include="DX3D\Include\DX3D\Math\Geometry.h" />
+    <ClInclude Include="DX3D\Include\DX3D\Math\Types.h" />
+    <ClInclude Include="DX3D\Include\DX3D\Math\Backend\MathBackend.h" />
+    <ClInclude Include="DX3D\Include\DX3D\Window\Window.h" />
+    <ClInclude Include="DX3D\Include\DX3D\Game\Game.h" />
+    <ClInclude Include="DX3D\Include\DX3D\Core\Logger.h" />
+    <ClInclude Include="DX3D\Source\DX3D\DataStructures\AABBTree.h" />
+    <ClInclude Include="DX3D\Include\DX3D\Graphics\Abstraction\GraphicsHandles.h" />
+    <ClInclude Include="DX3D\Include\DX3D\Graphics\Abstraction\RenderDevice.h" />
+    <ClInclude Include="DX3D\Include\DX3D\Graphics\Abstraction\RenderContext.h" />
+    <ClInclude Include="DX3D\Include\DX3D\Graphics\Abstraction\RenderSwapChain.h" />
+    <ClInclude Include="DX3D\Include\DX3D\Graphics\Abstraction\RenderBackend.h" />
+    <ClInclude Include="DX3D\Include\DX3D\Graphics\Abstraction\RenderBackendFactory.h" />
+    <ClInclude Include="DX3D\Include\DX3D\Graphics\Abstraction\RenderResources.h" />
+    <ClInclude Include="DX3D\Source\DX3D\Graphics\SkyboxRenderer.h" />
+    <ClInclude Include="DX3D\Source\DX3D\Graphics\DirectX11\DirectX11RenderBackend.h" />
+    <ClInclude Include="DX3D\Source\DX3D\Graphics\OpenGL\OpenGLRenderBackend.h" />
+    <ClInclude Include="DX3D\Source\DX3D\Graphics\OpenGL\OpenGLDevice.h" />
+    <ClInclude Include="DX3D\Source\DX3D\Graphics\OpenGL\OpenGLContext.h" />
+    <ClInclude Include="DX3D\Source\DX3D\Graphics\OpenGL\OpenGLSwapChain.h" />
+    <ClInclude Include="DX3D\Source\DX3D\DataStructures\KDTree.h" />
+    <ClInclude Include="DX3D\Source\DX3D\DataStructures\Octree.h" />
+    <ClInclude Include="DX3D\Source\DX3D\DataStructures\Quadtree.h" />
+    <ClInclude Include="DX3D\Source\DX3D\Core\ComponentManager.h" />
+    <ClInclude Include="DX3D\Source\DX3D\Core\Entity.h" />
+    <ClInclude Include="DX3D\Source\DX3D\Core\EntityManager.h" />
+    <ClInclude Include="DX3D\Source\DX3D\Core\Input.h" />
+    <ClInclude Include="DX3D\Source\DX3D\Core\Scene.h" />
+    <ClInclude Include="DX3D\Source\DX3D\Core\SystemManager.h" />
+    <ClInclude Include="DX3D\Source\DX3D\Core\TransformComponent.h" />
+    <ClInclude Include="DX3D\Source\DX3D\Game\Scenes\TestScenes\TestScene.h" />
+    <ClInclude Include="DX3D\Source\DX3D\Graphics\Camera.h" />
+    <ClInclude Include="DX3D\Source\DX3D\Graphics\DeviceContext.h" />
+    <ClInclude Include="DX3D\Source\DX3D\Graphics\DirectWriteText.h" />
+    <ClInclude Include="DX3D\Source\DX3D\Graphics\FBXLoader.h" />
+    <ClInclude Include="DX3D\Source\DX3D\Graphics\GraphicsDevice.h" />
+    <ClInclude Include="DX3D\Source\DX3D\Graphics\GraphicsEngine.h" />
+    <ClInclude Include="DX3D\Source\DX3D\Graphics\GraphicsLogUtils.h" />
+    <ClInclude Include="DX3D\Source\DX3D\Graphics\GraphicsPipelineState.h" />
+    <ClInclude Include="DX3D\Source\DX3D\Graphics\GraphicsResource.h" />
+    <ClInclude Include="DX3D\Source\DX3D\Graphics\GraphicsUtils.h" />
+    <ClInclude Include="DX3D\Source\DX3D\Graphics\IndexBuffer.h" />
+    <ClInclude Include="DX3D\Source\DX3D\Graphics\LineRenderer.h" />
+    <ClInclude Include="DX3D\Source\DX3D\Graphics\Mesh.h" />
+    <ClInclude Include="DX3D\Source\DX3D\Graphics\ShaderBinary.h" />
+    <ClInclude Include="DX3D\Source\DX3D\Graphics\ShadowMap.h" />
+    <ClInclude Include="DX3D\Source\DX3D\Graphics\SpriteComponent.h" />
+    <ClInclude Include="DX3D\Source\DX3D\Graphics\SwapChain.h" />
+    <ClInclude Include="DX3D\Source\DX3D\Graphics\Texture2D.h" />
+    <ClInclude Include="DX3D\Source\DX3D\Graphics\TextUtilities.h" />
+    <ClInclude Include="DX3D\Source\DX3D\Graphics\VertexBuffer.h" />
+    <ClInclude Include="DX3D\Source\DX3D\Graphics\VertexShaderSignature.h" />
+    <ClInclude Include="DX3D\Source\DX3D\Systems\AdvancedSlicingSystem.h" />
+    <ClInclude Include="DX3D\Source\DX3D\Systems\DynamicAABBTree.h" />
+    <ClInclude Include="DX3D\Source\DX3D\Systems\Collision.h" />
+    <ClInclude Include="DX3D\Source\DX3D\Systems\PhysicsWorld.h" />
+    <!-- Optional header entries for ImGui/ImPlot (docking) -->
+    <ClInclude Include="DX3D\Include\Libraries\imgui-docking\imgui.h" />
+    <ClInclude Include="DX3D\Include\Libraries\imgui-docking\imgui_internal.h" />
+    <ClInclude Include="DX3D\Include\Libraries\imgui-docking\backends\imgui_impl_win32.h" />
+    <ClInclude Include="DX3D\Include\Libraries\imgui-docking\backends\imgui_impl_dx11.h" />
+    <ClInclude Include="DX3D\Include\Libraries\implot-master\implot.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

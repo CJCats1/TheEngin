@@ -46,6 +46,16 @@ namespace dx3d
 	class GraphicsPipelineState;
 	class VertexBuffer;
 	class VertexShaderSignature;
+	class IRenderShaderBinary;
+	class IRenderPipelineState;
+	class IRenderVertexShaderSignature;
+	class IRenderVertexBuffer;
+	class IRenderIndexBuffer;
+	class IRenderDevice;
+	class IRenderContext;
+	class IRenderSwapChain;
+	class IRenderBackend;
+	class IImGuiBackend;
 
 	using i32 = int;
 	using ui32 = unsigned int;
@@ -53,10 +63,11 @@ namespace dx3d
 	using d64 = double;
 
 
-	using SwapChainPtr = std::shared_ptr<SwapChain>;
-	using DeviceContextPtr = std::shared_ptr<DeviceContext>;
-	using ShaderBinaryPtr = std::shared_ptr<ShaderBinary>;
-	using GraphicsPipelineStatePtr = std::shared_ptr<GraphicsPipelineState>;
-	using VertexBufferPtr = std::shared_ptr<VertexBuffer>;
-	using VertexShaderSignaturePtr = std::shared_ptr<VertexShaderSignature>;
+	using SwapChainPtr = std::shared_ptr<IRenderSwapChain>;
+	using DeviceContextPtr = std::shared_ptr<IRenderContext>;
+	using ShaderBinaryPtr = std::shared_ptr<IRenderShaderBinary>;
+	using GraphicsPipelineStatePtr = std::shared_ptr<IRenderPipelineState>;
+	using VertexBufferPtr = std::shared_ptr<IRenderVertexBuffer>;
+	using VertexShaderSignaturePtr = std::shared_ptr<IRenderVertexShaderSignature>;
+	using IndexBufferPtr = std::shared_ptr<IRenderIndexBuffer>;
 }

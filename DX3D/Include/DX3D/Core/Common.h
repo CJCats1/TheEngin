@@ -40,6 +40,8 @@ SOFTWARE.*/
 
 namespace dx3d
 {
+	class IRenderShaderBinary;
+	class IRenderVertexShaderSignature;
 	struct BaseDesc
 	{
 		Logger& logger;
@@ -49,17 +51,25 @@ namespace dx3d
 	{
 		BaseDesc base;
 		Rect size{};
+		bool createNativeWindow{ true };
 	};
 
 	struct DisplayDesc
 	{
 		WindowDesc window;
-		GraphicsDevice& graphicsDevice;
+		IRenderDevice& graphicsDevice;
+	};
+
+	enum class RenderBackendType
+	{
+		DirectX11,
+		OpenGL
 	};
 
 	struct GraphicsEngineDesc
 	{
 		BaseDesc base;
+		RenderBackendType backendType{ RenderBackendType::OpenGL };
 	};
 
 	struct GraphicsDeviceDesc
@@ -97,8 +107,8 @@ namespace dx3d
 	};
 	struct GraphicsPipelineStateDesc
 	{
-		const VertexShaderSignature& vs;
-		const ShaderBinary& ps;
+		const IRenderVertexShaderSignature& vs;
+		const IRenderShaderBinary& ps;
 	};
 	struct VertexBufferDesc
 	{
@@ -106,6 +116,12 @@ namespace dx3d
 		ui32 vertexListSize{};
 		ui32 vertexSize{};
 		bool isDynamic = false;
+	};
+	struct IndexBufferDesc
+	{
+		const void* data{};
+		ui32 count{};
+		ui32 stride{ 4 };
 	};
 	struct GameDesc
 	{

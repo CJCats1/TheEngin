@@ -22,7 +22,7 @@ namespace dx3d {
     // Advanced text component with alignment, word wrapping, etc.
     class AdvancedTextComponent : public TextComponent {
     public:
-        AdvancedTextComponent(GraphicsDevice& device, DirectWriteRenderer& textRenderer,
+        AdvancedTextComponent(IRenderDevice& device, DirectWriteRenderer& textRenderer,
             const std::wstring& text = L"", float fontSize = 24.0f);
 
         // Alignment
@@ -52,7 +52,7 @@ namespace dx3d {
         void setBorderVisible(bool visible);
 
         // Override draw to include background and alignment
-        void draw(DeviceContext& ctx) const override;
+        void draw(IRenderContext& ctx) const override;
 
     private:
         TextAlignment m_textAlignment;
@@ -82,7 +82,7 @@ namespace dx3d {
     // Text animation system
     class AnimatedTextComponent : public TextComponent {
     public:
-        AnimatedTextComponent(GraphicsDevice& device, DirectWriteRenderer& textRenderer,
+        AnimatedTextComponent(IRenderDevice& device, DirectWriteRenderer& textRenderer,
             const std::wstring& text = L"", float fontSize = 24.0f);
 
         // Typewriter effect
@@ -108,7 +108,7 @@ namespace dx3d {
         void updateAnimations(float dt);
 
         // Override draw to apply animation effects
-        void draw(DeviceContext& ctx) const override;
+        void draw(IRenderContext& ctx) const override;
 
     private:
         // Typewriter effect
@@ -156,7 +156,7 @@ namespace dx3d {
     // Text input component for simple text input
     class TextInputComponent : public AdvancedTextComponent {
     public:
-        TextInputComponent(GraphicsDevice& device, DirectWriteRenderer& textRenderer,
+        TextInputComponent(IRenderDevice& device, DirectWriteRenderer& textRenderer,
             const std::wstring& placeholder = L"Enter text...", float fontSize = 24.0f);
 
         // Input handling
@@ -186,7 +186,7 @@ namespace dx3d {
         void updateInput(float dt);
 
         // Override draw to include cursor
-        void draw(DeviceContext& ctx) const override;
+        void draw(IRenderContext& ctx) const override;
 
     private:
         std::wstring m_placeholderText;

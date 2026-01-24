@@ -33,9 +33,9 @@ void TestScene::load(GraphicsEngine& engine) {
 
     auto& device = engine.getGraphicsDevice();
 
-    m_nodeTexture = Texture2D::LoadTexture2D(device.getD3DDevice(), L"DX3D/Assets/Textures/node.png");
+    m_nodeTexture = Texture2D::LoadTexture2D(device, L"DX3D/Assets/Textures/node.png");
     if (!m_nodeTexture) {
-        m_nodeTexture = Texture2D::CreateDebugTexture(device.getD3DDevice());
+        m_nodeTexture = Texture2D::CreateDebugTexture(device);
     }
 
     auto& lineEntity = m_entityManager->createEntity("DebugLines");
@@ -50,9 +50,9 @@ void TestScene::load(GraphicsEngine& engine) {
     }
 
     m_backgroundTime = 0.0f;
-    m_backgroundTexture = Texture2D::LoadTexture2D(device.getD3DDevice(), L"DX3D/Assets/Textures/cat.jpg");
+    m_backgroundTexture = Texture2D::LoadTexture2D(device, L"DX3D/Assets/Textures/cat.jpg");
     if (!m_backgroundTexture) {
-        m_backgroundTexture = Texture2D::CreateDebugTexture(device.getD3DDevice());
+        m_backgroundTexture = Texture2D::CreateDebugTexture(device);
     }
     float backgroundWidth = screenWidth * 0.7f;
     float backgroundHeight = screenHeight * 0.7f;
@@ -68,7 +68,7 @@ void TestScene::load(GraphicsEngine& engine) {
     }
     if (TextSystem::isInitialized()) {
         m_screenText = std::make_unique<TextComponent>(device, TextSystem::getRenderer(),
-            L"DirectWrite Text Demo", 18.0f);
+            L"Text Demo", 18.0f);
         m_screenText->setScreenPosition(0.09f, 0.93f);
         m_screenText->setColor(Vec4(0.9f, 0.95f, 1.0f, 1.0f));
 
@@ -82,9 +82,9 @@ void TestScene::load(GraphicsEngine& engine) {
     m_playerBox = AABB(Vec2(0.0f, 0.0f), Vec2(5.0f, 5.0f)); // center at origin, 10x10 box
     m_playerVelocity = Vec2(0.0f, 0.0f);
 
-    m_beamTexture = Texture2D::LoadTexture2D(device.getD3DDevice(), L"DX3D/Assets/Textures/beam.png");
+    m_beamTexture = Texture2D::LoadTexture2D(device, L"DX3D/Assets/Textures/beam.png");
     if (!m_beamTexture) {
-        m_beamTexture = Texture2D::CreateDebugTexture(device.getD3DDevice());
+        m_beamTexture = Texture2D::CreateDebugTexture(device);
     }
 
     // Create player sprite - exact size of AABB, colored green
@@ -173,9 +173,9 @@ void TestScene::load(GraphicsEngine& engine) {
     m_circles.clear();
     m_circles.push_back({ Vec2(-80.0f, 80.0f), 8.0f, Vec2(0.0f, 0.0f), 6.0f, 0.18f, 0.1f });
     m_circles.push_back({ Vec2(80.0f, 90.0f), 10.0f, Vec2(0.0f, 0.0f), 8.0f, 0.2f, 0.12f });
-    m_circleTexture = Texture2D::LoadTexture2D(device.getD3DDevice(), L"DX3D/Assets/Textures/node.png");
+    m_circleTexture = Texture2D::LoadTexture2D(device, L"DX3D/Assets/Textures/node.png");
     if (!m_circleTexture) {
-        m_circleTexture = Texture2D::CreateDebugTexture(device.getD3DDevice());
+        m_circleTexture = Texture2D::CreateDebugTexture(device);
     }
     m_circleEntities.clear();
     for (size_t i = 0; i < m_circles.size(); ++i) {
@@ -225,7 +225,7 @@ void TestScene::update(float dt) {
                 std::wostringstream ss;
                 ss.setf(std::ios::fixed);
                 ss.precision(1);
-                ss << L"DirectWrite Text Demo\n";
+                ss << L"Text Demo\n";
                 ss << L"Player (" << m_playerBox.pos.x << L", " << m_playerBox.pos.y << L")\n";
                 ss << L"Vel (" << m_playerVelocity.x << L", " << m_playerVelocity.y << L")";
                 m_screenText->setText(ss.str());
@@ -281,8 +281,8 @@ void TestScene::fixedUpdate(float dt) {
             const float velocityScale = 0.08f;
             const float normalScale = 12.0f;
             const float contactThreshold = 1.5f;
-            const Vec4 velocityColor(0.2f, 0.9f, 1.0f, 1.0f);
-            const Vec4 normalColor(1.0f, 0.9f, 0.2f, 1.0f);
+            const Vec4 velocityColor(0.0f, 0.0f, 0.0f, 1.0f);
+            const Vec4 normalColor(0.0f, 0.0f, 0.0f, 1.0f);
 
             auto addVelocity = [&](const Vec2& pos, const Vec2& vel) {
                 Vec2 end = pos + vel * velocityScale;
@@ -411,13 +411,13 @@ void TestScene::updateCameraMovement(float dt) {
         camera->zoom(zoomDelta);
     }
 
-    if (input.isKeyDown(Key::Space)) {
+    if (input.wasKeyJustPressed(Key::Space)) {
         camera->setPosition(0.0f, 0.0f);
         camera->setZoom(1.0f);
     }
 }
 
-void TestScene::render(GraphicsEngine& engine, SwapChain& swapChain) {
+void TestScene::render(GraphicsEngine& engine, IRenderSwapChain& swapChain) {
     auto& ctx = engine.getContext();
     float screenWidth = GraphicsEngine::getWindowWidth();
     float screenHeight = GraphicsEngine::getWindowHeight();
@@ -592,7 +592,7 @@ void TestScene::updatePlayerMovement(float dt) {
     }
     
     // Reset player position with R key
-    if (input.isKeyDown(Key::R)) {
+    if (input.wasKeyJustPressed(Key::R)) {
         m_playerBox.pos = Vec2(0.0f, 0.0f);
         m_playerVelocity = Vec2(0.0f, 0.0f);
     }
@@ -623,6 +623,9 @@ void TestScene::renderImGui(GraphicsEngine& engine) {
         m_showTextDemo = !m_showTextDemo;
     }
     ImGui::Separator();
+    const char* backendLabel = (engine.getBackendType() == RenderBackendType::OpenGL) ? "OpenGL" : "DirectX11";
+    ImGui::Text("Backend: %s", backendLabel);
+    ImGui::Separator();
     ImGui::Text("Camera Controls:");
     ImGui::Text("WASD - Move camera");
     ImGui::Text("Q/E - Zoom");
@@ -643,7 +646,7 @@ void TestScene::renderImGui(GraphicsEngine& engine) {
 void TestScene::createOriginNodeSprite() {
     if (!m_entityManager || !m_graphicsDevice) return;
     if (!m_nodeTexture) {
-        m_nodeTexture = Texture2D::CreateDebugTexture(m_graphicsDevice->getD3DDevice());
+        m_nodeTexture = Texture2D::CreateDebugTexture(*m_graphicsDevice);
     }
     auto& entity = m_entityManager->createEntity("DebugNode_" + std::to_string(m_debugNodeCounter++));
     auto& sprite = entity.addComponent<SpriteComponent>(*m_graphicsDevice, m_nodeTexture, 1.0f, 1.0f);

@@ -1,6 +1,7 @@
-﻿// SpriteComponent.h
+// SpriteComponent.h
 #pragma once
-#include <DX3D/Graphics/GraphicsDevice.h>
+#include <DX3D/Graphics/Abstraction/RenderDevice.h>
+#include <DX3D/Graphics/Abstraction/RenderContext.h>
 #include <DX3D/Graphics/Mesh.h>
 #include <DX3D/Graphics/Texture2D.h>
 #include <DX3D/Math/Geometry.h>
@@ -11,13 +12,13 @@
 namespace dx3d {
     class SpriteComponent {
     public:
-        SpriteComponent(GraphicsDevice& device, const std::wstring& texturePath,
+        SpriteComponent(IRenderDevice& device, const std::wstring& texturePath,
             float width = 1.0f, float height = 1.0f);
 
         // Alternative constructor for existing texture
-        SpriteComponent(GraphicsDevice& device, std::shared_ptr<Texture2D> texture,
+        SpriteComponent(IRenderDevice& device, std::shared_ptr<Texture2D> texture,
             float width = 1.0f, float height = 1.0f);
-        SpriteComponent(GraphicsDevice& device, std::shared_ptr<Mesh> mesh,
+        SpriteComponent(IRenderDevice& device, std::shared_ptr<Mesh> mesh,
             std::shared_ptr<Texture2D> texture = nullptr);
 
         ~SpriteComponent() = default;
@@ -70,8 +71,8 @@ namespace dx3d {
         bool isVisible() const { return m_visible; }
 
         // Rendering
-        void draw(DeviceContext& ctx) const;
-        GraphicsDevice& getGraphicsDevice() { return m_device; }
+        void draw(IRenderContext& ctx) const;
+        IRenderDevice& getGraphicsDevice() { return m_device; }
         void setTint(const Vec4& tint) { m_tint = tint; }
         Vec4 getTint() const { return m_tint; }
 
@@ -171,7 +172,7 @@ namespace dx3d {
         std::shared_ptr<Texture2D> m_texture;
         TransformComponent m_transform;
         bool m_visible = true;
-        GraphicsDevice& m_device;
+        IRenderDevice& m_device;
         Vec4 m_tint = { 1,1,1,0 };
         float m_width = 1.0f;
         float m_height = 1.0f;
@@ -191,6 +192,6 @@ namespace dx3d {
         float m_animationFrameRate = 10.0f; // frames per second
         float m_animationTimer = 0.0f;
 
-        void initialize(GraphicsDevice& device, float width, float height);
+        void initialize(IRenderDevice& device, float width, float height);
     };
 }

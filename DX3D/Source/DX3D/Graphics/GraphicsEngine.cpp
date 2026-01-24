@@ -5,7 +5,11 @@
 #include <DX3D/Graphics/VertexBuffer.h>
 #include <fstream>
 #include <DX3D/Graphics/Texture2D.h>
+#include <DX3D/Math/Backend/MathBackend.h>
 #include <fstream>
+#include <DX3D/Graphics/Abstraction/RenderBackendFactory.h>
+#include <cstdlib>
+#include <string_view>
 using namespace dx3d;
 float dx3d::GraphicsEngine::m_windowHeight = 720.0f;
 float dx3d::GraphicsEngine::m_windowWidth = 1280.0f;
@@ -13,22 +17,82 @@ float dx3d::GraphicsEngine::m_windowWidth = 1280.0f;
 dx3d::GraphicsEngine::GraphicsEngine(const GraphicsEngineDesc& desc) : Base(desc.base)
 {
     std::cout << "GraphicsEngine: Starting initialization..." << std::endl;
-    m_graphicsDevice = std::make_shared<GraphicsDevice>(GraphicsDeviceDesc{ m_logger });
+	RenderBackendType backendType = desc.backendType;
+#if defined(_MSC_VER)
+	char* env = nullptr;
+	size_t envLen = 0;
+	if (_dupenv_s(&env, &envLen, "DX3D_BACKEND") == 0 && env)
+	{
+		std::string_view backendValue(env);
+		if (backendValue == "opengl" || backendValue == "OpenGL")
+			backendType = RenderBackendType::OpenGL;
+		else if (backendValue == "dx11" || backendValue == "directx11" || backendValue == "DirectX11")
+			backendType = RenderBackendType::DirectX11;
+	}
+	if (env)
+	{
+		std::free(env);
+	}
+#else
+	if (const char* env = std::getenv("DX3D_BACKEND"))
+	{
+		std::string_view backendValue(env);
+		if (backendValue == "opengl" || backendValue == "OpenGL")
+			backendType = RenderBackendType::OpenGL;
+		else if (backendValue == "dx11" || backendValue == "directx11" || backendValue == "DirectX11")
+			backendType = RenderBackendType::DirectX11;
+	}
+#endif
+
+    m_backendType = backendType;
+    if (m_backendType == RenderBackendType::OpenGL)
+    {
+        math::backend::setBackend(math::backend::MathBackendType::Glm);
+    }
+    else
+    {
+        math::backend::setBackend(math::backend::MathBackendType::Default);
+    }
+    m_renderBackend = createRenderBackend(backendType, m_logger);
+    m_graphicsDevice = m_renderBackend->createDevice(GraphicsDeviceDesc{ m_logger });
     auto& device = *m_graphicsDevice;
     m_deviceContext = device.createDeviceContext();
+    m_imguiBackend = m_renderBackend->createImGuiBackend();
     std::cout << "GraphicsEngine: Device and context created" << std::endl;
+    if (m_backendType != RenderBackendType::OpenGL)
+    {
+        initializePipelines();
+    }
+}
+
+void dx3d::GraphicsEngine::initializePipelines()
+{
+    if (m_pipelinesInitialized)
+    {
+        return;
+    }
+    m_pipelinesInitialized = true;
+    auto& device = *m_graphicsDevice;
+    const bool isOpenGL = (m_backendType == RenderBackendType::OpenGL);
+    const char* glslFallbackPath = "DX3D/Assets/Shaders/OpenGLFallback.glsl";
+    const auto shaderPath = [isOpenGL, glslFallbackPath](const char* hlslPath)
+    {
+        return isOpenGL ? glslFallbackPath : hlslPath;
+    };
+    const char* vsEntry = isOpenGL ? "main" : "VSMain";
+    const char* psEntry = isOpenGL ? "main" : "PSMain";
 
     // ---- Default world-space pipeline (Basic.hlsl) ----
     {
-        constexpr char shaderFilePath[] = "DX3D/Assets/Shaders/Basic.hlsl";
+        const char* shaderFilePath = shaderPath("DX3D/Assets/Shaders/Basic.hlsl");
         std::ifstream shaderStream(shaderFilePath);
         if (!shaderStream) DX3DLogThrowError("Failed to open shader file.");
         std::string shaderFileData{ std::istreambuf_iterator<char>(shaderStream), std::istreambuf_iterator<char>() };
         auto* src = shaderFileData.c_str();
         auto   len = shaderFileData.length();
 
-        auto vs = device.compileShader({ shaderFilePath, src, len, "VSMain", ShaderType::VertexShader });
-        auto ps = device.compileShader({ shaderFilePath, src, len, "PSMain", ShaderType::PixelShader });
+        auto vs = device.compileShader({ shaderFilePath, src, len, vsEntry, ShaderType::VertexShader });
+        auto ps = device.compileShader({ shaderFilePath, src, len, psEntry, ShaderType::PixelShader });
         auto vsSig = device.createVertexShaderSignature({ vs });
         m_pipeline = device.createGraphicsPipelineState({ *vsSig, *ps });
     }
@@ -36,7 +100,7 @@ dx3d::GraphicsEngine::GraphicsEngine(const GraphicsEngineDesc& desc) : Base(desc
     // ---- 3D world-space pipeline (Basic3D.hlsl) ----
     {
         std::cout << "GraphicsEngine: Creating 3D pipeline..." << std::endl;
-        constexpr char shaderFilePath[] = "DX3D/Assets/Shaders/Basic3D.hlsl";
+        const char* shaderFilePath = shaderPath("DX3D/Assets/Shaders/Basic3D.hlsl");
         std::ifstream shaderStream(shaderFilePath);
         if (!shaderStream) {
             std::cout << "ERROR: Failed to open Basic3D.hlsl" << std::endl;
@@ -47,8 +111,8 @@ dx3d::GraphicsEngine::GraphicsEngine(const GraphicsEngineDesc& desc) : Base(desc
         auto   len = shaderFileData.length();
         std::cout << "Basic3D.hlsl loaded, size: " << len << " bytes" << std::endl;
 
-        auto vs = device.compileShader({ shaderFilePath, src, len, "VSMain", ShaderType::VertexShader });
-        auto ps = device.compileShader({ shaderFilePath, src, len, "PSMain", ShaderType::PixelShader });
+        auto vs = device.compileShader({ shaderFilePath, src, len, vsEntry, ShaderType::VertexShader });
+        auto ps = device.compileShader({ shaderFilePath, src, len, psEntry, ShaderType::PixelShader });
         
         // Debug: Check if shaders compiled successfully
         std::cout << "About to check shader compilation results..." << std::endl;
@@ -77,22 +141,22 @@ dx3d::GraphicsEngine::GraphicsEngine(const GraphicsEngineDesc& desc) : Base(desc
 
     // ---- Text screen-space pipeline (Text.hlsl) ----
     {
-        constexpr char shaderFilePath[] = "DX3D/Assets/Shaders/Text.hlsl";
+        const char* shaderFilePath = shaderPath("DX3D/Assets/Shaders/Text.hlsl");
         std::ifstream shaderStream(shaderFilePath);
         if (!shaderStream) DX3DLogThrowError("Failed to open Text.hlsl.");
         std::string shaderFileData{ std::istreambuf_iterator<char>(shaderStream), std::istreambuf_iterator<char>() };
         auto* src = shaderFileData.c_str();
         auto   len = shaderFileData.length();
 
-        auto vs = device.compileShader({ shaderFilePath, src, len, "VSMain", ShaderType::VertexShader });
-        auto ps = device.compileShader({ shaderFilePath, src, len, "PSMain", ShaderType::PixelShader });
+        auto vs = device.compileShader({ shaderFilePath, src, len, vsEntry, ShaderType::VertexShader });
+        auto ps = device.compileShader({ shaderFilePath, src, len, psEntry, ShaderType::PixelShader });
         auto vsSig = device.createVertexShaderSignature({ vs }); // reflects POSITION0/TEXCOORD0
         m_textPipeline = device.createGraphicsPipelineState({ *vsSig, *ps });
     }
 
     // ---- Background dots pipeline (BackgroundDots.hlsl) ----
     {
-        constexpr char shaderFilePath[] = "DX3D/Assets/Shaders/BackgroundDots.hlsl";
+        const char* shaderFilePath = shaderPath("DX3D/Assets/Shaders/BackgroundDots.hlsl");
         std::ifstream shaderStream(shaderFilePath);
         if (shaderStream) {
             std::string shaderFileData{ std::istreambuf_iterator<char>(shaderStream), std::istreambuf_iterator<char>() };
@@ -100,14 +164,17 @@ dx3d::GraphicsEngine::GraphicsEngine(const GraphicsEngineDesc& desc) : Base(desc
             auto   len = shaderFileData.length();
 
             // Compile with explicit VS/PS entry points
-            auto vs = device.compileShader({ shaderFilePath, src, len, "VSMain", ShaderType::VertexShader });
-            auto ps = device.compileShader({ shaderFilePath, src, len, "PSMain", ShaderType::PixelShader });
+            auto vs = device.compileShader({ shaderFilePath, src, len, vsEntry, ShaderType::VertexShader });
+            auto ps = device.compileShader({ shaderFilePath, src, len, psEntry, ShaderType::PixelShader });
             // No input layout needed for SV_VertexID; create empty signature
             auto vsSig = device.createVertexShaderSignature({ vs });
             m_backgroundDotsPipeline = device.createGraphicsPipelineState({ *vsSig, *ps });
 
-            // Prepare a simple fullscreen quad (used just to issue 3 verts via Draw)
-            m_fullscreenQuad = Mesh::CreateQuadColored(device, 2.0f, 2.0f);
+            if (!isOpenGL)
+            {
+                // Prepare a simple fullscreen quad (used just to issue 3 verts via Draw)
+                m_fullscreenQuad = Mesh::CreateQuadColored(device, 2.0f, 2.0f);
+            }
         }
         else {
             // Optional: fallback silently if shader missing
@@ -117,15 +184,15 @@ dx3d::GraphicsEngine::GraphicsEngine(const GraphicsEngineDesc& desc) : Base(desc
 
     // ---- Toon/world-space pipeline (ToonSprite.hlsl) ----
     {
-        constexpr char shaderFilePath[] = "DX3D/Assets/Shaders/ToonSprite.hlsl";
+        const char* shaderFilePath = shaderPath("DX3D/Assets/Shaders/ToonSprite.hlsl");
         std::ifstream shaderStream(shaderFilePath);
         if (shaderStream) {
             std::string shaderFileData{ std::istreambuf_iterator<char>(shaderStream), std::istreambuf_iterator<char>() };
             auto* src = shaderFileData.c_str();
             auto   len = shaderFileData.length();
 
-            auto vs = device.compileShader({ shaderFilePath, src, len, "VSMain", ShaderType::VertexShader });
-            auto ps = device.compileShader({ shaderFilePath, src, len, "PSMain", ShaderType::PixelShader });
+            auto vs = device.compileShader({ shaderFilePath, src, len, vsEntry, ShaderType::VertexShader });
+            auto ps = device.compileShader({ shaderFilePath, src, len, psEntry, ShaderType::PixelShader });
             auto vsSig = device.createVertexShaderSignature({ vs });
             m_toonPipeline = device.createGraphicsPipelineState({ *vsSig, *ps });
         }
@@ -136,7 +203,7 @@ dx3d::GraphicsEngine::GraphicsEngine(const GraphicsEngineDesc& desc) : Base(desc
 
     // ---- Simple shadow map pipeline (SimpleShadowMap.hlsl) ----
     {
-        constexpr char shaderFilePath[] = "DX3D/Assets/Shaders/SimpleShadowMap.hlsl";
+        const char* shaderFilePath = shaderPath("DX3D/Assets/Shaders/SimpleShadowMap.hlsl");
         std::ifstream shaderStream(shaderFilePath);
         
         if (shaderStream) {
@@ -144,11 +211,11 @@ dx3d::GraphicsEngine::GraphicsEngine(const GraphicsEngineDesc& desc) : Base(desc
             auto* src = shaderFileData.c_str();
             auto   len = shaderFileData.length();
             
-            auto vs = device.compileShader({ shaderFilePath, src, len, "VSMain", ShaderType::VertexShader });
+            auto vs = device.compileShader({ shaderFilePath, src, len, vsEntry, ShaderType::VertexShader });
             auto vsSig = device.createVertexShaderSignature({ vs });
             
             // Create pipeline with vertex shader and pixel shader
-            auto ps = device.compileShader({ shaderFilePath, src, len, "PSMain", ShaderType::PixelShader });
+            auto ps = device.compileShader({ shaderFilePath, src, len, psEntry, ShaderType::PixelShader });
             m_shadowMapPipeline = device.createGraphicsPipelineState({ *vsSig, *ps });
             std::cout << "Simple shadow map pipeline created successfully" << std::endl;
         }
@@ -160,7 +227,7 @@ dx3d::GraphicsEngine::GraphicsEngine(const GraphicsEngineDesc& desc) : Base(desc
 
     // ---- Simple shadow map debug pipeline (SimpleShadowDebug.hlsl) ----
     {
-        constexpr char shaderFilePath[] = "DX3D/Assets/Shaders/SimpleShadowDebug.hlsl";
+        const char* shaderFilePath = shaderPath("DX3D/Assets/Shaders/SimpleShadowDebug.hlsl");
         std::ifstream shaderStream(shaderFilePath);
         
         if (shaderStream) {
@@ -168,8 +235,8 @@ dx3d::GraphicsEngine::GraphicsEngine(const GraphicsEngineDesc& desc) : Base(desc
             auto* src = shaderFileData.c_str();
             auto   len = shaderFileData.length();
             
-            auto vs = device.compileShader({ shaderFilePath, src, len, "VSMain", ShaderType::VertexShader });
-            auto ps = device.compileShader({ shaderFilePath, src, len, "PSMain", ShaderType::PixelShader });
+            auto vs = device.compileShader({ shaderFilePath, src, len, vsEntry, ShaderType::VertexShader });
+            auto ps = device.compileShader({ shaderFilePath, src, len, psEntry, ShaderType::PixelShader });
             auto vsSig = device.createVertexShaderSignature({ vs });
             
             m_shadowMapDebugPipeline = device.createGraphicsPipelineState({ *vsSig, *ps });
@@ -184,7 +251,9 @@ dx3d::GraphicsEngine::GraphicsEngine(const GraphicsEngineDesc& desc) : Base(desc
     // ---- Line rendering pipeline (Line.hlsl) ----
     {
         std::cout << "GraphicsEngine: Creating line pipeline..." << std::endl;
-        constexpr char shaderFilePath[] = "DX3D/Assets/Shaders/Line.hlsl";
+        const char* shaderFilePath = isOpenGL
+            ? "DX3D/Assets/Shaders/OpenGLLine.glsl"
+            : "DX3D/Assets/Shaders/Line.hlsl";
         std::ifstream shaderStream(shaderFilePath);
         
         if (shaderStream) {
@@ -192,8 +261,8 @@ dx3d::GraphicsEngine::GraphicsEngine(const GraphicsEngineDesc& desc) : Base(desc
             auto* src = shaderFileData.c_str();
             auto len = shaderFileData.length();
             
-            auto vs = device.compileShader({ shaderFilePath, src, len, "VSMain", ShaderType::VertexShader });
-            auto ps = device.compileShader({ shaderFilePath, src, len, "PSMain", ShaderType::PixelShader });
+            auto vs = device.compileShader({ shaderFilePath, src, len, vsEntry, ShaderType::VertexShader });
+            auto ps = device.compileShader({ shaderFilePath, src, len, psEntry, ShaderType::PixelShader });
             
             if (vs && ps) {
                 auto vsSig = device.createVertexShaderSignature({ vs });
@@ -213,7 +282,7 @@ dx3d::GraphicsEngine::GraphicsEngine(const GraphicsEngineDesc& desc) : Base(desc
     // Create skybox pipeline
     {
         std::cout << "Creating skybox pipeline..." << std::endl;
-        constexpr char shaderFilePath[] = "DX3D/Assets/Shaders/Skybox.hlsl";
+        const char* shaderFilePath = shaderPath("DX3D/Assets/Shaders/Skybox.hlsl");
         std::ifstream shaderStream(shaderFilePath);
         
         if (shaderStream) {
@@ -221,8 +290,8 @@ dx3d::GraphicsEngine::GraphicsEngine(const GraphicsEngineDesc& desc) : Base(desc
             auto* src = shaderFileData.c_str();
             auto len = shaderFileData.length();
             
-            auto vs = device.compileShader({ shaderFilePath, src, len, "VSMain", ShaderType::VertexShader });
-            auto ps = device.compileShader({ shaderFilePath, src, len, "PSMain", ShaderType::PixelShader });
+            auto vs = device.compileShader({ shaderFilePath, src, len, vsEntry, ShaderType::VertexShader });
+            auto ps = device.compileShader({ shaderFilePath, src, len, psEntry, ShaderType::PixelShader });
             
             if (vs && ps) {
                 auto vsSig = device.createVertexShaderSignature({ vs });
@@ -249,12 +318,17 @@ dx3d::GraphicsEngine::~GraphicsEngine()
 {
 }
 
-GraphicsDevice& dx3d::GraphicsEngine::getGraphicsDevice() noexcept
+IRenderDevice& dx3d::GraphicsEngine::getGraphicsDevice() noexcept
 {
 	return *m_graphicsDevice;
 }
 
-void dx3d::GraphicsEngine::beginFrame(SwapChain& swapChain)
+IImGuiBackend& dx3d::GraphicsEngine::getImGuiBackend() noexcept
+{
+	return *m_imguiBackend;
+}
+
+void dx3d::GraphicsEngine::beginFrame(IRenderSwapChain& swapChain)
 {
 	auto& context = *m_deviceContext;
 	context.clearAndSetBackBuffer(swapChain, { 0.27f, 0.39f, 0.55f, 1.0f });
@@ -270,7 +344,7 @@ void dx3d::GraphicsEngine::beginFrame(SwapChain& swapChain)
     context.setGraphicsPipelineState(*m_pipeline);
 }
 
-void GraphicsEngine::renderBackgroundDots(DeviceContext& context, GraphicsPipelineState* backgroundDotsPipeline, 
+void GraphicsEngine::renderBackgroundDots(IRenderContext& context, IRenderPipelineState* backgroundDotsPipeline,
     float screenWidth, float screenHeight, float dotSpacing, float dotRadius,
     const Vec4& baseColor, const Vec4& dotColor)
 {
@@ -310,13 +384,13 @@ void GraphicsEngine::renderBackgroundDots(DeviceContext& context, GraphicsPipeli
     context.enableDepthTest();
 }
 
-void dx3d::GraphicsEngine::endFrame(SwapChain& swapChain)
+void dx3d::GraphicsEngine::endFrame(IRenderSwapChain& swapChain)
 {
 	m_graphicsDevice->executeCommandList(*m_deviceContext);
 	swapChain.present();
 }
 
-DeviceContext& dx3d::GraphicsEngine::getContext()
+IRenderContext& dx3d::GraphicsEngine::getContext()
 {
 	return *m_deviceContext;
 }

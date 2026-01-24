@@ -6,7 +6,7 @@
 
 namespace dx3d
 {
-    class GraphicsDevice;
+    class IRenderDevice;
     class Mesh;
 
     // Forward declaration for FBX data structures
@@ -30,10 +30,10 @@ namespace dx3d
     {
     public:
         // Load a single mesh from FBX file
-        static std::shared_ptr<Mesh> LoadMesh(GraphicsDevice& device, const std::string& path);
+        static std::shared_ptr<Mesh> LoadMesh(IRenderDevice& device, const std::string& path);
         
         // Load multiple meshes from FBX file (for multi-material models)
-        static std::vector<std::shared_ptr<Mesh>> LoadMeshes(GraphicsDevice& device, const std::string& path);
+        static std::vector<std::shared_ptr<Mesh>> LoadMeshes(IRenderDevice& device, const std::string& path);
         
         // Check if FBX file exists and is valid
         static bool IsValidFBXFile(const std::string& path);
@@ -43,6 +43,6 @@ namespace dx3d
         static std::vector<FBXMesh> ParseFBXFile(const std::string& path);
         
         // Convert FBX mesh data to engine Mesh
-        static std::shared_ptr<Mesh> CreateMeshFromFBXData(GraphicsDevice& device, const FBXMesh& fbxMesh);
+        static std::shared_ptr<Mesh> CreateMeshFromFBXData(IRenderDevice& device, const FBXMesh& fbxMesh);
     };
 }

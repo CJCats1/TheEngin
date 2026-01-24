@@ -31,7 +31,7 @@ namespace dx3d
 
     LineRenderer* SceneHelper::createLineRenderer(
         EntityManager& entityManager,
-        GraphicsDevice& device,
+        IRenderDevice& device,
         GraphicsEngine& engine,
         bool screenSpace,
         bool visible,
@@ -50,9 +50,9 @@ namespace dx3d
         return &lineRenderer;
     }
 
-    GraphicsDevice& SceneHelper::initializeScene(
+    IRenderDevice& SceneHelper::initializeScene(
         GraphicsEngine& engine,
-        GraphicsDevice*& outDevice,
+        IRenderDevice*& outDevice,
         std::unique_ptr<EntityManager>& outEntityManager)
     {
         auto& device = engine.getGraphicsDevice();

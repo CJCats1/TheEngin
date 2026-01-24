@@ -1,14 +1,15 @@
 #pragma once
 #include <DX3D/Graphics/GraphicsResource.h>
+#include <DX3D/Graphics/Abstraction/RenderResources.h>
 
 namespace dx3d
 {
-	class VertexBuffer final : public GraphicsResource
+	class VertexBuffer final : public GraphicsResource, public IRenderVertexBuffer
 	{
 	public:
 		VertexBuffer(const VertexBufferDesc& desc, const GraphicsResourceDesc& gDesc);
-		ui32 getVertexListSize() const noexcept;
-		ui32 getVertexSize() const noexcept { return m_vertexSize; }
+		ui32 getVertexListSize() const noexcept override;
+		ui32 getVertexSize() const noexcept override { return m_vertexSize; }
 
 		// Method to update vertex buffer data (needed for spritesheet UV updates)
 		bool updateVertexData(const void* newData, ui32 dataSize);

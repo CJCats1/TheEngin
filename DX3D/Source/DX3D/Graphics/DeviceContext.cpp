@@ -229,7 +229,9 @@ void dx3d::DeviceContext::setTint(const Vec4& tint)
 		m_context->Unmap(m_tintBuffer.Get(), 0);
 	}
 
-	m_context->PSSetConstantBuffers(1, 1, m_tintBuffer.GetAddressOf()); // b1 matches shader
+	// b1 matches shader; bind to both VS and PS (line shader uses VS)
+	m_context->VSSetConstantBuffers(1, 1, m_tintBuffer.GetAddressOf());
+	m_context->PSSetConstantBuffers(1, 1, m_tintBuffer.GetAddressOf());
 }
 void dx3d::DeviceContext::setWorldMatrix(const Mat4& worldMatrix)
 {
@@ -249,9 +251,10 @@ void dx3d::DeviceContext::setProjectionMatrix(const Mat4& projectionMatrix)
 	updateTransformBuffer();
 }
 
-void dx3d::DeviceContext::setPSSampler(ui32 slot, ID3D11SamplerState* sampler)
+void dx3d::DeviceContext::setSampler(ui32 slot, NativeGraphicsHandle sampler)
 {
-	m_context->PSSetSamplers(slot, 1, &sampler);
+	auto* nativeSampler = static_cast<ID3D11SamplerState*>(sampler);
+	m_context->PSSetSamplers(slot, 1, &nativeSampler);
 }
 
 void dx3d::DeviceContext::setDirectionalLight(const Vec3& direction, const Vec3& color, float intensity, float ambient)
@@ -337,15 +340,16 @@ void dx3d::DeviceContext::setSpotlight(bool enabled, const Vec3& position, const
 	if (SUCCEEDED(hr)) { memcpy(mapped.pData, &s, sizeof(SpotBuf)); m_context->Unmap(m_spotlightBuffer.Get(), 0); }
 	m_context->PSSetConstantBuffers(6, 1, m_spotlightBuffer.GetAddressOf());
 }
-void dx3d::DeviceContext::clearAndSetBackBuffer(const SwapChain& swapChain, const Vec4& color)
+void dx3d::DeviceContext::clearAndSetBackBuffer(const IRenderSwapChain& swapChain, const Vec4& color)
 {
+	const auto& dxSwapChain = static_cast<const SwapChain&>(swapChain);
 	f32 fColor[] = {color.x,color.y,color.z,color.w};
-	auto rtv = swapChain.m_rtv.Get();
+	auto rtv = dxSwapChain.m_rtv.Get();
 	m_context->ClearRenderTargetView(rtv,fColor);
-	if (swapChain.m_dsv)
+	if (dxSwapChain.m_dsv)
 	{
-		m_context->ClearDepthStencilView(swapChain.m_dsv.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-		m_context->OMSetRenderTargets(1,&rtv, swapChain.m_dsv.Get());
+		m_context->ClearDepthStencilView(dxSwapChain.m_dsv.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+		m_context->OMSetRenderTargets(1,&rtv, dxSwapChain.m_dsv.Get());
 	}
 	else
 	{
@@ -353,19 +357,21 @@ void dx3d::DeviceContext::clearAndSetBackBuffer(const SwapChain& swapChain, cons
 	}
 }
 
-void dx3d::DeviceContext::setGraphicsPipelineState(const GraphicsPipelineState& pipeline)
+void dx3d::DeviceContext::setGraphicsPipelineState(const IRenderPipelineState& pipeline)
 {
+    const auto& dxPipeline = static_cast<const GraphicsPipelineState&>(pipeline);
     // Allow null input layout for shaders that use SV_VertexID
-    m_context->IASetInputLayout(pipeline.m_layout.Get());
-	m_context->VSSetShader(pipeline.m_vs.Get(), nullptr, 0);
-	m_context->PSSetShader(pipeline.m_ps.Get(), nullptr, 0);
+    m_context->IASetInputLayout(dxPipeline.m_layout.Get());
+	m_context->VSSetShader(dxPipeline.m_vs.Get(), nullptr, 0);
+	m_context->PSSetShader(dxPipeline.m_ps.Get(), nullptr, 0);
 	
 }
 
-void dx3d::DeviceContext::setVertexBuffer(const VertexBuffer& buffer)
+void dx3d::DeviceContext::setVertexBuffer(const IRenderVertexBuffer& buffer)
 {
-	auto stride = buffer.m_vertexSize;
-	auto buf = buffer.m_buffer.Get();
+	const auto& dxBuffer = static_cast<const VertexBuffer&>(buffer);
+	auto stride = dxBuffer.m_vertexSize;
+	auto buf = dxBuffer.m_buffer.Get();
 	auto offset = 0u;
 	m_context->IASetVertexBuffers(0,1,&buf,&stride,&offset);
 }
@@ -407,9 +413,11 @@ void dx3d::DeviceContext::drawTriangleList(ui32 vertexCount, ui32 startVertexLoc
 	m_context->Draw(vertexCount, startVertexLocation);
 }
 
-void dx3d::DeviceContext::setIndexBuffer(IndexBuffer& ib, DXGI_FORMAT fmt, ui32 offset)
+void dx3d::DeviceContext::setIndexBuffer(IRenderIndexBuffer& ib, IndexFormat fmt, ui32 offset)
 {
-	m_context->IASetIndexBuffer(ib.getNative(), fmt, offset);
+	DXGI_FORMAT nativeFmt = (fmt == IndexFormat::UInt16) ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT;
+	auto& dxBuffer = static_cast<IndexBuffer&>(ib);
+	m_context->IASetIndexBuffer(dxBuffer.getNative(), nativeFmt, offset);
 }
 
 void dx3d::DeviceContext::drawIndexedTriangleList(ui32 indexCount, ui32 startIndex)
@@ -427,9 +435,10 @@ void dx3d::DeviceContext::drawIndexedLineList(ui32 indexCount, ui32 startIndex)
 		static_cast<UINT>(startIndex),
 		0);
 }
-void dx3d::DeviceContext::setPSShaderResource(ui32 slot, ID3D11ShaderResourceView* srv)
+void dx3d::DeviceContext::setTexture(ui32 slot, NativeGraphicsHandle srv)
 {
-	m_context->PSSetShaderResources(slot, 1, &srv);
+	auto* nativeSrv = static_cast<ID3D11ShaderResourceView*>(srv);
+	m_context->PSSetShaderResources(slot, 1, &nativeSrv);
 }
 
 void dx3d::DeviceContext::setPSConstants0(const void* data, ui32 byteSize)
@@ -476,21 +485,25 @@ void dx3d::DeviceContext::updateTransformBuffer()
 	}
 }
 
-void dx3d::DeviceContext::setShadowMap(ID3D11ShaderResourceView* shadowMap, ID3D11SamplerState* shadowSampler)
+void dx3d::DeviceContext::setShadowMap(NativeGraphicsHandle shadowMap, NativeGraphicsHandle shadowSampler)
 {
 	// Bind shadow map texture to slot 1 (slot 0 is for regular textures)
-	m_context->PSSetShaderResources(1, 1, &shadowMap);
+	auto* nativeShadowMap = static_cast<ID3D11ShaderResourceView*>(shadowMap);
+	m_context->PSSetShaderResources(1, 1, &nativeShadowMap);
 	
 	// Bind shadow sampler to slot 1 (slot 0 is for regular samplers)
-	m_context->PSSetSamplers(1, 1, &shadowSampler);
+	auto* nativeShadowSampler = static_cast<ID3D11SamplerState*>(shadowSampler);
+	m_context->PSSetSamplers(1, 1, &nativeShadowSampler);
 }
 
-void dx3d::DeviceContext::setShadowMaps(ID3D11ShaderResourceView* const* shadowMaps, ui32 count, ID3D11SamplerState* shadowSampler)
+void dx3d::DeviceContext::setShadowMaps(NativeGraphicsHandle const* shadowMaps, ui32 count, NativeGraphicsHandle shadowSampler)
 {
     // Bind up to 10 SRVs starting at slot 1
     ui32 clamped = std::min(count, 10u);
-    m_context->PSSetShaderResources(1, clamped, shadowMaps);
-    m_context->PSSetSamplers(1, 1, &shadowSampler);
+    auto* nativeMaps = reinterpret_cast<ID3D11ShaderResourceView* const*>(shadowMaps);
+    auto* nativeShadowSampler = static_cast<ID3D11SamplerState*>(shadowSampler);
+    m_context->PSSetShaderResources(1, clamped, nativeMaps);
+    m_context->PSSetSamplers(1, 1, &nativeShadowSampler);
 }
 
 void dx3d::DeviceContext::setShadowMatrix(const Mat4& lightViewProj)
@@ -521,4 +534,14 @@ void dx3d::DeviceContext::setShadowMatrices(const std::vector<Mat4>& lightViewPr
         m_context->Unmap(m_shadowBuffer.Get(), 0);
     }
     m_context->PSSetConstantBuffers(7, 1, m_shadowBuffer.GetAddressOf());
+}
+
+void dx3d::DeviceContext::clearShaderResourceBindings()
+{
+	ID3D11ShaderResourceView* nullSrvs[16] = {};
+	ID3D11SamplerState* nullSamplers[16] = {};
+	m_context->PSSetShaderResources(0, 16, nullSrvs);
+	m_context->VSSetShaderResources(0, 16, nullSrvs);
+	m_context->GSSetShaderResources(0, 16, nullSrvs);
+	m_context->PSSetSamplers(0, 16, nullSamplers);
 }

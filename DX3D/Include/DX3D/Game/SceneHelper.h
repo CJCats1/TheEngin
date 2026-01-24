@@ -36,7 +36,7 @@ namespace dx3d
         // Returns pointer to the LineRenderer component
         static LineRenderer* createLineRenderer(
             EntityManager& entityManager,
-            GraphicsDevice& device,
+            IRenderDevice& device,
             GraphicsEngine& engine,
             bool screenSpace = false,
             bool visible = true,
@@ -45,9 +45,9 @@ namespace dx3d
 
         // Common initialization pattern: Get device and create entity manager
         // Returns the graphics device reference
-        static GraphicsDevice& initializeScene(
+        static IRenderDevice& initializeScene(
             GraphicsEngine& engine,
-            GraphicsDevice*& outDevice,
+            IRenderDevice*& outDevice,
             std::unique_ptr<EntityManager>& outEntityManager
         );
     };

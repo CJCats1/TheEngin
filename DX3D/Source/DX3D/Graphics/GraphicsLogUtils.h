@@ -1,5 +1,6 @@
 #pragma once
 #include <DX3D/Core/Logger.h>
+#include <DX3D/Core/Base.h>
 #include <d3d11.h>
 
 namespace dx3d
@@ -26,9 +27,9 @@ namespace dx3d
 		DX3DLogThrowError(message);\
 	}
 
-#define DX3DGraphicsCheckShaderCompile(hr,errorBlob)\
+#define DX3DGraphicsCheckShaderCompile(logger,hr,errorBlob)\
 {\
 auto res = (hr);\
-dx3d::GraphicsLogUtils::CheckShaderCompile(getLogger(), res,errorBlob);\
+dx3d::GraphicsLogUtils::CheckShaderCompile(logger, res,errorBlob);\
 }
 #define DXCall(x) do { HRESULT _hr = (x); if (FAILED(_hr)) DX3DLogThrowError("DirectX call failed: " #x); } while(0)

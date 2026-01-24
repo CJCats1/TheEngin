@@ -1,0 +1,17 @@
+﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(538,5): warning MSB8028: The intermediate directory (Intermediate\x64\Debug\) contains files shared from another project (DirectXGame.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+  OpenGLSwapChain.cpp
+D:\TheEngine\TheEngine\DX3D\Include\Libraries\imgui-docking\imconfig.h(18,9): warning C4005: 'IMGUI_IMPL_OPENGL_LOADER_GLAD': macro redefinition
+  (compiling source file 'DX3D/Source/DX3D/Graphics/OpenGL/OpenGLSwapChain.cpp')
+      D:\TheEngine\TheEngine\DX3D\Include\Libraries\imgui-docking\imconfig.h(18,9):
+      'IMGUI_IMPL_OPENGL_LOADER_GLAD' previously declared on the command line
+  
+  Win32Window.cpp
+D:\TheEngine\TheEngine\DX3D\Include\Libraries\imgui-docking\imconfig.h(18,9): warning C4005: 'IMGUI_IMPL_OPENGL_LOADER_GLAD': macro redefinition
+  (compiling source file 'DX3D/Source/DX3D/Window/Win32/Win32Window.cpp')
+      D:\TheEngine\TheEngine\DX3D\Include\Libraries\imgui-docking\imconfig.h(18,9):
+      'IMGUI_IMPL_OPENGL_LOADER_GLAD' previously declared on the command line
+  
+  Generating Code...
+  TheEngine.vcxproj -> D:\TheEngine\TheEngine\Bin\x64\Debug\TheEngine.exe
+  'pwsh.exe' is not recognized as an internal or external command,
+  operable program or batch file.

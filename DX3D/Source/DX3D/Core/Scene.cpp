@@ -1,6 +1,5 @@
 #include <DX3D/Core/Scene.h>
 #include <DX3D/Graphics/GraphicsEngine.h>
-#include <DX3D/Graphics/GraphicsDevice.h>
 #include <DX3D/Graphics/Texture2D.h>
 #include <imgui.h>
 
@@ -13,7 +12,7 @@ void Scene::renderImGui(GraphicsEngine& engine)
     if (!s_catTexture)
     {
         s_catTexture = Texture2D::LoadTexture2D(
-            engine.getGraphicsDevice().getD3DDevice(),
+            engine.getGraphicsDevice(),
             L"DX3D/Assets/Textures/cat.jpg"
         );
     }
@@ -25,7 +24,7 @@ void Scene::renderImGui(GraphicsEngine& engine)
         {
             ImVec2 avail = ImGui::GetContentRegionAvail();
             float size = (avail.x < avail.y) ? avail.x : avail.y;
-            ImGui::Image((ImTextureID)s_catTexture->getSRV(), ImVec2(size, size));
+            ImGui::Image((ImTextureID)s_catTexture->getNativeView(), ImVec2(size, size));
         }
         else
         {

@@ -2,15 +2,16 @@
 #include <DX3D/Graphics/GraphicsEngine.h>
 #include <DX3D/Graphics/SwapChain.h>
 #include <DX3D/Graphics/Texture2D.h>
+#include <DX3D/Graphics/SkyboxRenderer.h>
 #include <DX3D/Core/Input.h>
 #include <imgui.h>
-#include <windows.h>
 
 using namespace dx3d;
 
 void ThreeDTestScene::load(GraphicsEngine& engine)
 {
     auto& device = engine.getGraphicsDevice();
+    m_devicePtr = &device;
     m_cube = Mesh::CreateCube(device, 1.0f);
     
     
@@ -23,7 +24,7 @@ void ThreeDTestScene::load(GraphicsEngine& engine)
     if (m_groundPlane)
     {
         std::wstring groundTexturePath = L"DX3D/Assets/Textures/beam.png";
-        auto groundTexture = Texture2D::LoadTexture2D(device.getD3DDevice(), groundTexturePath.c_str());
+        auto groundTexture = Texture2D::LoadTexture2D(device, groundTexturePath.c_str());
         if (groundTexture)
         {
             m_groundPlane->setTexture(groundTexture);
@@ -35,10 +36,10 @@ void ThreeDTestScene::load(GraphicsEngine& engine)
     if (m_skybox) {
         // Try to load skybox from file first, fallback to solid colors
         std::wstring skyboxPath = L"DX3D/Assets/Textures/Skybox.png";
-        auto skyboxTexture = Texture2D::LoadSkyboxCubemap(device.getD3DDevice(), skyboxPath.c_str());
+        auto skyboxTexture = Texture2D::LoadSkyboxCubemap(device, skyboxPath.c_str());
         if (!skyboxTexture) {
             // Fallback to solid color cubemap
-            skyboxTexture = Texture2D::CreateSkyboxCubemap(device.getD3DDevice());
+            skyboxTexture = Texture2D::CreateSkyboxCubemap(device);
         }
         
         if (skyboxTexture) {
@@ -111,7 +112,7 @@ void ThreeDTestScene::update(float dt)
     m_camera.setTarget(m_camera.getPosition() + lookDir);
 }
 
-void ThreeDTestScene::render(GraphicsEngine& engine, SwapChain& swapChain)
+void ThreeDTestScene::render(GraphicsEngine& engine, IRenderSwapChain& swapChain)
 {
     auto& ctx = engine.getContext();
 
@@ -133,90 +134,22 @@ void ThreeDTestScene::render(GraphicsEngine& engine, SwapChain& swapChain)
 
     // Draw skybox first (behind everything)
     if (m_skybox) {
-        // Use skybox pipeline
-        if (auto* skyboxPipeline = engine.getSkyboxPipeline()) {
-            ctx.setGraphicsPipelineState(*skyboxPipeline);
-        }
-
-        // Configure depth: enable test with LESS_EQUAL and disable depth writes
-        auto* d3dDeviceContext = ctx.getD3DDeviceContext();
-        D3D11_DEPTH_STENCIL_DESC depthDesc = {};
-        depthDesc.DepthEnable = TRUE;
-        depthDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO; // Don't write to depth buffer
-        depthDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL; // Standard skybox depth test
-        depthDesc.StencilEnable = FALSE;
-        
-        Microsoft::WRL::ComPtr<ID3D11DepthStencilState> skyboxDepthState;
-        engine.getGraphicsDevice().getD3DDevice()->CreateDepthStencilState(&depthDesc, skyboxDepthState.GetAddressOf());
-        d3dDeviceContext->OMSetDepthStencilState(skyboxDepthState.Get(), 0);
-        
-        // For skybox, we want to remove translation from view matrix
-        // so the skybox always appears at infinity (like the OpenGL version)
-        // Create a view matrix without translation
         Vec3 cameraPos = m_camera.getPosition();
         Vec3 target = m_camera.getTarget();
         Vec3 up = m_camera.getUp();
-        
-        // Create view matrix at origin (no translation)
         Mat4 viewMatrix = Mat4::lookAt(Vec3(0, 0, 0), target - cameraPos, up);
-        ctx.setViewMatrix(viewMatrix);
-        
-        // Position skybox at origin (large enough to always be visible)
-        Mat4 skyboxWorld = Mat4::identity(); // No translation, just at origin
-        ctx.setWorldMatrix(skyboxWorld);
-        
-        // Draw skybox
 
-        // Cull front faces so we render the inside of the cube
-        D3D11_RASTERIZER_DESC rastDesc = {};
-        rastDesc.FillMode = D3D11_FILL_SOLID;
-        rastDesc.CullMode = D3D11_CULL_FRONT; // Cull front faces
-        rastDesc.FrontCounterClockwise = FALSE;
-        rastDesc.DepthBias = 0;
-        rastDesc.SlopeScaledDepthBias = 0.0f;
-        rastDesc.DepthBiasClamp = 0.0f;
-        rastDesc.DepthClipEnable = TRUE;
-        rastDesc.ScissorEnable = FALSE;
-        rastDesc.MultisampleEnable = FALSE;
-        rastDesc.AntialiasedLineEnable = FALSE;
-        
-        Microsoft::WRL::ComPtr<ID3D11RasterizerState> skyboxRastState;
-        engine.getGraphicsDevice().getD3DDevice()->CreateRasterizerState(&rastDesc, skyboxRastState.GetAddressOf());
-        d3dDeviceContext->RSSetState(skyboxRastState.Get());
+        SkyboxRenderer::render(
+            engine.getGraphicsDevice(),
+            ctx,
+            *m_skybox,
+            engine.getSkyboxPipeline(),
+            viewMatrix,
+            m_showSkybox
+        );
 
-        // Bind cubemap SRV and a sampler to the skybox pixel shader slot 0
-        if (m_skybox && m_skybox->getTexture())
-        {
-            ID3D11ShaderResourceView* srv = m_skybox->getTexture()->getSRV();
-            d3dDeviceContext->PSSetShaderResources(0, 1, &srv);
-
-            static Microsoft::WRL::ComPtr<ID3D11SamplerState> s_skyboxSampler;
-            if (!s_skyboxSampler)
-            {
-                D3D11_SAMPLER_DESC samp{};
-                samp.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-                samp.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
-                samp.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
-                samp.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
-                samp.ComparisonFunc = D3D11_COMPARISON_NEVER;
-                samp.MinLOD = 0;
-                samp.MaxLOD = D3D11_FLOAT32_MAX;
-                engine.getGraphicsDevice().getD3DDevice()->CreateSamplerState(&samp, s_skyboxSampler.GetAddressOf());
-            }
-            ID3D11SamplerState* sampPtr = s_skyboxSampler.Get();
-            d3dDeviceContext->PSSetSamplers(0, 1, &sampPtr);
-        }
-
-        if (m_showSkybox && m_skybox) m_skybox->draw(ctx);
-        
-        // Restore default depth state for other objects
-        d3dDeviceContext->OMSetDepthStencilState(nullptr, 0);
-        d3dDeviceContext->RSSetState(nullptr);
-        
         // Switch back to 3D pipeline for other objects
         ctx.setGraphicsPipelineState(engine.get3DPipeline());
-        
-        // Restore original view matrix
         ctx.setViewMatrix(m_camera.getViewMatrix());
     }
 
@@ -273,13 +206,13 @@ void ThreeDTestScene::renderImGui(GraphicsEngine& engine)
         if (ImGui::Button("Reload Skybox Texture")) {
             auto& device = engine.getGraphicsDevice();
             std::wstring skyboxPath = L"DX3D/Assets/Textures/Skybox.png";
-            auto skyboxTexture = Texture2D::LoadSkyboxCubemap(device.getD3DDevice(), skyboxPath.c_str());
-            if (!skyboxTexture) skyboxTexture = Texture2D::CreateSkyboxCubemap(device.getD3DDevice());
+            auto skyboxTexture = Texture2D::LoadSkyboxCubemap(device, skyboxPath.c_str());
+            if (!skyboxTexture) skyboxTexture = Texture2D::CreateSkyboxCubemap(device);
             if (skyboxTexture && m_skybox) m_skybox->setTexture(skyboxTexture);
         }
         if (ImGui::Button("Use Debug Cubemap (colors)")) {
             auto& device = engine.getGraphicsDevice();
-            auto skyboxTexture = Texture2D::CreateSkyboxCubemap(device.getD3DDevice());
+            auto skyboxTexture = Texture2D::CreateSkyboxCubemap(device);
             if (skyboxTexture && m_skybox) m_skybox->setTexture(skyboxTexture);
         }
         ImGui::Text("Drawing skybox - Pipeline: %s", engine.getSkyboxPipeline() ? "YES" : "NO");

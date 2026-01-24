@@ -1,8 +1,6 @@
 #pragma once
-#include <DX3D/Graphics/GraphicsDevice.h>
-#include <DX3D/Graphics/DeviceContext.h>
-#include <DX3D/Graphics/VertexBuffer.h>
-#include <DX3D/Graphics/IndexBuffer.h>
+#include <DX3D/Graphics/Abstraction/RenderDevice.h>
+#include <DX3D/Graphics/Abstraction/RenderContext.h>
 #include <DX3D/Math/Geometry.h>
 #include <DX3D/Graphics/Mesh.h>
 #include <DX3D/Graphics/Camera.h>
@@ -11,6 +9,7 @@
 #include <memory>
 
 namespace dx3d {
+    class IRenderPipelineState;
 
     struct Line {
         Vec2 start;
@@ -28,7 +27,7 @@ namespace dx3d {
 
     class LineRenderer {
     public:
-        LineRenderer(GraphicsDevice& device);
+        LineRenderer(IRenderDevice& device);
         ~LineRenderer() = default;
 
         // Add lines to be rendered
@@ -49,7 +48,7 @@ namespace dx3d {
         void updateBuffer();
 
         // Render all lines
-        void draw(DeviceContext& ctx);
+        void draw(IRenderContext& ctx);
 
         // Camera integration - make this public so the scene can call it
         void setCamera(const Camera2D* camera);
@@ -73,20 +72,20 @@ namespace dx3d {
         bool isLocalPositioning() const { return m_useLocalPositioning; }
 
         // Get device reference
-        GraphicsDevice& getDevice() { return m_device; }
+        IRenderDevice& getDevice() { return m_device; }
         
         // Set line pipeline for optimal rendering
-        void setLinePipeline(GraphicsPipelineState* pipeline) { m_linePipeline = pipeline; }
+        void setLinePipeline(IRenderPipelineState* pipeline) { m_linePipeline = pipeline; }
 
     private:
-        GraphicsDevice& m_device;
+        IRenderDevice& m_device;
         std::vector<Line> m_lines;
         std::vector<Line3D> m_lines3D;
         std::vector<Vertex> m_vertices;
         std::vector<ui32> m_indices;
 
-        std::shared_ptr<VertexBuffer> m_vertexBuffer;
-        std::shared_ptr<IndexBuffer> m_indexBuffer;
+        VertexBufferPtr m_vertexBuffer;
+        IndexBufferPtr m_indexBuffer;
 
         bool m_visible = true;
         bool m_useScreenSpace = false;
@@ -96,7 +95,7 @@ namespace dx3d {
         Mat4 m_viewMatrix;
         Mat4 m_projMatrix;
         const Camera2D* m_camera = nullptr;
-        GraphicsPipelineState* m_linePipeline = nullptr;  // Dedicated line pipeline
+        IRenderPipelineState* m_linePipeline = nullptr;  // Dedicated line pipeline
 
         // Helper methods
         void generateLineVertices(const Line& line);

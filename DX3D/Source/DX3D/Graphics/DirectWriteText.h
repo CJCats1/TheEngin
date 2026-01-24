@@ -1,5 +1,6 @@
 #pragma once
-#include <DX3D/Graphics/GraphicsDevice.h>
+#include <DX3D/Graphics/Abstraction/RenderDevice.h>
+#include <DX3D/Graphics/Abstraction/RenderContext.h>
 #include <DX3D/Graphics/Texture2D.h>
 #include <DX3D/Core/TransformComponent.h>
 #include <DX3D/Math/Geometry.h>
@@ -20,7 +21,7 @@ namespace dx3d {
 
     class DirectWriteRenderer {
     public:
-        DirectWriteRenderer(GraphicsDevice& device);
+        DirectWriteRenderer(IRenderDevice& device);
         ~DirectWriteRenderer();
 
         bool initialize();
@@ -49,7 +50,7 @@ namespace dx3d {
         );
 
     private:
-        GraphicsDevice& m_device;
+        IRenderDevice& m_device;
 
         // DirectWrite/Direct2D interfaces
         Microsoft::WRL::ComPtr<IDWriteFactory> m_writeFactory;
@@ -65,7 +66,7 @@ namespace dx3d {
 
     class TextComponent {
     public:
-        TextComponent(GraphicsDevice& device, DirectWriteRenderer& textRenderer,
+        TextComponent(IRenderDevice& device, DirectWriteRenderer& textRenderer,
             const std::wstring& text = L"", float fontSize = 24.0f);
         virtual ~TextComponent() = default;
 
@@ -135,7 +136,7 @@ namespace dx3d {
         void markDirty() { m_needsRebuild = true; }
 
         // Rendering
-        virtual void draw(class DeviceContext& ctx) const;
+        virtual void draw(IRenderContext& ctx) const;
         TransformComponent m_transform;
         bool m_useScreenSpace;
         Vec2 m_screenPosition;
@@ -143,7 +144,7 @@ namespace dx3d {
         mutable std::shared_ptr<Texture2D> m_textTexture;
         mutable std::shared_ptr<class Mesh> m_textMesh;
     protected:
-        GraphicsDevice& m_device;
+        IRenderDevice& m_device;
         DirectWriteRenderer& m_textRenderer;
 
         // Text properties
@@ -169,14 +170,16 @@ namespace dx3d {
     // Global text renderer instance manager
     class TextSystem {
     public:
-        static void initialize(GraphicsDevice& device);
+        static void initialize(IRenderDevice& device);
         static void shutdown();
         static DirectWriteRenderer& getRenderer();
         static bool isInitialized();
+        static bool isImGuiFallback();
 
     private:
         static std::unique_ptr<DirectWriteRenderer> s_renderer;
         static bool s_initialized;
+        static bool s_useImGuiFallback;
     };
 
     // Utility functions for string conversion

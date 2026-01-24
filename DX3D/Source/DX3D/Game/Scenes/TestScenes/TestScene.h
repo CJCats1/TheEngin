@@ -9,7 +9,7 @@
 
 namespace dx3d {
     class LineRenderer;
-    class GraphicsDevice;
+    class IRenderDevice;
     class Texture2D;
     class TextComponent;
     class TestScene : public Scene {
@@ -18,7 +18,7 @@ namespace dx3d {
         void reset(GraphicsEngine& engine) override;
         void update(float dt) override;
         void fixedUpdate(float dt) override;
-        void render(GraphicsEngine& engine, SwapChain& swapChain) override;
+        void render(GraphicsEngine& engine, IRenderSwapChain& swapChain) override;
         EntityManager* getEntityManager() override { return m_entityManager.get(); }
         void renderImGui(GraphicsEngine& engine);
     private:
@@ -28,7 +28,7 @@ namespace dx3d {
             Circle
         };
         std::unique_ptr<EntityManager> m_entityManager;
-        GraphicsDevice* m_graphicsDevice = nullptr;
+        IRenderDevice* m_graphicsDevice = nullptr;
 
         // Physics AABBs
         dx3d::physics::AABB m_playerBox;

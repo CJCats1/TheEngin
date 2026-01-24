@@ -1,9 +1,8 @@
 #pragma once
 #include <DX3D/Math/Geometry.h>
-#include <DX3D/Graphics/GraphicsDevice.h>
-#include <DX3D/Graphics/DeviceContext.h>
-#include <DX3D/Graphics/VertexBuffer.h>
-#include <DX3D/Graphics/IndexBuffer.h>
+#include <DX3D/Graphics/Abstraction/RenderDevice.h>
+#include <DX3D/Graphics/Abstraction/RenderContext.h>
+#include <DX3D/Graphics/Abstraction/RenderResources.h>
 #include <DX3D/Graphics/Texture2D.h>
 #include <memory>
 
@@ -27,17 +26,17 @@ namespace dx3d
 
     class Mesh {
     public:
-        static std::shared_ptr<Mesh> CreateQuadColored(GraphicsDevice& device, float w, float h);
-        static std::shared_ptr<Mesh> CreateQuadSolidColored(GraphicsDevice& device, float w, float h, Vec4 color);
-        static std::shared_ptr<Mesh> CreateQuadTextured(GraphicsDevice& device, float w, float h);
-        static std::shared_ptr<Mesh> CreateCube(GraphicsDevice& device, float size);
-        static std::shared_ptr<Mesh> CreatePlane(GraphicsDevice& device, float width, float height);
-        static std::shared_ptr<Mesh> CreateSphere(GraphicsDevice& device, float radius, int segments = 16);
-        static std::shared_ptr<Mesh> CreateCylinder(GraphicsDevice& device, float radius, float height, int segments = 16);
-        static std::shared_ptr<Mesh> CreateFromOBJ(GraphicsDevice& device, const std::string& path);
-        static std::vector<std::shared_ptr<Mesh>> CreateFromOBJMultiMaterial(GraphicsDevice& device, const std::string& path);
-        static std::shared_ptr<Mesh> CreateFromFBX(GraphicsDevice& device, const std::string& path);
-        static std::vector<std::shared_ptr<Mesh>> CreateFromFBXMultiMaterial(GraphicsDevice& device, const std::string& path);
+        static std::shared_ptr<Mesh> CreateQuadColored(IRenderDevice& device, float w, float h);
+        static std::shared_ptr<Mesh> CreateQuadSolidColored(IRenderDevice& device, float w, float h, Vec4 color);
+        static std::shared_ptr<Mesh> CreateQuadTextured(IRenderDevice& device, float w, float h);
+        static std::shared_ptr<Mesh> CreateCube(IRenderDevice& device, float size);
+        static std::shared_ptr<Mesh> CreatePlane(IRenderDevice& device, float width, float height);
+        static std::shared_ptr<Mesh> CreateSphere(IRenderDevice& device, float radius, int segments = 16);
+        static std::shared_ptr<Mesh> CreateCylinder(IRenderDevice& device, float radius, float height, int segments = 16);
+        static std::shared_ptr<Mesh> CreateFromOBJ(IRenderDevice& device, const std::string& path);
+        static std::vector<std::shared_ptr<Mesh>> CreateFromOBJMultiMaterial(IRenderDevice& device, const std::string& path);
+        static std::shared_ptr<Mesh> CreateFromFBX(IRenderDevice& device, const std::string& path);
+        static std::vector<std::shared_ptr<Mesh>> CreateFromFBXMultiMaterial(IRenderDevice& device, const std::string& path);
 
         // Spritesheet support
         void setSpriteFrame(int frameX, int frameY, int totalFramesX, int totalFramesY);
@@ -46,7 +45,7 @@ namespace dx3d
 
         void setTexture(std::shared_ptr<Texture2D> texture) { m_texture = texture; }
         bool isTextured() const { return (bool)m_texture; }
-        void draw(DeviceContext& ctx) const;
+        void draw(IRenderContext& ctx) const;
         float getWidth() const { return m_width; }
         float getHeight() const { return m_height; }
 
@@ -61,12 +60,12 @@ namespace dx3d
 		void setIndexCount(ui32 theIndexCount) { m_indexCount = theIndexCount; }
 
 		ui32 getIndexCount() const { return m_indexCount; }
-		void setVB(std::shared_ptr<VertexBuffer> vb) { m_vb = vb; }
-		void setIB(std::shared_ptr<IndexBuffer> ib) { m_ib = ib; }
+		void setVB(VertexBufferPtr vb) { m_vb = vb; }
+		void setIB(IndexBufferPtr ib) { m_ib = ib; }
 		std::shared_ptr<Texture2D> getTexture() const { return m_texture; }
     private:
-        std::shared_ptr<VertexBuffer> m_vb;
-        std::shared_ptr<IndexBuffer>  m_ib;
+        VertexBufferPtr m_vb;
+        IndexBufferPtr  m_ib;
         Primitive m_prim{ Primitive::Triangles };
         std::shared_ptr<Texture2D>    m_texture;
         ui32 m_vertexCount{ 0 };
@@ -81,7 +80,7 @@ namespace dx3d
         float m_currentVHeight = 1.0f;
 
         // Keep reference to device for updating vertex buffer
-        GraphicsDevice* m_device = nullptr;
+        IRenderDevice* m_device = nullptr;
 
         // Helper method to update UV coordinates
         void updateUVCoordinates();

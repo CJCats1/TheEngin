@@ -1,32 +1,32 @@
-﻿#include "SpriteComponent.h"
+#include "SpriteComponent.h"
 #include <DX3D/Graphics/GraphicsEngine.h>
 
 using namespace dx3d;
 
 
-SpriteComponent::SpriteComponent(GraphicsDevice& device, const std::wstring& texturePath,
+SpriteComponent::SpriteComponent(IRenderDevice& device, const std::wstring& texturePath,
 	float width, float height) : m_device(device) {
 	// Load texture
-	m_texture = Texture2D::LoadTexture2D(device.getD3DDevice(), texturePath.c_str());
+	m_texture = Texture2D::LoadTexture2D(device, texturePath.c_str());
 	if (!m_texture) {
 		// Fallback to white texture if loading fails
-		m_texture = Texture2D::CreateDebugTexture(device.getD3DDevice());
+		m_texture = Texture2D::CreateDebugTexture(device);
 	}
 
 	initialize(device, width, height);
 }
 
-SpriteComponent::SpriteComponent(GraphicsDevice& device, std::shared_ptr<Texture2D> texture,
+SpriteComponent::SpriteComponent(IRenderDevice& device, std::shared_ptr<Texture2D> texture,
 	float width, float height)
 	: m_device(device), m_texture(texture) {
 	if (!m_texture) {
-		m_texture = Texture2D::CreateDebugTexture(device.getD3DDevice());
+		m_texture = Texture2D::CreateDebugTexture(device);
 	}
 
 	initialize(device, width, height);
 }
 
-SpriteComponent::SpriteComponent(GraphicsDevice& device, std::shared_ptr<Mesh> mesh,
+SpriteComponent::SpriteComponent(IRenderDevice& device, std::shared_ptr<Mesh> mesh,
 	std::shared_ptr<Texture2D> texture)
 	: m_device(device), m_mesh(std::move(mesh)), m_texture(std::move(texture)) {
 	if (!m_mesh) {
@@ -37,7 +37,7 @@ SpriteComponent::SpriteComponent(GraphicsDevice& device, std::shared_ptr<Mesh> m
 }
 
 
-void SpriteComponent::initialize(GraphicsDevice& device, float width, float height) {
+void SpriteComponent::initialize(IRenderDevice& device, float width, float height) {
 	// Create textured quad mesh
 	m_width = width;
 	m_height = height;
@@ -54,7 +54,7 @@ void SpriteComponent::setTexture(std::shared_ptr<Texture2D> texture) {
 	}
 }
 
-void SpriteComponent::draw(DeviceContext& ctx) const {
+void SpriteComponent::draw(IRenderContext& ctx) const {
 	if (!isVisible() || !isValid()) return;
 	float screenWidth = GraphicsEngine::getWindowWidth();
 	float screenHeight = GraphicsEngine::getWindowHeight();
