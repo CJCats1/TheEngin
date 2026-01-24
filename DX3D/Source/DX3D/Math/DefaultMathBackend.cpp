@@ -1,5 +1,8 @@
 #include <DX3D/Math/Backend/MathBackend.h>
 #include <cmath>
+#if defined(DX3D_PLATFORM_ANDROID)
+#include <android/log.h>
+#endif
 
 namespace dx3d::math::backend::default_impl
 {
@@ -153,6 +156,10 @@ namespace dx3d::math::backend::default_impl
     }
 
     Mat4 perspective(f32 fovY, f32 aspect, f32 nearZ, f32 farZ) {
+#if defined(DX3D_PLATFORM_ANDROID)
+        __android_log_print(ANDROID_LOG_INFO, "Math", "perspective: fovY=%f, aspect=%f, near=%f, far=%f",
+                           fovY, aspect, nearZ, farZ);
+#endif
         f32 f = 1.0f / std::tan(fovY * 0.5f);
         Mat4 result;
         result[0] = f / aspect;
@@ -174,6 +181,10 @@ namespace dx3d::math::backend::default_impl
         result[13] = 0.0f;
         result[14] = -(farZ * nearZ) / (farZ - nearZ);
         result[15] = 0.0f;
+#if defined(DX3D_PLATFORM_ANDROID)
+        __android_log_print(ANDROID_LOG_INFO, "Math", "perspective result: [0]=%f [5]=%f [10]=%f [15]=%f",
+                           result[0], result[5], result[10], result[15]);
+#endif
         return result;
     }
 

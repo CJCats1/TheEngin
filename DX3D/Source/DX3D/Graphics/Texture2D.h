@@ -1,9 +1,14 @@
 #pragma once
+#include <memory>
+#if defined(_WIN32)
 #include <wrl.h>
 #include <d3d11.h>
-#include <memory>
-#include <wincodec.h> // For WIC
+#include <wincodec.h>
 #include <comdef.h>
+#else
+struct ID3D11ShaderResourceView;
+struct ID3D11Device;
+#endif
 #include <iostream>
 #include <cstdint>
 #include <DX3D/Graphics/Abstraction/RenderDevice.h>
@@ -11,6 +16,12 @@
 
 #if defined(DX3D_ENABLE_OPENGL)
 #include <glad/glad.h>
+#endif
+#if defined(DX3D_PLATFORM_ANDROID)
+#include <GLES3/gl3.h>
+#include <DX3D/Core/AndroidPlatform.h>
+#include <Libraries/stb/stb_image.h>
+#include <android/log.h>
 #endif
 namespace dx3d
 {
@@ -21,11 +32,13 @@ namespace dx3d
             OpenGL
         };
 
+#if defined(_WIN32)
         Texture2D(Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> srv)
             : m_backend(Backend::DirectX11), m_srv(srv) {
         }
+#endif
 
-#if defined(DX3D_ENABLE_OPENGL)
+#if defined(DX3D_ENABLE_OPENGL) || defined(DX3D_PLATFORM_ANDROID)
         explicit Texture2D(unsigned int glTexture)
             : m_backend(Backend::OpenGL), m_glTexture(glTexture) {
         }
@@ -33,7 +46,7 @@ namespace dx3d
 
         ~Texture2D()
         {
-#if defined(DX3D_ENABLE_OPENGL)
+#if defined(DX3D_ENABLE_OPENGL) || defined(DX3D_PLATFORM_ANDROID)
             if (m_backend == Backend::OpenGL && m_glTexture)
             {
                 glDeleteTextures(1, &m_glTexture);
@@ -42,21 +55,36 @@ namespace dx3d
 #endif
         }
 
-        ID3D11ShaderResourceView* getSRV() const { return m_srv.Get(); }
+        ID3D11ShaderResourceView* getSRV() const
+        {
+#if defined(_WIN32)
+            return m_srv.Get();
+#else
+            return nullptr;
+#endif
+        }
         NativeGraphicsHandle getNativeView() const {
             if (m_backend == Backend::OpenGL) {
                 return reinterpret_cast<NativeGraphicsHandle>(static_cast<uintptr_t>(m_glTexture));
             }
+#if defined(_WIN32)
             return m_srv.Get();
+#else
+            return nullptr;
+#endif
         }
 
         static std::shared_ptr<Texture2D> LoadTexture2D(IRenderDevice& device, const wchar_t* filePath)
         {
+#if defined(_WIN32)
             auto* nativeDevice = static_cast<ID3D11Device*>(device.getNativeDeviceHandle());
             if (nativeDevice) {
                 return LoadTexture2D(nativeDevice, filePath);
             }
-#if defined(DX3D_ENABLE_OPENGL)
+#endif
+#if defined(DX3D_PLATFORM_ANDROID)
+            return LoadTexture2DOpenGLES(filePath);
+#elif defined(DX3D_ENABLE_OPENGL)
             return LoadTexture2DOpenGL(filePath);
 #else
             return nullptr;
@@ -68,6 +96,7 @@ namespace dx3d
             return device ? LoadTexture2D(*device, filePath) : nullptr;
         }
 
+#if defined(_WIN32)
         static std::shared_ptr<Texture2D> LoadTexture2D(ID3D11Device* device, const wchar_t* filePath)
         {
             // Initialize COM
@@ -165,7 +194,9 @@ namespace dx3d
 
             return std::make_shared<Texture2D>(srv);
         }
+#endif
 
+#if defined(_WIN32)
         static std::shared_ptr<Texture2D> CreateDebugTexture(ID3D11Device* device)
         {
             std::cout << "DebugTextureUsed" << std::endl;
@@ -218,14 +249,19 @@ namespace dx3d
 
             return std::make_shared<Texture2D>(srv);
         }
+#endif
 
         static std::shared_ptr<Texture2D> CreateDebugTexture(IRenderDevice& device)
         {
+#if defined(_WIN32)
             auto* nativeDevice = static_cast<ID3D11Device*>(device.getNativeDeviceHandle());
             if (nativeDevice) {
                 return CreateDebugTexture(nativeDevice);
             }
-#if defined(DX3D_ENABLE_OPENGL)
+#endif
+#if defined(DX3D_PLATFORM_ANDROID)
+            return CreateDebugTextureOpenGLES();
+#elif defined(DX3D_ENABLE_OPENGL)
             return CreateDebugTextureOpenGL();
 #else
             return nullptr;
@@ -238,6 +274,7 @@ namespace dx3d
         }
 
         // Create a cubemap with solid colors for testing
+#if defined(_WIN32)
         static std::shared_ptr<Texture2D> CreateSkyboxCubemap(ID3D11Device* device) {
             // Create a simple cubemap with solid colors
             D3D11_TEXTURE2D_DESC texDesc = {};
@@ -300,11 +337,17 @@ namespace dx3d
 
             return std::make_shared<Texture2D>(srv);
         }
+#endif
 
         static std::shared_ptr<Texture2D> CreateSkyboxCubemap(IRenderDevice& device)
         {
+#if defined(_WIN32)
             auto* nativeDevice = static_cast<ID3D11Device*>(device.getNativeDeviceHandle());
             return nativeDevice ? CreateSkyboxCubemap(nativeDevice) : nullptr;
+#else
+            (void)device;
+            return nullptr;
+#endif
         }
 
         static std::shared_ptr<Texture2D> CreateSkyboxCubemap(IRenderDevice* device)
@@ -313,6 +356,7 @@ namespace dx3d
         }
 
         // Load cubemap from a single 4x3 cross-layout image file
+#if defined(_WIN32)
         static std::shared_ptr<Texture2D> LoadSkyboxCubemap(ID3D11Device* device, const wchar_t* filePath) {
             // Decode with WIC to 32bpp RGBA
             CoInitializeEx(nullptr, COINIT_MULTITHREADED);
@@ -438,11 +482,18 @@ namespace dx3d
 
             return std::make_shared<Texture2D>(srv);
         }
+#endif
 
         static std::shared_ptr<Texture2D> LoadSkyboxCubemap(IRenderDevice& device, const wchar_t* filePath)
         {
+#if defined(_WIN32)
             auto* nativeDevice = static_cast<ID3D11Device*>(device.getNativeDeviceHandle());
             return nativeDevice ? LoadSkyboxCubemap(nativeDevice, filePath) : nullptr;
+#else
+            (void)device;
+            (void)filePath;
+            return nullptr;
+#endif
         }
 
         static std::shared_ptr<Texture2D> LoadSkyboxCubemap(IRenderDevice* device, const wchar_t* filePath)
@@ -451,6 +502,7 @@ namespace dx3d
         }
 
        
+#if defined(_WIN32)
         static std::shared_ptr<Texture2D> CreateNoiseTexture(ID3D11Device* device, int size = 256) {
             std::unique_ptr<BYTE[]> pixels(new BYTE[size * size * 4]);
             
@@ -506,10 +558,17 @@ namespace dx3d
             
             return std::make_shared<Texture2D>(srv);
         }
+#endif
 
         static std::shared_ptr<Texture2D> CreateNoiseTexture(IRenderDevice& device, int size = 256) {
+#if defined(_WIN32)
             auto* nativeDevice = static_cast<ID3D11Device*>(device.getNativeDeviceHandle());
             return nativeDevice ? CreateNoiseTexture(nativeDevice, size) : nullptr;
+#else
+            (void)device;
+            (void)size;
+            return nullptr;
+#endif
         }
 
         static std::shared_ptr<Texture2D> CreateNoiseTexture(IRenderDevice* device, int size = 256) {
@@ -517,6 +576,7 @@ namespace dx3d
         }
         
         // Create a sun texture with glow effect
+#if defined(_WIN32)
         static std::shared_ptr<Texture2D> CreateSunTexture(ID3D11Device* device, int size = 256) {
             std::unique_ptr<BYTE[]> pixels(new BYTE[size * size * 4]);
             
@@ -592,10 +652,17 @@ namespace dx3d
             
             return std::make_shared<Texture2D>(srv);
         }
+#endif
 
         static std::shared_ptr<Texture2D> CreateSunTexture(IRenderDevice& device, int size = 256) {
+#if defined(_WIN32)
             auto* nativeDevice = static_cast<ID3D11Device*>(device.getNativeDeviceHandle());
             return nativeDevice ? CreateSunTexture(nativeDevice, size) : nullptr;
+#else
+            (void)device;
+            (void)size;
+            return nullptr;
+#endif
         }
 
         static std::shared_ptr<Texture2D> CreateSunTexture(IRenderDevice* device, int size = 256) {
@@ -603,6 +670,92 @@ namespace dx3d
         }
 
     private:
+#if defined(DX3D_PLATFORM_ANDROID)
+        static std::string wideToUtf8Path(const wchar_t* path)
+        {
+            if (!path)
+            {
+                return {};
+            }
+            std::wstring wpath(path);
+            std::string out;
+            out.reserve(wpath.size());
+            for (wchar_t ch : wpath)
+            {
+                if (ch <= 0x7F)
+                {
+                    out.push_back(static_cast<char>(ch));
+                }
+                else
+                {
+                    out.push_back('?');
+                }
+            }
+            return out;
+        }
+
+        static std::shared_ptr<Texture2D> LoadTexture2DOpenGLES(const wchar_t* filePath)
+        {
+            const std::string path = wideToUtf8Path(filePath);
+            if (path.empty())
+            {
+                __android_log_print(ANDROID_LOG_ERROR, "LoadTexture2D", "Failed: empty path");
+                return nullptr;
+            }
+            
+            __android_log_print(ANDROID_LOG_INFO, "LoadTexture2D", "Loading: %s", path.c_str());
+            
+            auto data = platform::readAsset(path.c_str());
+            if (data.empty())
+            {
+                __android_log_print(ANDROID_LOG_ERROR, "LoadTexture2D", "Failed: asset not found or empty (%s)", path.c_str());
+                return nullptr;
+            }
+            
+            __android_log_print(ANDROID_LOG_INFO, "LoadTexture2D", "Asset loaded, size: %zu bytes", data.size());
+
+            int width = 0;
+            int height = 0;
+            int channels = 0;
+            stbi_uc* pixels = stbi_load_from_memory(
+                data.data(),
+                static_cast<int>(data.size()),
+                &width,
+                &height,
+                &channels,
+                STBI_rgb_alpha
+            );
+            if (!pixels || width <= 0 || height <= 0)
+            {
+                __android_log_print(ANDROID_LOG_ERROR, "LoadTexture2D", "Failed: stbi_load_from_memory returned nullptr or invalid dimensions (%dx%d)", width, height);
+                if (pixels)
+                {
+                    stbi_image_free(pixels);
+                }
+                return nullptr;
+            }
+            
+            __android_log_print(ANDROID_LOG_INFO, "LoadTexture2D", "Image decoded: %dx%d, channels: %d", width, height, channels);
+
+            unsigned int textureId = 0;
+            glGenTextures(1, &textureId);
+            glBindTexture(GL_TEXTURE_2D, textureId);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
+                GL_UNSIGNED_BYTE, pixels);
+            glBindTexture(GL_TEXTURE_2D, 0);
+
+            stbi_image_free(pixels);
+            
+            __android_log_print(ANDROID_LOG_INFO, "LoadTexture2D", "Success! texture ID: %u", textureId);
+
+            return std::make_shared<Texture2D>(textureId);
+        }
+#endif
+
         static std::shared_ptr<Texture2D> LoadTexture2DOpenGL(const wchar_t* filePath)
         {
 #if defined(DX3D_ENABLE_OPENGL)
@@ -709,8 +862,46 @@ namespace dx3d
 #endif
         }
 
+#if defined(DX3D_PLATFORM_ANDROID)
+        static std::shared_ptr<Texture2D> CreateDebugTextureOpenGLES()
+        {
+            const int size = 8;
+            const int width = size;
+            const int height = size;
+            std::unique_ptr<unsigned int[]> pixels(new unsigned int[width * height]);
+            const unsigned int magenta = 0xFFFF00FF;
+            const unsigned int black = 0xFF000000;
+
+            for (int y = 0; y < height; ++y)
+            {
+                for (int x = 0; x < width; ++x)
+                {
+                    const bool isMagenta = ((x / (size / 2)) + (y / (size / 2))) % 2 == 0;
+                    pixels[y * width + x] = isMagenta ? magenta : black;
+                }
+            }
+
+            unsigned int textureId = 0;
+            glGenTextures(1, &textureId);
+            glBindTexture(GL_TEXTURE_2D, textureId);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0,
+                GL_RGBA, GL_UNSIGNED_BYTE, pixels.get());
+            glBindTexture(GL_TEXTURE_2D, 0);
+
+            return std::make_shared<Texture2D>(textureId);
+        }
+#endif
+
         Backend m_backend{ Backend::DirectX11 };
+#if defined(_WIN32)
         Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_srv;
+#else
+        void* m_srv{};
+#endif
         unsigned int m_glTexture{};
     };
 }

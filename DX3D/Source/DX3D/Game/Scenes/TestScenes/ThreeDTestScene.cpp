@@ -1,8 +1,9 @@
 #include <DX3D/Game/Scenes/TestScenes/ThreeDTestScene.h>
 #include <DX3D/Graphics/GraphicsEngine.h>
-#include <DX3D/Graphics/SwapChain.h>
 #include <DX3D/Graphics/Texture2D.h>
+#if !defined(DX3D_PLATFORM_ANDROID)
 #include <DX3D/Graphics/SkyboxRenderer.h>
+#endif
 #include <DX3D/Core/Input.h>
 #include <imgui.h>
 
@@ -31,6 +32,7 @@ void ThreeDTestScene::load(GraphicsEngine& engine)
         }
     }
 
+#if !defined(DX3D_PLATFORM_ANDROID)
     // Create skybox (large cube that surrounds the scene)
     m_skybox = Mesh::CreateCube(device, 10.0f); // Make it smaller for debugging
     if (m_skybox) {
@@ -46,11 +48,19 @@ void ThreeDTestScene::load(GraphicsEngine& engine)
             m_skybox->setTexture(skyboxTexture);
         }
     }
+#endif
 
     float w = GraphicsEngine::getWindowWidth();
     float h = GraphicsEngine::getWindowHeight();
+    float aspect = w / h;
+    
+#if defined(DX3D_PLATFORM_ANDROID)
+    #include <android/log.h>
+    __android_log_print(ANDROID_LOG_INFO, "ThreeDTestScene", "Camera init: w=%f h=%f aspect=%f", w, h, aspect);
+#endif
+    
     // Initialize like PartitionScene's FPS preset
-    m_camera.setPerspective(1.22173048f, w / h, 0.1f, 5000.0f);
+    m_camera.setPerspective(1.22173048f, aspect, 0.1f, 5000.0f);
     m_yaw = 0.0f;
     m_pitch = 0.0f;
     m_camera.setPosition({ 0.0f, 5.0f, 15.0f });
@@ -132,6 +142,7 @@ void ThreeDTestScene::render(GraphicsEngine& engine, IRenderSwapChain& swapChain
     ctx.setViewMatrix(m_camera.getViewMatrix());
     ctx.setProjectionMatrix(m_camera.getProjectionMatrix());
 
+#if !defined(DX3D_PLATFORM_ANDROID)
     // Draw skybox first (behind everything)
     if (m_skybox) {
         Vec3 cameraPos = m_camera.getPosition();
@@ -152,6 +163,7 @@ void ThreeDTestScene::render(GraphicsEngine& engine, IRenderSwapChain& swapChain
         ctx.setGraphicsPipelineState(engine.get3DPipeline());
         ctx.setViewMatrix(m_camera.getViewMatrix());
     }
+#endif
 
     // (Ground plane removed)
     // Draw small ground plane
@@ -195,6 +207,7 @@ void ThreeDTestScene::renderImGui(GraphicsEngine& engine)
     }
     
     ImGui::Separator();
+#if !defined(DX3D_PLATFORM_ANDROID)
     if (ImGui::CollapsingHeader("Skybox", ImGuiTreeNodeFlags_DefaultOpen)) {
         ImGui::Checkbox("Show skybox", &m_showSkybox);
         ImGui::Text("Mesh: %s", m_skybox ? "YES" : "NO");
@@ -218,6 +231,7 @@ void ThreeDTestScene::renderImGui(GraphicsEngine& engine)
         ImGui::Text("Drawing skybox - Pipeline: %s", engine.getSkyboxPipeline() ? "YES" : "NO");
         ImGui::Text("Camera: (%.2f, %.2f, %.2f)", m_camera.getPosition().x, m_camera.getPosition().y, m_camera.getPosition().z);
     }
+#endif
     ImGui::End();
 }
 

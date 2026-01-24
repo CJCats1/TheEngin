@@ -1,11 +1,12 @@
 #include <DX3D/Game/Scenes/TestScenes/TestScene.h>
 #include <DX3D/Graphics/GraphicsEngine.h>
-#include <DX3D/Graphics/SwapChain.h>
 #include <DX3D/Graphics/Camera.h>
 #include <DX3D/Graphics/LineRenderer.h>
 #include <DX3D/Graphics/SpriteComponent.h>
 #include <DX3D/Graphics/Texture2D.h>
+#if defined(_WIN32)
 #include <DX3D/Graphics/DirectWriteText.h>
+#endif
 #include <DX3D/Physics/PhysicsSystem.h>
 #include <DX3D/Physics/PhysicsSystem.inl>
 #include <DX3D/Core/Input.h>
@@ -63,6 +64,7 @@ void TestScene::load(GraphicsEngine& engine) {
     backgroundSprite.setTint(Vec4(1.0f, 1.0f, 1.0f, 0.0f));
     createOriginNodeSprite();
 
+#if defined(_WIN32)
     if (!TextSystem::isInitialized()) {
         TextSystem::initialize(device);
     }
@@ -77,6 +79,7 @@ void TestScene::load(GraphicsEngine& engine) {
         m_worldText->setColor(Vec4(1.0f, 0.85f, 0.2f, 1.0f));
         m_worldText->setPosition(m_playerBox.pos.x, m_playerBox.pos.y + 14.0f, 0.0f);
     }
+#endif
 
     // Initialize player AABB (movable)
     m_playerBox = AABB(Vec2(0.0f, 0.0f), Vec2(5.0f, 5.0f)); // center at origin, 10x10 box
@@ -217,6 +220,7 @@ void TestScene::update(float dt) {
         }
     }
 
+#if defined(_WIN32)
     if (m_showTextDemo && (m_screenText || m_worldText)) {
         m_textUpdateTimer += dt;
         if (m_textUpdateTimer >= m_textUpdateInterval) {
@@ -236,6 +240,7 @@ void TestScene::update(float dt) {
             }
         }
     }
+#endif
 }
 
 void TestScene::fixedUpdate(float dt) {
@@ -468,6 +473,7 @@ void TestScene::render(GraphicsEngine& engine, IRenderSwapChain& swapChain) {
         }
     }
 
+#if defined(_WIN32)
     if (m_showTextDemo) {
         if (m_worldText) {
             m_worldText->draw(ctx);
@@ -476,6 +482,7 @@ void TestScene::render(GraphicsEngine& engine, IRenderSwapChain& swapChain) {
             m_screenText->draw(ctx);
         }
     }
+#endif
 
     if (m_lineRenderer && m_showDebugLines) {
         m_lineRenderer->draw(ctx);

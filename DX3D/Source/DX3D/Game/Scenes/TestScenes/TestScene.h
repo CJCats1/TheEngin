@@ -11,7 +11,9 @@ namespace dx3d {
     class LineRenderer;
     class IRenderDevice;
     class Texture2D;
+    #if defined(_WIN32)
     class TextComponent;
+    #endif
     class TestScene : public Scene {
     public:
         void load(GraphicsEngine& engine) override;
@@ -20,7 +22,7 @@ namespace dx3d {
         void fixedUpdate(float dt) override;
         void render(GraphicsEngine& engine, IRenderSwapChain& swapChain) override;
         EntityManager* getEntityManager() override { return m_entityManager.get(); }
-        void renderImGui(GraphicsEngine& engine);
+        void renderImGui(GraphicsEngine& engine) override;
     private:
         enum class SpawnMode
         {
@@ -74,8 +76,10 @@ namespace dx3d {
         bool m_showTextDemo = true;
         float m_textUpdateTimer = 0.0f;
         float m_textUpdateInterval = 0.15f;
+        #if defined(_WIN32)
         std::unique_ptr<TextComponent> m_screenText;
         std::unique_ptr<TextComponent> m_worldText;
+        #endif
         SpawnMode m_spawnMode = SpawnMode::Aabb;
 
         void updateCameraMovement(float dt);

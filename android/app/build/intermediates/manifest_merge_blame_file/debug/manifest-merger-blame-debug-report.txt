@@ -1,0 +1,51 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.theengine"
+4    android:versionCode="1"
+5    android:versionName="1.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="28"
+9        android:targetSdkVersion="34" />
+10
+11    <application
+11-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:3:5-20:19
+12        android:debuggable="true"
+12-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:6:9-34
+13        android:extractNativeLibs="false"
+14        android:hasCode="false"
+14-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:5:9-32
+15        android:label="TheEngine"
+15-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:4:9-34
+16        android:testOnly="true" >
+17        <activity
+17-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:7:9-19:20
+18            android:name="android.app.NativeActivity"
+18-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:8:13-54
+19            android:configChanges="orientation|screenSize|keyboardHidden"
+19-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:11:13-74
+20            android:exported="true"
+20-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:10:13-36
+21            android:label="TheEngine" >
+21-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:9:13-38
+22            <meta-data
+22-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:12:13-14:45
+23                android:name="android.app.lib_name"
+23-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:13:17-52
+24                android:value="TheEngine" />
+24-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:14:17-42
+25
+26            <intent-filter>
+26-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:15:13-18:29
+27                <action android:name="android.intent.action.MAIN" />
+27-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:16:17-69
+27-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:16:25-66
+28
+29                <category android:name="android.intent.category.LAUNCHER" />
+29-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:17:17-77
+29-->D:\TheEngine\TheEngine\android\app\src\main\AndroidManifest.xml:17:27-74
+30            </intent-filter>
+31        </activity>
+32    </application>
+33
+34</manifest>

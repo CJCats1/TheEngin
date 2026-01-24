@@ -1,4 +1,5 @@
 #pragma once
+#if defined(_WIN32)
 #include "DirectWriteText.h"
 #include <vector>
 #include <functional>
@@ -230,3 +231,4 @@ namespace dx3d {
         std::wstring addTextOutline(const std::wstring& text);
     }
 }
+#endif

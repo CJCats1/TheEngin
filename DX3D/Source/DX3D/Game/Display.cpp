@@ -23,11 +23,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include <DX3D/Game/Display.h>
-#include <DX3D/Graphics/GraphicsDevice.h>
+#include <DX3D/Graphics/Abstraction/RenderDevice.h>
 #include <DX3D/Graphics/GraphicsEngine.h>
+#if defined(_WIN32)
 #include <Windows.h>
 #include <imgui.h>
 #include <backends/imgui_impl_win32.h>
+#endif
 
 dx3d::Display::Display(const DisplayDesc& desc): Window(desc.window)
 {
@@ -39,6 +41,7 @@ dx3d::IRenderSwapChain& dx3d::Display::getSwapChain() noexcept
 	return *m_swapChain;
 }
 
+#if defined(_WIN32)
 LRESULT dx3d::Display::handleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	// Call base class handler first
@@ -66,3 +69,4 @@ LRESULT dx3d::Display::handleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 
 	return result;
 }
+#endif

@@ -1,8 +1,12 @@
 #include <DX3D/Graphics/GraphicsEngine.h>
+#if defined(_WIN32)
 #include <DX3D/Graphics/GraphicsDevice.h>
+#endif
+#if defined(_WIN32)
 #include <DX3D/Graphics/DeviceContext.h>
 #include <DX3D/Graphics/SwapChain.h>
 #include <DX3D/Graphics/VertexBuffer.h>
+#endif
 #include <fstream>
 #include <DX3D/Graphics/Texture2D.h>
 #include <DX3D/Math/Backend/MathBackend.h>
@@ -10,7 +14,34 @@
 #include <DX3D/Graphics/Abstraction/RenderBackendFactory.h>
 #include <cstdlib>
 #include <string_view>
+#if defined(DX3D_PLATFORM_ANDROID)
+#include <DX3D/Core/AndroidPlatform.h>
+#endif
 using namespace dx3d;
+
+namespace
+{
+	bool loadShaderFile(const char* path, std::string& out)
+	{
+#if defined(DX3D_PLATFORM_ANDROID)
+		auto data = platform::readAsset(path);
+		if (data.empty())
+		{
+			return false;
+		}
+		out.assign(reinterpret_cast<const char*>(data.data()), data.size());
+		return true;
+#else
+		std::ifstream shaderStream(path);
+		if (!shaderStream)
+		{
+			return false;
+		}
+		out.assign(std::istreambuf_iterator<char>(shaderStream), std::istreambuf_iterator<char>());
+		return true;
+#endif
+	}
+}
 float dx3d::GraphicsEngine::m_windowHeight = 720.0f;
 float dx3d::GraphicsEngine::m_windowWidth = 1280.0f;
 
@@ -18,6 +49,9 @@ dx3d::GraphicsEngine::GraphicsEngine(const GraphicsEngineDesc& desc) : Base(desc
 {
     std::cout << "GraphicsEngine: Starting initialization..." << std::endl;
 	RenderBackendType backendType = desc.backendType;
+#if defined(DX3D_PLATFORM_ANDROID)
+    backendType = RenderBackendType::OpenGL;
+#endif
 #if defined(_MSC_VER)
 	char* env = nullptr;
 	size_t envLen = 0;
@@ -45,6 +79,8 @@ dx3d::GraphicsEngine::GraphicsEngine(const GraphicsEngineDesc& desc) : Base(desc
 #endif
 
     m_backendType = backendType;
+#if !defined(DX3D_PLATFORM_ANDROID)
+    // On desktop, use GLM for OpenGL as it's available via vcpkg
     if (m_backendType == RenderBackendType::OpenGL)
     {
         math::backend::setBackend(math::backend::MathBackendType::Glm);
@@ -53,6 +89,10 @@ dx3d::GraphicsEngine::GraphicsEngine(const GraphicsEngineDesc& desc) : Base(desc
     {
         math::backend::setBackend(math::backend::MathBackendType::Default);
     }
+#else
+    // On Android, GLM isn't available, so always use default backend
+    math::backend::setBackend(math::backend::MathBackendType::Default);
+#endif
     m_renderBackend = createRenderBackend(backendType, m_logger);
     m_graphicsDevice = m_renderBackend->createDevice(GraphicsDeviceDesc{ m_logger });
     auto& device = *m_graphicsDevice;
@@ -85,9 +125,9 @@ void dx3d::GraphicsEngine::initializePipelines()
     // ---- Default world-space pipeline (Basic.hlsl) ----
     {
         const char* shaderFilePath = shaderPath("DX3D/Assets/Shaders/Basic.hlsl");
-        std::ifstream shaderStream(shaderFilePath);
-        if (!shaderStream) DX3DLogThrowError("Failed to open shader file.");
-        std::string shaderFileData{ std::istreambuf_iterator<char>(shaderStream), std::istreambuf_iterator<char>() };
+        std::string shaderFileData{};
+        if (!loadShaderFile(shaderFilePath, shaderFileData))
+            DX3DLogThrowError("Failed to open shader file.");
         auto* src = shaderFileData.c_str();
         auto   len = shaderFileData.length();
 
@@ -101,12 +141,11 @@ void dx3d::GraphicsEngine::initializePipelines()
     {
         std::cout << "GraphicsEngine: Creating 3D pipeline..." << std::endl;
         const char* shaderFilePath = shaderPath("DX3D/Assets/Shaders/Basic3D.hlsl");
-        std::ifstream shaderStream(shaderFilePath);
-        if (!shaderStream) {
+        std::string shaderFileData{};
+        if (!loadShaderFile(shaderFilePath, shaderFileData)) {
             std::cout << "ERROR: Failed to open Basic3D.hlsl" << std::endl;
             DX3DLogThrowError("Failed to open Basic3D.hlsl.");
         }
-        std::string shaderFileData{ std::istreambuf_iterator<char>(shaderStream), std::istreambuf_iterator<char>() };
         auto* src = shaderFileData.c_str();
         auto   len = shaderFileData.length();
         std::cout << "Basic3D.hlsl loaded, size: " << len << " bytes" << std::endl;
@@ -142,9 +181,9 @@ void dx3d::GraphicsEngine::initializePipelines()
     // ---- Text screen-space pipeline (Text.hlsl) ----
     {
         const char* shaderFilePath = shaderPath("DX3D/Assets/Shaders/Text.hlsl");
-        std::ifstream shaderStream(shaderFilePath);
-        if (!shaderStream) DX3DLogThrowError("Failed to open Text.hlsl.");
-        std::string shaderFileData{ std::istreambuf_iterator<char>(shaderStream), std::istreambuf_iterator<char>() };
+        std::string shaderFileData{};
+        if (!loadShaderFile(shaderFilePath, shaderFileData))
+            DX3DLogThrowError("Failed to open Text.hlsl.");
         auto* src = shaderFileData.c_str();
         auto   len = shaderFileData.length();
 
@@ -157,9 +196,8 @@ void dx3d::GraphicsEngine::initializePipelines()
     // ---- Background dots pipeline (BackgroundDots.hlsl) ----
     {
         const char* shaderFilePath = shaderPath("DX3D/Assets/Shaders/BackgroundDots.hlsl");
-        std::ifstream shaderStream(shaderFilePath);
-        if (shaderStream) {
-            std::string shaderFileData{ std::istreambuf_iterator<char>(shaderStream), std::istreambuf_iterator<char>() };
+        std::string shaderFileData{};
+        if (loadShaderFile(shaderFilePath, shaderFileData)) {
             auto* src = shaderFileData.c_str();
             auto   len = shaderFileData.length();
 
@@ -185,9 +223,8 @@ void dx3d::GraphicsEngine::initializePipelines()
     // ---- Toon/world-space pipeline (ToonSprite.hlsl) ----
     {
         const char* shaderFilePath = shaderPath("DX3D/Assets/Shaders/ToonSprite.hlsl");
-        std::ifstream shaderStream(shaderFilePath);
-        if (shaderStream) {
-            std::string shaderFileData{ std::istreambuf_iterator<char>(shaderStream), std::istreambuf_iterator<char>() };
+        std::string shaderFileData{};
+        if (loadShaderFile(shaderFilePath, shaderFileData)) {
             auto* src = shaderFileData.c_str();
             auto   len = shaderFileData.length();
 
@@ -204,10 +241,9 @@ void dx3d::GraphicsEngine::initializePipelines()
     // ---- Simple shadow map pipeline (SimpleShadowMap.hlsl) ----
     {
         const char* shaderFilePath = shaderPath("DX3D/Assets/Shaders/SimpleShadowMap.hlsl");
-        std::ifstream shaderStream(shaderFilePath);
+        std::string shaderFileData{};
         
-        if (shaderStream) {
-            std::string shaderFileData{ std::istreambuf_iterator<char>(shaderStream), std::istreambuf_iterator<char>() };
+        if (loadShaderFile(shaderFilePath, shaderFileData)) {
             auto* src = shaderFileData.c_str();
             auto   len = shaderFileData.length();
             
@@ -228,10 +264,9 @@ void dx3d::GraphicsEngine::initializePipelines()
     // ---- Simple shadow map debug pipeline (SimpleShadowDebug.hlsl) ----
     {
         const char* shaderFilePath = shaderPath("DX3D/Assets/Shaders/SimpleShadowDebug.hlsl");
-        std::ifstream shaderStream(shaderFilePath);
+        std::string shaderFileData{};
         
-        if (shaderStream) {
-            std::string shaderFileData{ std::istreambuf_iterator<char>(shaderStream), std::istreambuf_iterator<char>() };
+        if (loadShaderFile(shaderFilePath, shaderFileData)) {
             auto* src = shaderFileData.c_str();
             auto   len = shaderFileData.length();
             
@@ -254,10 +289,9 @@ void dx3d::GraphicsEngine::initializePipelines()
         const char* shaderFilePath = isOpenGL
             ? "DX3D/Assets/Shaders/OpenGLLine.glsl"
             : "DX3D/Assets/Shaders/Line.hlsl";
-        std::ifstream shaderStream(shaderFilePath);
+        std::string shaderFileData{};
         
-        if (shaderStream) {
-            std::string shaderFileData{ std::istreambuf_iterator<char>(shaderStream), std::istreambuf_iterator<char>() };
+        if (loadShaderFile(shaderFilePath, shaderFileData)) {
             auto* src = shaderFileData.c_str();
             auto len = shaderFileData.length();
             
@@ -283,10 +317,9 @@ void dx3d::GraphicsEngine::initializePipelines()
     {
         std::cout << "Creating skybox pipeline..." << std::endl;
         const char* shaderFilePath = shaderPath("DX3D/Assets/Shaders/Skybox.hlsl");
-        std::ifstream shaderStream(shaderFilePath);
+        std::string shaderFileData{};
         
-        if (shaderStream) {
-            std::string shaderFileData{ std::istreambuf_iterator<char>(shaderStream), std::istreambuf_iterator<char>() };
+        if (loadShaderFile(shaderFilePath, shaderFileData)) {
             auto* src = shaderFileData.c_str();
             auto len = shaderFileData.length();
             

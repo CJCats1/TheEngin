@@ -1,9 +1,10 @@
 #include <DX3D/Graphics/LineRenderer.h>
-#include <DX3D/Graphics/GraphicsDevice.h>
+#if defined(_WIN32)
 #include <DX3D/Graphics/DeviceContext.h>
 #include <DX3D/Graphics/VertexBuffer.h>
 #include <DX3D/Graphics/IndexBuffer.h>
 #include <DX3D/Graphics/GraphicsPipelineState.h>
+#endif
 #include <DX3D/Graphics/GraphicsEngine.h>
 #include <cmath>
 

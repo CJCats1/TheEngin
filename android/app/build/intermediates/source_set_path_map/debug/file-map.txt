@@ -1,0 +1,7 @@
+com.theengine.app-pngs-0 D:\TheEngine\TheEngine\android\app\build\generated\res\pngs\debug
+com.theengine.app-resValues-1 D:\TheEngine\TheEngine\android\app\build\generated\res\resValues\debug
+com.theengine.app-packageDebugResources-2 D:\TheEngine\TheEngine\android\app\build\intermediates\incremental\debug\packageDebugResources\merged.dir
+com.theengine.app-packageDebugResources-3 D:\TheEngine\TheEngine\android\app\build\intermediates\incremental\debug\packageDebugResources\stripped.dir
+com.theengine.app-merged_res-4 D:\TheEngine\TheEngine\android\app\build\intermediates\merged_res\debug
+com.theengine.app-debug-5 D:\TheEngine\TheEngine\android\app\src\debug\res
+com.theengine.app-main-6 D:\TheEngine\TheEngine\android\app\src\main\res

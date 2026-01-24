@@ -23,16 +23,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include <DX3D/Game/Game.h>
+#if !defined(DX3D_PLATFORM_ANDROID)
 #include <DX3D/Graphics/OpenGL/OpenGLSwapChain.h>
+#endif
 #include <DX3D/Window/Window.h>
 #include <DX3D/Graphics/GraphicsEngine.h>
 #include <DX3D/Core/Logger.h>
 #include <DX3D/Game/Display.h>
 #include <DX3D/Core/Scene.h>
 #include <DX3D/Core/Input.h>
+#if defined(_WIN32)
 #include <DX3D/Graphics/DirectWriteText.h>
+#endif
 #include <DX3D/Game/Scenes/TestScenes/TestScene.h>
-#include <DX3D/Graphics/SwapChain.h>
 #include <DX3D/Core/EntityManager.h>
 
 // Define the static Game instance
@@ -42,9 +45,13 @@ namespace dx3d {
 // ImGui/ImPlot
 #include <imgui.h>
 #include <imgui_internal.h>
+#if defined(_WIN32)
 #include <implot.h>
+#endif
+#if defined(_WIN32)
 // Windows DPI functions
 #include <windows.h>
+#endif
 
 dx3d::Game::Game(const GameDesc& desc) :
     Base({ *std::make_unique<Logger>(desc.logLevel).release() }),
@@ -52,6 +59,18 @@ dx3d::Game::Game(const GameDesc& desc) :
 {
     // Set the static reference to this Game instance
     s_currentInstance = this;
+
+    // Update GraphicsEngine static window dimensions
+    float setWidth = static_cast<float>(desc.windowSize.width);
+    float setHeight = static_cast<float>(desc.windowSize.height);
+    GraphicsEngine::setWindowWidth(setWidth);
+    GraphicsEngine::setWindowHeight(setHeight);
+    
+    #if defined(DX3D_PLATFORM_ANDROID)
+    #include <android/log.h>
+    __android_log_print(ANDROID_LOG_INFO, "Game", "Set window dims to %fx%f, current: %fx%f",
+                       setWidth, setHeight, GraphicsEngine::getWindowWidth(), GraphicsEngine::getWindowHeight());
+    #endif
 
     m_graphicsEngine = std::make_unique<GraphicsEngine>(GraphicsEngineDesc{ m_logger });
     WindowDesc windowDesc{ {m_logger}, desc.windowSize };
@@ -84,10 +103,17 @@ dx3d::Game::Game(const GameDesc& desc) :
     io.ConfigViewportsNoAutoMerge = true;
     io.ConfigViewportsNoTaskBarIcon = true;
 
+#if defined(_WIN32)
     ImPlot::CreateContext();
+#endif
     void* imguiWindowHandle = m_display->getHandle();
-    if (m_graphicsEngine->getBackendType() == RenderBackendType::OpenGL) {
+    if (m_graphicsEngine->getBackendType() == RenderBackendType::OpenGL)
+    {
+#if defined(DX3D_PLATFORM_ANDROID)
+        imguiWindowHandle = m_display->getHandle();
+#else
         imguiWindowHandle = m_display->getSwapChain().getNativeSwapChainHandle();
+#endif
     }
     m_graphicsEngine->getImGuiBackend().initialize(
         imguiWindowHandle,
@@ -108,7 +134,9 @@ dx3d::Game::~Game()
     s_currentInstance = nullptr;
     
     // Shutdown ImGui/ImPlot
+#if defined(_WIN32)
     ImPlot::DestroyContext();
+#endif
     m_graphicsEngine->getImGuiBackend().shutdown();
     ImGui::DestroyContext();
     DX3DLogInfo("Game deallocation started.");
@@ -122,10 +150,12 @@ void dx3d::Game::onInternalUpdate()
 {
     if (m_graphicsEngine->getBackendType() == RenderBackendType::OpenGL)
     {
-        if (auto* glSwapChain = dynamic_cast<OpenGLSwapChain*>(&m_display->getSwapChain()))
-        {
-            glSwapChain->pollInput();
-        }
+#if !defined(DX3D_PLATFORM_ANDROID)
+    if (auto* glSwapChain = dynamic_cast<OpenGLSwapChain*>(&m_display->getSwapChain()))
+    {
+        glSwapChain->pollInput();
+    }
+#endif
     }
     auto& input = Input::getInstance();
     if (input.isKeyDown(Key::Escape))

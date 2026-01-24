@@ -1,4 +1,5 @@
 #pragma once
+#if defined(_WIN32)
 #include <DX3D/Graphics/GraphicsResource.h>
 #include <DX3D/Core/Core.h>
 #include <DX3D/Core/Base.h>
@@ -38,3 +39,9 @@ namespace dx3d
         Microsoft::WRL::ComPtr<IDXGIFactory>        m_dxgiFactory{};
     };
 }
+#else
+namespace dx3d
+{
+    class GraphicsDevice;
+}
+#endif
