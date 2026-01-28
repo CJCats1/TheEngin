@@ -5,6 +5,9 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#if defined(DX3D_PLATFORM_ANDROID)
+#include <android/log.h>
+#endif
 
 using namespace dx3d;
 
@@ -561,14 +564,37 @@ std::shared_ptr<Mesh> Mesh::CreateCylinder(IRenderDevice& device, float radius, 
 
 void Mesh::draw(IRenderContext& ctx) const
 {
-    
+#if defined(DX3D_PLATFORM_ANDROID)
+    static int totalDrawCalls = 0;
+    totalDrawCalls++;
+    if (totalDrawCalls <= 3) {
+        __android_log_print(ANDROID_LOG_INFO, "Mesh", "draw: Called (total: %d), texture=%p", totalDrawCalls, m_texture.get());
+    }
+#endif
     ctx.setVertexBuffer(*m_vb);
     if (m_ib)
         ctx.setIndexBuffer(*m_ib);
 
     // Bind the texture if the mesh is textured
     if (m_texture) {
+#if defined(DX3D_PLATFORM_ANDROID)
+        const auto textureId = static_cast<unsigned int>(reinterpret_cast<uintptr_t>(m_texture->getNativeView()));
+        // Log first few times to debug texture binding
+        static int drawCallCount = 0;
+        if (drawCallCount < 5) {
+            __android_log_print(ANDROID_LOG_INFO, "Mesh", "draw: Binding texture ID %u (draw call %d)", textureId, drawCallCount);
+            drawCallCount++;
+        }
+#endif
         ctx.setTexture(0, m_texture->getNativeView());
+    } else {
+#if defined(DX3D_PLATFORM_ANDROID)
+        static int noTextureCount = 0;
+        if (noTextureCount < 3) {
+            __android_log_print(ANDROID_LOG_ERROR, "Mesh", "draw: No texture set on mesh! This will cause rendering issues. (count: %d)", noTextureCount);
+            noTextureCount++;
+        }
+#endif
     }
     
     // Always bind default sampler to prevent D3D11 warnings

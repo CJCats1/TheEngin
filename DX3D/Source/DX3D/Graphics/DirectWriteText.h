@@ -5,11 +5,58 @@
 #include <DX3D/Core/TransformComponent.h>
 #include <DX3D/Math/Geometry.h>
 
+#if defined(_WIN32)
 #include <wrl.h>
 #include <d3d11.h>
 #include <d2d1_1.h>
 #include <dwrite.h>
 #include <wincodec.h>
+#else
+// Forward declarations for Android (ImGui fallback doesn't need these)
+#include <cstdint>
+typedef uint32_t UINT32;
+typedef int DWRITE_FONT_WEIGHT;
+typedef int DWRITE_FONT_STYLE;
+constexpr DWRITE_FONT_WEIGHT DWRITE_FONT_WEIGHT_NORMAL = 400;
+constexpr DWRITE_FONT_STYLE DWRITE_FONT_STYLE_NORMAL = 0;
+typedef int HRESULT;
+#define FAILED(hr) ((hr) < 0)
+#define SUCCEEDED(hr) ((hr) >= 0)
+#define CLCTX_INPROC_SERVER 0
+#define IID_PPV_ARGS(ppType) (__uuidof(**(ppType)), (void**)(ppType))
+struct IUnknown;
+struct IDWriteFactory;
+struct ID2D1Factory1;
+struct ID2D1Device;
+struct ID2D1DeviceContext;
+struct IWICImagingFactory;
+struct ID3D11Device;
+struct IDXGIDevice;
+struct IDWriteTextFormat;
+struct IDWriteTextLayout;
+struct IWICBitmap;
+struct ID2D1RenderTarget;
+struct ID2D1SolidColorBrush;
+struct ID3D11Texture2D;
+struct ID3D11ShaderResourceView;
+struct IWICBitmapLock;
+// Stub functions for Android
+inline void* __uuidof(void*) { return nullptr; }
+template<typename T> void* __uuidof() { return nullptr; }
+namespace Microsoft {
+    namespace WRL {
+        template<typename T> class ComPtr {
+        public:
+            T* Get() const { return nullptr; }
+            T** GetAddressOf() { return nullptr; }
+            void Reset() {}
+            ComPtr() {}
+            ComPtr(T*) {}
+            ComPtr& operator=(T*) { return *this; }
+        };
+    }
+}
+#endif
 #include <string>
 #include <memory>
 #include <vector>

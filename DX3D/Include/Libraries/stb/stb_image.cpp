@@ -2,11 +2,8 @@
 #include <cstdlib>
 #include <cstring>
 #include <android/log.h>
-#include <android/api-level.h>
-
-// Try to include AImageDecoder if available
-#if __ANDROID_API__ >= 29
-#include <android/imagedecoder.h>
+#if defined(DX3D_PLATFORM_ANDROID)
+#include <DX3D/Core/AndroidPlatform.h>
 #endif
 
 extern "C" {
@@ -55,73 +52,63 @@ stbi_uc* stbi_load_from_memory(const stbi_uc* buffer, int len, int* x, int* y,
         return nullptr;
     }
 
-#if defined(__ANDROID_API__) && __ANDROID_API__ >= 30
-    __android_log_print(ANDROID_LOG_INFO, "LoadTexture2D", "Attempting AImageDecoder");
+#if defined(DX3D_PLATFORM_ANDROID)
+    // Try to use Android BitmapFactory via JNI
+    int width = 0, height = 0, channels = 0;
+    unsigned char* pixels = dx3d::platform::decodeImageFromMemory(buffer, len, &width, &height, &channels);
     
-    AImageDecoder* decoder = nullptr;
-    int result = AImageDecoder_createFromBuffer(buffer, len, &decoder);
-    
-    if (result == ANDROID_IMAGE_DECODER_SUCCESS && decoder) {
-        const AImageDecoderHeaderInfo* info = AImageDecoder_getHeaderInfo(decoder);
-        int width = AImageDecoderHeaderInfo_getWidth(info);
-        int height = AImageDecoderHeaderInfo_getHeight(info);
-        
-        __android_log_print(ANDROID_LOG_INFO, "LoadTexture2D", "Decoded: %dx%d", width, height);
+    if (pixels && width > 0 && height > 0) {
+        __android_log_print(ANDROID_LOG_INFO, "stb_image", "Image decoded via BitmapFactory: %dx%d, channels: %d", width, height, channels);
         
         if (x) *x = width;
         if (y) *y = height;
+        if (channels_in_file) *channels_in_file = channels;
         
-        // Set format to RGBA_8888
-        AImageDecoder_setAndroidBitmapFormat(decoder, ANDROID_BITMAP_FORMAT_RGBA_8888);
-        if (channels_in_file) *channels_in_file = 4;
-        
-        // Decode
-        size_t stride = AImageDecoder_getMinimumStride(decoder);
-        unsigned char* pixelBuffer = (unsigned char*)malloc(stride * height);
-        
-        if (pixelBuffer) {
-            result = AImageDecoder_decode(decoder, pixelBuffer, stride);
-            AImageDecoder_delete(decoder);
-            
-            if (result == ANDROID_IMAGE_DECODER_SUCCESS) {
-                __android_log_print(ANDROID_LOG_INFO, "LoadTexture2D", "Success!");
-                return pixelBuffer;
+        // Convert to desired channel format if needed
+        if (desired_channels == STBI_rgb || desired_channels == 3) {
+            // Convert RGBA to RGB
+            unsigned char* rgbPixels = (unsigned char*)malloc(width * height * 3);
+            if (rgbPixels) {
+                for (int i = 0; i < width * height; i++) {
+                    rgbPixels[i * 3 + 0] = pixels[i * 4 + 0];
+                    rgbPixels[i * 3 + 1] = pixels[i * 4 + 1];
+                    rgbPixels[i * 3 + 2] = pixels[i * 4 + 2];
+                }
+                free(pixels);
+                __android_log_print(ANDROID_LOG_INFO, "stb_image", "Converted to RGB format");
+                return rgbPixels;
             }
-            free(pixelBuffer);
-        } else {
-            AImageDecoder_delete(decoder);
         }
-    } else if (decoder) {
-        AImageDecoder_delete(decoder);
+        
+        __android_log_print(ANDROID_LOG_INFO, "stb_image", "Image decoded successfully (RGBA)");
+        return pixels;
+    } else {
+        __android_log_print(ANDROID_LOG_WARN, "stb_image", "BitmapFactory decode failed, falling back to checkerboard");
     }
-    
-    __android_log_print(ANDROID_LOG_INFO, "LoadTexture2D", "AImageDecoder failed, using fallback");
-#else
-    __android_log_print(ANDROID_LOG_INFO, "LoadTexture2D", "AImageDecoder unavailable, using fallback");
 #endif
 
     // Fallback: return checkerboard with correct dimensions
     // Try to at least get dimensions from PNG/JPEG headers
     int w = 256, h = 256;
-    int channels = 4;
+    int fallback_channels = 4;
     
     // Check PNG signature and get dimensions
     if (len >= 24 && buffer[0] == 137 && buffer[1] == 80 && buffer[2] == 78 && buffer[3] == 71) {
         w = ((int)buffer[16] << 24) | ((int)buffer[17] << 16) | ((int)buffer[18] << 8) | buffer[19];
         h = ((int)buffer[20] << 24) | ((int)buffer[21] << 16) | ((int)buffer[22] << 8) | buffer[23];
-        __android_log_print(ANDROID_LOG_INFO, "LoadTexture2D", "PNG detected: %dx%d", w, h);
-        channels = 4;
+        __android_log_print(ANDROID_LOG_INFO, "stb_image", "PNG detected: %dx%d (fallback)", w, h);
+        fallback_channels = 4;
     }
     // Check JPEG signature and find SOF marker for dimensions
     else if (len >= 4 && buffer[0] == 0xFF && buffer[1] == 0xD8) {
-        __android_log_print(ANDROID_LOG_INFO, "LoadTexture2D", "JPEG detected, searching for dimensions...");
-        channels = 3;
+        __android_log_print(ANDROID_LOG_INFO, "stb_image", "JPEG detected, searching for dimensions...");
+        fallback_channels = 3;
         for (int pos = 2; pos + 8 < len; pos++) {
             if (buffer[pos] == 0xFF && (buffer[pos+1] == 0xC0 || buffer[pos+1] == 0xC1)) {
                 if (pos + 9 < len) {
                     h = ((int)buffer[pos + 5] << 8) | buffer[pos + 6];
                     w = ((int)buffer[pos + 7] << 8) | buffer[pos + 8];
-                    __android_log_print(ANDROID_LOG_INFO, "LoadTexture2D", "JPEG dimensions: %dx%d", w, h);
+                    __android_log_print(ANDROID_LOG_INFO, "stb_image", "JPEG dimensions: %dx%d (fallback)", w, h);
                     break;
                 }
             }
@@ -130,8 +117,9 @@ stbi_uc* stbi_load_from_memory(const stbi_uc* buffer, int len, int* x, int* y,
     
     if (x) *x = w;
     if (y) *y = h;
-    if (channels_in_file) *channels_in_file = channels;
+    if (channels_in_file) *channels_in_file = fallback_channels;
     
+    __android_log_print(ANDROID_LOG_WARN, "stb_image", "Using checkerboard fallback");
     return create_checkerboard(w, h, desired_channels);
 }
 

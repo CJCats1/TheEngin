@@ -126,6 +126,14 @@ dx3d::Game::Game(const GameDesc& desc) :
     // Apply dark style
     ImGui::StyleColorsDark();
 
+#if defined(DX3D_PLATFORM_ANDROID)
+    // Scale up fonts for Android to make text more readable on mobile screens
+    io.FontGlobalScale = 2.5f; // Increase font size by 2.5x for better readability
+    // Also scale up the UI elements
+    ImGuiStyle& style = ImGui::GetStyle();
+    style.ScaleAllSizes(2.0f); // Scale all UI elements (padding, spacing, etc.) by 2x
+#endif
+
     DX3DLogInfo("Game initialized (ImGui ready with fonts).");
 }
 

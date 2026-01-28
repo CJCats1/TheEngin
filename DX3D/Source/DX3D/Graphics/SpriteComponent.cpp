@@ -46,7 +46,25 @@ void SpriteComponent::initialize(IRenderDevice& device, float width, float heigh
 	m_height = height;
 	m_mesh = Mesh::CreateQuadTextured(device, width, height);
 	if (m_mesh && m_texture) {
+#if defined(DX3D_PLATFORM_ANDROID)
+		const auto textureId = static_cast<unsigned int>(reinterpret_cast<uintptr_t>(m_texture->getNativeView()));
+		__android_log_print(ANDROID_LOG_INFO, "SpriteComponent", "initialize: Setting texture ID %u on mesh", textureId);
+#endif
 		m_mesh->setTexture(m_texture);
+#if defined(DX3D_PLATFORM_ANDROID)
+		// Verify texture was set
+		auto setTexture = m_mesh->getTexture();
+		if (setTexture) {
+			const auto verifyId = static_cast<unsigned int>(reinterpret_cast<uintptr_t>(setTexture->getNativeView()));
+			__android_log_print(ANDROID_LOG_INFO, "SpriteComponent", "initialize: Verified texture ID %u is set on mesh", verifyId);
+		} else {
+			__android_log_print(ANDROID_LOG_ERROR, "SpriteComponent", "initialize: ERROR - Texture was not set on mesh!");
+		}
+#endif
+	} else {
+#if defined(DX3D_PLATFORM_ANDROID)
+		__android_log_print(ANDROID_LOG_WARN, "SpriteComponent", "initialize: Cannot set texture - mesh=%p, texture=%p", m_mesh.get(), m_texture.get());
+#endif
 	}
 }
 
@@ -58,11 +76,28 @@ void SpriteComponent::setTexture(std::shared_ptr<Texture2D> texture) {
 }
 
 void SpriteComponent::draw(IRenderContext& ctx) const {
-	if (!isVisible() || !isValid()) return;
 #if defined(DX3D_PLATFORM_ANDROID)
-	if (m_texture) {
-		const auto textureId = static_cast<unsigned int>(reinterpret_cast<uintptr_t>(m_texture->getNativeView()));
-		__android_log_print(ANDROID_LOG_INFO, "SpriteComponent", "Drawing sprite with texture ID: %u", textureId);
+	static int drawCallCount = 0;
+	drawCallCount++;
+	if (drawCallCount <= 5) {
+		const auto textureId = m_texture ? static_cast<unsigned int>(reinterpret_cast<uintptr_t>(m_texture->getNativeView())) : 0;
+		__android_log_print(ANDROID_LOG_INFO, "SpriteComponent", "draw: Entry (count: %d), visible=%d, valid=%d, texture=%p (ID: %u), mesh=%p", 
+			drawCallCount, isVisible(), isValid(), m_texture.get(), textureId, m_mesh.get());
+	}
+#endif
+	if (!isVisible() || !isValid()) {
+#if defined(DX3D_PLATFORM_ANDROID)
+		static int skipCount = 0;
+		if (skipCount < 3) {
+			__android_log_print(ANDROID_LOG_WARN, "SpriteComponent", "draw: Skipping - visible=%d, valid=%d", isVisible(), isValid());
+			skipCount++;
+		}
+#endif
+		return;
+	}
+#if defined(DX3D_PLATFORM_ANDROID)
+	if (drawCallCount <= 5) {
+		__android_log_print(ANDROID_LOG_INFO, "SpriteComponent", "draw: Proceeding to draw mesh");
 	}
 #endif
 	float screenWidth = GraphicsEngine::getWindowWidth();

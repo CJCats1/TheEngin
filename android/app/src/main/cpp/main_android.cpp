@@ -16,11 +16,8 @@ namespace
     int32_t onInputEvent(android_app* app, AInputEvent* event)
     {
         (void)app;
-        if (ImGui_ImplAndroid_HandleInputEvent(event))
-        {
-            return 1;
-        }
-
+        
+        // Always update our Input system first, regardless of ImGui
         const int32_t type = AInputEvent_getType(event);
         if (type == AINPUT_EVENT_TYPE_MOTION)
         {
@@ -42,9 +39,8 @@ namespace
                 {
                     dx3d::Input::getInstance().setMouseDown(dx3d::MouseClick::LeftMouse);
                 }
-                return 1;
             }
-            if (masked == AMOTION_EVENT_ACTION_UP || masked == AMOTION_EVENT_ACTION_POINTER_UP)
+            else if (masked == AMOTION_EVENT_ACTION_UP || masked == AMOTION_EVENT_ACTION_POINTER_UP)
             {
                 if (pointerCount >= 2)
                 {
@@ -54,8 +50,8 @@ namespace
                 {
                     dx3d::Input::getInstance().setMouseUp(dx3d::MouseClick::LeftMouse);
                 }
-                return 1;
             }
+            // MOVE events just update position (already done above)
         }
         else if (type == AINPUT_EVENT_TYPE_KEY)
         {
@@ -64,14 +60,19 @@ namespace
             if (action == AKEY_EVENT_ACTION_DOWN)
             {
                 dx3d::Input::getInstance().setKeyDown(keyCode);
-                return 1;
             }
-            if (action == AKEY_EVENT_ACTION_UP)
+            else if (action == AKEY_EVENT_ACTION_UP)
             {
                 dx3d::Input::getInstance().setKeyUp(keyCode);
-                return 1;
             }
         }
+        
+        // Then let ImGui handle the event (it will return true if it wants to capture)
+        if (ImGui_ImplAndroid_HandleInputEvent(event))
+        {
+            return 1;
+        }
+        
         return 0;
     }
 

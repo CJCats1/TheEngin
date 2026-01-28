@@ -28,7 +28,6 @@ list(FILTER ENGINE_SOURCES EXCLUDE REGEX "/OpenGL/")
 list(FILTER ENGINE_SOURCES EXCLUDE REGEX "/GraphicsDevice.cpp$")
 list(FILTER ENGINE_SOURCES EXCLUDE REGEX "/DeviceContext.cpp$")
 list(FILTER ENGINE_SOURCES EXCLUDE REGEX "/SwapChain.cpp$")
-list(FILTER ENGINE_SOURCES EXCLUDE REGEX "/DirectWriteText.cpp$")
 list(FILTER ENGINE_SOURCES EXCLUDE REGEX "/ShaderBinary.cpp$")
 list(FILTER ENGINE_SOURCES EXCLUDE REGEX "/GraphicsPipelineState.cpp$")
 list(FILTER ENGINE_SOURCES EXCLUDE REGEX "/VertexShaderSignature.cpp$")
@@ -56,6 +55,14 @@ find_library(log-lib log)
 find_library(android-lib android)
 find_library(egl-lib EGL)
 find_library(gles-lib GLESv3)
+
+# Add 16 KB page alignment for Android 15+ compatibility
+# This aligns LOAD segments to 16 KB boundaries
+# The Android Gradle Plugin will handle ZIP boundary alignment automatically
+target_link_options(TheEngine PRIVATE
+    -Wl,-z,max-page-size=16384
+    -Wl,-z,common-page-size=16384
+)
 
 target_link_libraries(TheEngine
     ${log-lib}

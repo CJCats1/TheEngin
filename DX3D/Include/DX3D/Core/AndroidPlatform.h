@@ -16,5 +16,10 @@ namespace dx3d::platform
 	ANativeWindow* getNativeWindow();
 	void setAndroidApp(android_app* app);
 	android_app* getAndroidApp();
+	
+	// Decode image using Android BitmapFactory via JNI
+	// Returns decoded RGBA pixels, width, height, and channels (4 for RGBA)
+	// Caller must free the returned pixel buffer
+	unsigned char* decodeImageFromMemory(const unsigned char* buffer, int bufferSize, int* outWidth, int* outHeight, int* outChannels);
 }
 #endif

@@ -744,8 +744,26 @@ namespace dx3d
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
+            // Use GL_RGBA8 as internal format for OpenGL ES 3.0 compatibility
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA,
                 GL_UNSIGNED_BYTE, pixels);
+            
+            // Check for OpenGL errors after texture creation
+            GLenum err = glGetError();
+            if (err != GL_NO_ERROR) {
+                __android_log_print(ANDROID_LOG_ERROR, "LoadTexture2D", "OpenGL error after glTexImage2D: 0x%x", err);
+            }
+            
+            // Verify texture is valid by checking if it's actually bound
+            GLint boundAfter = 0;
+            glGetIntegerv(GL_TEXTURE_BINDING_2D, &boundAfter);
+            if (static_cast<unsigned int>(boundAfter) != textureId) {
+                __android_log_print(ANDROID_LOG_ERROR, "LoadTexture2D", "Texture binding verification failed! Expected %u, got %d", textureId, boundAfter);
+            }
+            
+            // Verify texture parameters (use known dimensions since GL_TEXTURE_WIDTH/HEIGHT not available in OpenGL ES)
+            __android_log_print(ANDROID_LOG_INFO, "LoadTexture2D", "Texture verified: ID=%u, size=%dx%d", textureId, width, height);
+            
             glBindTexture(GL_TEXTURE_2D, 0);
 
             stbi_image_free(pixels);

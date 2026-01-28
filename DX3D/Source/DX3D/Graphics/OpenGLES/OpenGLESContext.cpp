@@ -72,7 +72,7 @@ void OpenGLESContext::setVertexBuffer(const IRenderVertexBuffer& buffer)
 void OpenGLESContext::setViewportSize(const Rect& size)
 {
 #if defined(DX3D_PLATFORM_ANDROID)
-	__android_log_print(ANDROID_LOG_INFO, "OpenGLESContext", "setViewportSize: %dx%d", size.width, size.height);
+	// Removed verbose logging to reduce logcat spam
 	glViewport(0, 0, size.width, size.height);
 #else
 	(void)size;
@@ -139,9 +139,60 @@ void OpenGLESContext::setTexture(ui32 slot, NativeGraphicsHandle srv)
 {
 #if defined(DX3D_PLATFORM_ANDROID)
 	const auto textureId = static_cast<unsigned int>(reinterpret_cast<uintptr_t>(srv));
-	__android_log_print(ANDROID_LOG_INFO, "OpenGLESContext", "setTexture slot=%u, textureId=%u", slot, textureId);
+	if (textureId == 0) {
+		__android_log_print(ANDROID_LOG_ERROR, "OpenGLESContext", "setTexture: WARNING - textureId is 0 (invalid texture)!");
+		return;
+	}
+	
+	// Ensure shader program is active before binding texture
+	if (m_program == 0) {
+		__android_log_print(ANDROID_LOG_WARN, "OpenGLESContext", "setTexture: No shader program active!");
+	}
+	
 	glActiveTexture(GL_TEXTURE0 + slot);
 	glBindTexture(GL_TEXTURE_2D, textureId);
+	
+	// Verify the texture is actually bound
+	GLint boundTexture = 0;
+	glGetIntegerv(GL_TEXTURE_BINDING_2D, &boundTexture);
+	if (static_cast<unsigned int>(boundTexture) != textureId) {
+		__android_log_print(ANDROID_LOG_ERROR, "OpenGLESContext", "setTexture: FAILED to bind texture! Expected %u, got %d", textureId, boundTexture);
+	} else {
+		// Texture binding verified successfully
+		// Note: Cannot query texture dimensions in OpenGL ES (GL_TEXTURE_WIDTH/HEIGHT not available)
+		// Removed verbose success logging to reduce logcat spam
+		
+		// Verify the shader uniform is set correctly
+		if (m_program != 0) {
+			const GLint texLoc = glGetUniformLocation(m_program, "tex");
+			if (texLoc >= 0) {
+				// Ensure uniform is set to the correct texture unit
+				glUniform1i(texLoc, slot);
+				GLint currentTexUnit = -1;
+				glGetUniformiv(m_program, texLoc, &currentTexUnit);
+				static int uniformSetCount = 0;
+				if (uniformSetCount < 3) {
+					__android_log_print(ANDROID_LOG_INFO, "OpenGLESContext", "setTexture: Uniform 'tex' found at location %d, set to unit %u (verified: %d)", texLoc, slot, currentTexUnit);
+					uniformSetCount++;
+				}
+				if (currentTexUnit != static_cast<GLint>(slot)) {
+					__android_log_print(ANDROID_LOG_WARN, "OpenGLESContext", "setTexture: Shader uniform 'tex' expects unit %d, but texture is bound to unit %u", currentTexUnit, slot);
+				}
+			} else {
+				static int uniformNotFoundCount = 0;
+				if (uniformNotFoundCount < 3) {
+					__android_log_print(ANDROID_LOG_ERROR, "OpenGLESContext", "setTexture: Shader uniform 'tex' not found! Program: %u", m_program);
+					uniformNotFoundCount++;
+				}
+			}
+		} else {
+			static int noProgramCount = 0;
+			if (noProgramCount < 3) {
+				__android_log_print(ANDROID_LOG_WARN, "OpenGLESContext", "setTexture: No shader program active (m_program=0)!");
+				noProgramCount++;
+			}
+		}
+	}
 #else
 	(void)slot;
 	(void)srv;
@@ -209,12 +260,7 @@ void OpenGLESContext::setProjectionMatrix(const Mat4& projectionMatrix)
 		}
 	}
 	
-	// Debug: Log projection matrix (log every frame to see updates)
-	__android_log_print(ANDROID_LOG_DEBUG, "OpenGLESContext", "Projection matrix SET: [0]=%f [5]=%f [10]=%f [15]=%f",
-	                     m_projectionMatrix.data()[0],
-	                     m_projectionMatrix.data()[5],
-	                     m_projectionMatrix.data()[10],
-	                     m_projectionMatrix.data()[15]);
+	// Removed verbose projection matrix logging to reduce logcat spam
 #else
 	(void)projectionMatrix;
 #endif

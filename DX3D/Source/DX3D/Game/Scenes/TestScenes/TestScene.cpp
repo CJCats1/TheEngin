@@ -4,7 +4,7 @@
 #include <DX3D/Graphics/LineRenderer.h>
 #include <DX3D/Graphics/SpriteComponent.h>
 #include <DX3D/Graphics/Texture2D.h>
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(DX3D_PLATFORM_ANDROID)
 #include <DX3D/Graphics/DirectWriteText.h>
 #endif
 #if defined(DX3D_PLATFORM_ANDROID)
@@ -33,7 +33,11 @@ void TestScene::load(GraphicsEngine& engine) {
     float screenHeight = GraphicsEngine::getWindowHeight();
     auto& camera = cameraEntity.addComponent<Camera2D>(screenWidth, screenHeight);
     camera.setPosition(0.0f, 0.0f);
+#if defined(DX3D_PLATFORM_ANDROID)
+    camera.setZoom(3.0f); // Higher zoom for Android to make objects more visible
+#else
     camera.setZoom(1.0f);
+#endif
 
     auto& device = engine.getGraphicsDevice();
 
@@ -57,21 +61,32 @@ void TestScene::load(GraphicsEngine& engine) {
     m_backgroundTexture = Texture2D::LoadTexture2D(device, L"DX3D/Assets/Textures/cat.jpg");
     #if defined(DX3D_PLATFORM_ANDROID)
     if (m_backgroundTexture) {
-        __android_log_print(ANDROID_LOG_INFO, "TestScene", "Background texture ID: %p", m_backgroundTexture->getNativeView());
+        const auto textureId = static_cast<unsigned int>(reinterpret_cast<uintptr_t>(m_backgroundTexture->getNativeView()));
+        __android_log_print(ANDROID_LOG_INFO, "TestScene", "Background texture loaded successfully, ID: %u", textureId);
     } else {
         __android_log_print(ANDROID_LOG_ERROR, "TestScene", "Failed to load cat.jpg!");
     }
     #endif
     if (!m_backgroundTexture) {
         m_backgroundTexture = Texture2D::CreateDebugTexture(device);
+        #if defined(DX3D_PLATFORM_ANDROID)
+        const auto debugTextureId = static_cast<unsigned int>(reinterpret_cast<uintptr_t>(m_backgroundTexture->getNativeView()));
+        __android_log_print(ANDROID_LOG_WARN, "TestScene", "Using debug texture instead, ID: %u", debugTextureId);
+        #endif
     }
     float backgroundWidth = screenWidth * 0.7f;
     float backgroundHeight = screenHeight * 0.7f;
     m_backgroundEntity = &m_entityManager->createEntity("BackgroundSprite");
+    #if defined(DX3D_PLATFORM_ANDROID)
+    const auto textureIdBeforeSprite = static_cast<unsigned int>(reinterpret_cast<uintptr_t>(m_backgroundTexture->getNativeView()));
+    __android_log_print(ANDROID_LOG_INFO, "TestScene", "Creating background sprite with texture ID: %u", textureIdBeforeSprite);
+    #endif
     auto& backgroundSprite = m_backgroundEntity->addComponent<SpriteComponent>(device, m_backgroundTexture,
         backgroundWidth, backgroundHeight);
     backgroundSprite.setPosition(0.0f, 0.0f, 0.0f);
-    backgroundSprite.setTint(Vec4(1.0f, 1.0f, 1.0f, 1.0f)); // Make visible - was 0.0f
+    // Tint alpha of 0.0 means use texture color, 1.0 means use tint color (white)
+    // RGB doesn't matter when alpha is 0, but we set it to white as a neutral value
+    backgroundSprite.setTint(Vec4(1.0f, 1.0f, 1.0f, 0.0f)); // Alpha 0 = use texture, not tint
     createOriginNodeSprite();
 
 #if defined(_WIN32)
@@ -86,6 +101,23 @@ void TestScene::load(GraphicsEngine& engine) {
 
         m_worldText = std::make_unique<TextComponent>(device, TextSystem::getRenderer(),
             L"Player", 16.0f);
+        m_worldText->setColor(Vec4(1.0f, 0.85f, 0.2f, 1.0f));
+        m_worldText->setPosition(m_playerBox.pos.x, m_playerBox.pos.y + 14.0f, 0.0f);
+    }
+#endif
+#if defined(DX3D_PLATFORM_ANDROID)
+    // On Android, initialize TextSystem for ImGui fallback
+    if (!TextSystem::isInitialized()) {
+        TextSystem::initialize(device);
+    }
+    if (TextSystem::isInitialized()) {
+        m_screenText = std::make_unique<TextComponent>(device, TextSystem::getRenderer(),
+            L"Text Demo", 18.0f * 2.5f); // Scaled font size for Android
+        m_screenText->setScreenPosition(0.02f, 0.98f); // Top-left corner
+        m_screenText->setColor(Vec4(0.9f, 0.95f, 1.0f, 1.0f));
+
+        m_worldText = std::make_unique<TextComponent>(device, TextSystem::getRenderer(),
+            L"Player", 16.0f * 2.5f); // Scaled font size for Android
         m_worldText->setColor(Vec4(1.0f, 0.85f, 0.2f, 1.0f));
         m_worldText->setPosition(m_playerBox.pos.x, m_playerBox.pos.y + 14.0f, 0.0f);
     }
@@ -230,7 +262,7 @@ void TestScene::update(float dt) {
         }
     }
 
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(DX3D_PLATFORM_ANDROID)
     if (m_showTextDemo && (m_screenText || m_worldText)) {
         m_textUpdateTimer += dt;
         if (m_textUpdateTimer >= m_textUpdateInterval) {
@@ -246,7 +278,26 @@ void TestScene::update(float dt) {
             }
             if (m_worldText) {
                 m_worldText->setText(L"Player");
+#if defined(DX3D_PLATFORM_ANDROID)
+                // On Android, update world text position accounting for camera
+                auto* cameraEntity = m_entityManager->findEntity("MainCamera");
+                auto* camera = cameraEntity ? cameraEntity->getComponent<Camera2D>() : nullptr;
+                if (camera) {
+                    // Transform world position to screen space for ImGui fallback
+                    Vec2 worldPos(m_playerBox.pos.x, m_playerBox.pos.y + 14.0f);
+                    Vec2 screenPos = camera->worldToScreen(worldPos);
+                    // Convert to normalized coordinates for setScreenPosition
+                    float screenWidth = GraphicsEngine::getWindowWidth();
+                    float screenHeight = GraphicsEngine::getWindowHeight();
+                    float normX = screenPos.x / screenWidth;
+                    float normY = 1.0f - (screenPos.y / screenHeight); // Invert Y for normalized coords
+                    m_worldText->setScreenPosition(normX, normY);
+                } else {
+                    m_worldText->setPosition(m_playerBox.pos.x, m_playerBox.pos.y + 14.0f, 0.0f);
+                }
+#else
                 m_worldText->setPosition(m_playerBox.pos.x, m_playerBox.pos.y + 14.0f, 0.0f);
+#endif
             }
         }
     }
@@ -289,6 +340,22 @@ void TestScene::fixedUpdate(float dt) {
         m_playerPushMass
     };
     dx3d::physics::PhysicsSystem::stepWorld(config, dt);
+
+#if defined(DX3D_PLATFORM_ANDROID)
+    // On Android, update spring target position while dragging (spring effect handles the rest)
+    if (m_springDynamicActive || m_springCircleActive) {
+        ImGuiIO& io = ImGui::GetIO();
+        if (!io.WantCaptureMouse) {
+            auto& input = Input::getInstance();
+            auto* cameraEntity = m_entityManager->findEntity("MainCamera");
+            auto* camera = cameraEntity ? cameraEntity->getComponent<Camera2D>() : nullptr;
+            if (camera && input.isMouseDown(MouseClick::LeftMouse)) {
+                Vec2 touchScreen = input.getMousePositionClient();
+                m_springTarget = camera->screenToWorld(touchScreen);
+            }
+        }
+    }
+#endif
 
     if (m_lineRenderer) {
         m_lineRenderer->clear();
@@ -380,6 +447,7 @@ void TestScene::fixedUpdate(float dt) {
             sprite->setPosition(m_playerBox.pos.x, m_playerBox.pos.y, 0.0f);
         }
     }
+    
     for (size_t i = 0; i < m_dynamicBoxes.size() && i < m_dynamicBoxEntities.size(); ++i) {
         if (auto* sprite = m_dynamicBoxEntities[i]->getComponent<SpriteComponent>()) {
             sprite->setPosition(m_dynamicBoxes[i].pos.x, m_dynamicBoxes[i].pos.y, 0.0f);
@@ -428,7 +496,11 @@ void TestScene::updateCameraMovement(float dt) {
 
     if (input.wasKeyJustPressed(Key::Space)) {
         camera->setPosition(0.0f, 0.0f);
+#if defined(DX3D_PLATFORM_ANDROID)
+        camera->setZoom(3.0f); // Reset to Android zoom level
+#else
         camera->setZoom(1.0f);
+#endif
     }
 }
 
@@ -483,7 +555,7 @@ void TestScene::render(GraphicsEngine& engine, IRenderSwapChain& swapChain) {
         }
     }
 
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(DX3D_PLATFORM_ANDROID)
     if (m_showTextDemo) {
         if (m_worldText) {
             m_worldText->draw(ctx);
@@ -505,6 +577,113 @@ void TestScene::render(GraphicsEngine& engine, IRenderSwapChain& swapChain) {
 void TestScene::updatePlayerMovement(float dt) {
     auto& input = Input::getInstance();
     
+#if defined(DX3D_PLATFORM_ANDROID)
+    // Android-specific touch controls
+    // Skip if ImGui wants to capture mouse input (e.g., clicking on ImGui window)
+    ImGuiIO& io = ImGui::GetIO();
+    if (!io.WantCaptureMouse) {
+        auto* cameraEntity = m_entityManager->findEntity("MainCamera");
+        auto* camera = cameraEntity ? cameraEntity->getComponent<Camera2D>() : nullptr;
+        
+        if (camera) {
+            Vec2 touchScreen = input.getMousePositionClient();
+            Vec2 worldPos = camera->screenToWorld(touchScreen);
+            
+            if (m_androidMode == AndroidInteractionMode::Grab) {
+                // Grab mode: drag objects with finger using spring effect (like desktop)
+                if (input.isMouseDown(MouseClick::LeftMouse)) {
+                    m_springTarget = worldPos;
+                    
+                    if (!m_springDynamicActive && !m_springCircleActive) {
+                        // Try to grab a circle first
+                        m_springCircleIndex = -1;
+                        for (size_t i = 0; i < m_circles.size(); ++i) {
+                            Vec2 toTouch = worldPos - m_circles[i].pos;
+                            float distSq = toTouch.x * toTouch.x + toTouch.y * toTouch.y;
+                            float radius = m_circles[i].radius;
+                            if (distSq <= radius * radius) {
+                                m_springCircleIndex = static_cast<int>(i);
+                                m_springCircleActive = true;
+                                #if defined(DX3D_PLATFORM_ANDROID)
+                                __android_log_print(ANDROID_LOG_INFO, "TestScene", "Grabbed circle %d", m_springCircleIndex);
+                                #endif
+                                break;
+                            }
+                        }
+                        
+                        // If no circle, try to grab a dynamic box
+                        if (!m_springCircleActive) {
+                            m_springDynamicIndex = -1;
+                            for (size_t i = 0; i < m_dynamicBoxes.size(); ++i) {
+                                if (m_dynamicBoxes[i].intersectPoint(worldPos)) {
+                                    m_springDynamicIndex = static_cast<int>(i);
+                                    m_springDynamicActive = true;
+                                    #if defined(DX3D_PLATFORM_ANDROID)
+                                    __android_log_print(ANDROID_LOG_INFO, "TestScene", "Grabbed box %d", m_springDynamicIndex);
+                                    #endif
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    // Touch released - disable spring
+                    if (m_springDynamicActive || m_springCircleActive) {
+                        #if defined(DX3D_PLATFORM_ANDROID)
+                        __android_log_print(ANDROID_LOG_INFO, "TestScene", "Released grab");
+                        #endif
+                    }
+                    m_springDynamicActive = false;
+                    m_springDynamicIndex = -1;
+                    m_springCircleActive = false;
+                    m_springCircleIndex = -1;
+                }
+        } else {
+            // Spawn mode: tap to spawn
+            if (input.wasMouseJustPressed(MouseClick::LeftMouse) && m_graphicsDevice) {
+                if (m_spawnMode == SpawnMode::Circle) {
+                    CircleBody circle;
+                    circle.pos = worldPos;
+                    circle.radius = 8.0f;
+                    circle.velocity = Vec2(0.0f, 0.0f);
+                    circle.mass = 6.0f;
+                    circle.friction = 0.18f;
+                    circle.restitution = 0.1f;
+                    m_circles.push_back(circle);
+                    auto& entity = m_entityManager->createEntity("Circle_spawn_" + std::to_string(m_circleEntities.size()));
+                    auto& sprite = entity.addComponent<SpriteComponent>(*m_graphicsDevice, m_circleTexture,
+                        circle.radius * 2.0f, circle.radius * 2.0f);
+                    sprite.setPosition(circle.pos.x, circle.pos.y, 0.0f);
+                    sprite.setTint(Vec4(1.0f, 1.0f, 1.0f, 1.0f));
+                    m_circleEntities.push_back(&entity);
+                    createOriginNodeSprite();
+                } else {
+                    Vec2 halfSize(5.0f, 5.0f);
+                    m_dynamicBoxes.push_back(dx3d::physics::AABB(worldPos, halfSize));
+                    m_dynamicVelocities.push_back(Vec2(0.0f, 0.0f));
+                    m_dynamicMasses.push_back(6.0f);
+                    m_dynamicFrictions.push_back(0.18f);
+                    m_dynamicRestitutions.push_back(0.08f);
+                    
+                    Vec2 boxSize = halfSize * 2.0f;
+                    auto& entity = m_entityManager->createEntity("DynamicAABB_spawn_" + std::to_string(m_dynamicBoxEntities.size()));
+                    auto& sprite = entity.addComponent<SpriteComponent>(*m_graphicsDevice, m_beamTexture,
+                        boxSize.x, boxSize.y);
+                    sprite.setPosition(worldPos.x, worldPos.y, 0.0f);
+                    sprite.setTint(Vec4(0.0f, 0.5f, 1.0f, 1.0f));
+                    m_dynamicBoxEntities.push_back(&entity);
+                    createOriginNodeSprite();
+                }
+            }
+        }
+    }
+    }
+    
+    // Don't update player movement on Android
+    m_playerVelocity = Vec2(0.0f, 0.0f);
+    
+#else
+    // Desktop controls (original code)
     float moveSpeed = 200.0f;
     Vec2 moveInput(0.0f, 0.0f);
     
@@ -613,6 +792,7 @@ void TestScene::updatePlayerMovement(float dt) {
         m_playerBox.pos = Vec2(0.0f, 0.0f);
         m_playerVelocity = Vec2(0.0f, 0.0f);
     }
+#endif
 }
 
 
@@ -623,12 +803,29 @@ void TestScene::renderImGui(GraphicsEngine& engine) {
         reset(engine);
     }
     ImGui::Separator();
+    
+#if defined(DX3D_PLATFORM_ANDROID)
+    // Android-specific controls
+    const char* modeLabel = (m_androidMode == AndroidInteractionMode::Grab) ? "Mode: Grab" : "Mode: Spawn";
+    if (ImGui::Button(modeLabel)) {
+        m_androidMode = (m_androidMode == AndroidInteractionMode::Grab) ? AndroidInteractionMode::Spawn : AndroidInteractionMode::Grab;
+    }
+    ImGui::Separator();
+    const char* spawnLabel = (m_spawnMode == SpawnMode::Circle) ? "Type: Circle" : "Type: AABB";
+    if (ImGui::Button(spawnLabel)) {
+        m_spawnMode = (m_spawnMode == SpawnMode::Aabb) ? SpawnMode::Circle : SpawnMode::Aabb;
+    }
+    ImGui::Text("Grab: Drag objects");
+    ImGui::Text("Spawn: Tap to create");
+#else
+    // Desktop controls
     const char* spawnLabel = (m_spawnMode == SpawnMode::Circle) ? "Spawn: Circle" : "Spawn: AABB";
     if (ImGui::Button(spawnLabel)) {
         m_spawnMode = (m_spawnMode == SpawnMode::Aabb) ? SpawnMode::Circle : SpawnMode::Aabb;
     }
     ImGui::SameLine();
     ImGui::Text("RMB to spawn");
+#endif
     ImGui::Separator();
     const char* debugLabel = m_showDebugLines ? "Debug Lines: On" : "Debug Lines: Off";
     if (ImGui::Button(debugLabel)) {
@@ -643,6 +840,7 @@ void TestScene::renderImGui(GraphicsEngine& engine) {
     const char* backendLabel = (engine.getBackendType() == RenderBackendType::OpenGL) ? "OpenGL" : "DirectX11";
     ImGui::Text("Backend: %s", backendLabel);
     ImGui::Separator();
+#if !defined(DX3D_PLATFORM_ANDROID)
     ImGui::Text("Camera Controls:");
     ImGui::Text("WASD - Move camera");
     ImGui::Text("Q/E - Zoom");
@@ -652,6 +850,7 @@ void TestScene::renderImGui(GraphicsEngine& engine) {
     ImGui::Text("Arrow Keys - Move player box");
     ImGui::Text("R - Reset player position");
     ImGui::Separator();
+#endif
     ImGui::Text("Player Position: (%.1f, %.1f)", m_playerBox.pos.x, m_playerBox.pos.y);
     ImGui::Text("Player Velocity: (%.1f, %.1f)", m_playerVelocity.x, m_playerVelocity.y);
     ImGui::Text("Static Obstacles: %d", (int)m_staticBoxes.size());

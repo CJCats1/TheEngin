@@ -1,11 +1,15 @@
 #include "DirectWriteText.h"
 #include <DX3D/Graphics/Mesh.h>
+#if defined(_WIN32)
 #include <DX3D/Graphics/DeviceContext.h>
+#endif
 #include <vector>
 #include <DX3D/Core/Logger.h>
 #include <DX3D/Graphics/GraphicsEngine.h>
 #include <imgui.h>
+#if defined(_WIN32)
 #include <Windows.h>
+#endif
 #include <iostream>
 #include <DX3D/Core/Logger.h>
 #include <algorithm>
@@ -34,6 +38,7 @@ namespace dx3d {
         shutdown();
     }
     bool DirectWriteRenderer::initialize() {
+#if defined(_WIN32)
         auto* d3dDevice = static_cast<ID3D11Device*>(m_device.getNativeDeviceHandle());
         if (!d3dDevice) {
             std::cout << "DirectWriteRenderer: No D3D11 device (OpenGL backend). Text disabled.\n";
@@ -62,16 +67,23 @@ namespace dx3d {
         }
 
         return true;
+#else
+        // On Android/OpenGL, DirectWrite is not available, use ImGui fallback
+        return false;
+#endif
     }
     void DirectWriteRenderer::shutdown() {
+#if defined(_WIN32)
         m_d2dContext.Reset();
         m_d2dDevice.Reset();
         m_d2dFactory.Reset();
         m_writeFactory.Reset();
         m_wicFactory.Reset();
+#endif
     }
 
     bool DirectWriteRenderer::initializeWIC() {
+#if defined(_WIN32)
         HRESULT hr = CoCreateInstance(
             CLSID_WICImagingFactory2,
             nullptr,
@@ -79,18 +91,26 @@ namespace dx3d {
             IID_PPV_ARGS(&m_wicFactory)
         );
         return SUCCEEDED(hr);
+#else
+        return false;
+#endif
     }
 
     bool DirectWriteRenderer::initializeDirectWrite() {
+#if defined(_WIN32)
         HRESULT hr = DWriteCreateFactory(
             DWRITE_FACTORY_TYPE_SHARED,
             __uuidof(IDWriteFactory),
             reinterpret_cast<IUnknown**>(m_writeFactory.GetAddressOf())
         );
         return SUCCEEDED(hr);
+#else
+        return false;
+#endif
     }
 
     bool DirectWriteRenderer::initializeDirect2D() {
+#if defined(_WIN32)
         auto* d3dDevice = static_cast<ID3D11Device*>(m_device.getNativeDeviceHandle());
         if (!d3dDevice) {
             std::cout << "Direct2D initialization skipped: No D3D11 device (OpenGL backend).\n";
@@ -132,6 +152,9 @@ namespace dx3d {
 
         // WIC initialization
         return initializeWIC();
+#else
+        return false;
+#endif
     }
 
     std::shared_ptr<Texture2D> DirectWriteRenderer::renderTextToTexture(
@@ -143,7 +166,7 @@ namespace dx3d {
         const Vec4& color,
         UINT32 maxWidth,
         UINT32 maxHeight) {
-
+#if defined(_WIN32)
         if (text.empty()) return nullptr;
 
         // Create text format
@@ -265,6 +288,10 @@ namespace dx3d {
         if (FAILED(hr)) return nullptr;
 
         return std::make_shared<Texture2D>(srv);
+#else
+        // On Android, this function won't be called (ImGui fallback is used)
+        return nullptr;
+#endif
     }
 
     Vec2 DirectWriteRenderer::measureText(
@@ -274,7 +301,7 @@ namespace dx3d {
         DWRITE_FONT_WEIGHT fontWeight,
         DWRITE_FONT_STYLE fontStyle,
         UINT32 maxWidth) {
-
+#if defined(_WIN32)
         if (text.empty()) return Vec2(0.0f, 0.0f);
 
         Microsoft::WRL::ComPtr<IDWriteTextFormat> textFormat;
@@ -306,6 +333,10 @@ namespace dx3d {
         if (FAILED(hr)) return Vec2(0.0f, 0.0f);
 
         return Vec2(textMetrics.width, textMetrics.height);
+#else
+        // On Android, this function won't be called (ImGui fallback is used)
+        return Vec2(0.0f, 0.0f);
+#endif
     }
 
     // TextComponent implementation
@@ -574,6 +605,7 @@ namespace dx3d::TextUtils {
         if (str.empty()) {
             return L"";
         }
+#if defined(_WIN32)
         const int required = MultiByteToWideChar(CP_UTF8, 0, str.data(),
             static_cast<int>(str.size()), nullptr, 0);
         if (required <= 0) {
@@ -583,12 +615,38 @@ namespace dx3d::TextUtils {
         MultiByteToWideChar(CP_UTF8, 0, str.data(), static_cast<int>(str.size()),
             result.data(), required);
         return result;
+#else
+        // Android: Simple UTF-8 to UTF-16 conversion
+        std::wstring result;
+        result.reserve(str.size());
+        for (size_t i = 0; i < str.size(); ) {
+            unsigned char c = static_cast<unsigned char>(str[i]);
+            if (c < 0x80) {
+                result += static_cast<wchar_t>(c);
+                i++;
+            } else if ((c & 0xE0) == 0xC0) {
+                if (i + 1 >= str.size()) break;
+                unsigned int code = ((c & 0x1F) << 6) | (str[i+1] & 0x3F);
+                result += static_cast<wchar_t>(code);
+                i += 2;
+            } else if ((c & 0xF0) == 0xE0) {
+                if (i + 2 >= str.size()) break;
+                unsigned int code = ((c & 0x0F) << 12) | ((str[i+1] & 0x3F) << 6) | (str[i+2] & 0x3F);
+                result += static_cast<wchar_t>(code);
+                i += 3;
+            } else {
+                i++;
+            }
+        }
+        return result;
+#endif
     }
 
     std::string wstringToString(const std::wstring& wstr) {
         if (wstr.empty()) {
             return "";
         }
+#if defined(_WIN32)
         const int required = WideCharToMultiByte(CP_UTF8, 0, wstr.data(),
             static_cast<int>(wstr.size()), nullptr, 0, nullptr, nullptr);
         if (required <= 0) {
@@ -598,6 +656,25 @@ namespace dx3d::TextUtils {
         WideCharToMultiByte(CP_UTF8, 0, wstr.data(), static_cast<int>(wstr.size()),
             result.data(), required, nullptr, nullptr);
         return result;
+#else
+        // Android: Simple UTF-16 to UTF-8 conversion
+        std::string result;
+        result.reserve(wstr.size() * 3);
+        for (wchar_t wc : wstr) {
+            unsigned int code = static_cast<unsigned int>(wc);
+            if (code < 0x80) {
+                result += static_cast<char>(code);
+            } else if (code < 0x800) {
+                result += static_cast<char>(0xC0 | (code >> 6));
+                result += static_cast<char>(0x80 | (code & 0x3F));
+            } else {
+                result += static_cast<char>(0xE0 | (code >> 12));
+                result += static_cast<char>(0x80 | ((code >> 6) & 0x3F));
+                result += static_cast<char>(0x80 | (code & 0x3F));
+            }
+        }
+        return result;
+#endif
     }
 
     std::wstring formatText(const wchar_t* format, ...) {

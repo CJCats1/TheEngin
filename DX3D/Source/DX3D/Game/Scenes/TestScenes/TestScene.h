@@ -4,6 +4,9 @@
 #include <DX3D/Graphics/GraphicsEngine.h>
 #include <DX3D/Math/Geometry.h>
 #include <DX3D/Physics/PhysicsSystem.h>
+#if defined(_WIN32) || defined(DX3D_PLATFORM_ANDROID)
+#include <DX3D/Graphics/DirectWriteText.h>
+#endif
 #include <memory>
 #include <vector>
 
@@ -11,9 +14,6 @@ namespace dx3d {
     class LineRenderer;
     class IRenderDevice;
     class Texture2D;
-    #if defined(_WIN32)
-    class TextComponent;
-    #endif
     class TestScene : public Scene {
     public:
         void load(GraphicsEngine& engine) override;
@@ -29,6 +29,15 @@ namespace dx3d {
             Aabb,
             Circle
         };
+        
+#if defined(DX3D_PLATFORM_ANDROID)
+        enum class AndroidInteractionMode
+        {
+            Grab,   // Drag objects with finger
+            Spawn   // Tap to spawn objects
+        };
+        AndroidInteractionMode m_androidMode = AndroidInteractionMode::Grab;
+#endif
         std::unique_ptr<EntityManager> m_entityManager;
         IRenderDevice* m_graphicsDevice = nullptr;
 
@@ -76,7 +85,7 @@ namespace dx3d {
         bool m_showTextDemo = true;
         float m_textUpdateTimer = 0.0f;
         float m_textUpdateInterval = 0.15f;
-        #if defined(_WIN32)
+        #if defined(_WIN32) || defined(DX3D_PLATFORM_ANDROID)
         std::unique_ptr<TextComponent> m_screenText;
         std::unique_ptr<TextComponent> m_worldText;
         #endif

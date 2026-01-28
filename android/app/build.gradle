@@ -16,6 +16,10 @@ android {
         externalNativeBuild {
             cmake {
                 cppFlags "-std=c++20 -frtti -fexceptions"
+                // Add linker flags for 16 KB page alignment (Android 15+ requirement)
+                arguments "-DANDROID_SUPPORT_16KB_PAGE_SIZE=ON"
+                // Set platform to 30 to enable AImageDecoder (still supports minSdk 28 at runtime)
+                arguments "-DANDROID_PLATFORM=android-30"
             }
         }
 
@@ -39,6 +43,12 @@ android {
     buildTypes {
         release {
             minifyEnabled false
+        }
+    }
+
+    packaging {
+        jniLibs {
+            useLegacyPackaging = false
         }
     }
 }
