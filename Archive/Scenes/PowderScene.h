@@ -1,19 +1,19 @@
 #pragma once
-#include <DX3D/Core/Scene.h>
-#include <DX3D/Graphics/GraphicsEngine.h>
-#include <DX3D/Graphics/Camera.h>
-#include <DX3D/Graphics/SpriteComponent.h>
-#include <DX3D/Core/EntityManager.h>
-#include <DX3D/Core/Input.h>
-#include <DX3D/Graphics/LineRenderer.h>
-#include <DX3D/Math/Geometry.h>
+#include <TheEngine/Core/Scene.h>
+#include <TheEngine/Graphics/GraphicsEngine.h>
+#include <TheEngine/Graphics/Camera.h>
+#include <TheEngine/Graphics/SpriteComponent.h>
+#include <TheEngine/Core/EntityManager.h>
+#include <TheEngine/Core/Input.h>
+#include <TheEngine/Graphics/LineRenderer.h>
+#include <TheEngine/Math/Geometry.h>
 #include <vector>
 #include <memory>
 #include <string>
 #include <unordered_map>
 #include <cstdint>
 
-namespace dx3d
+namespace TheEngine
 {
     class Texture2D;
 

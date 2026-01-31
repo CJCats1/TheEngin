@@ -1,5 +1,5 @@
-#include <DX3D/Game/Scenes/PartitionScene.h>
-using namespace dx3d;
+#include <TheEngine/Game/Scenes/PartitionScene.h>
+using namespace TheEngine;
 
 void PartitionScene::createUIElements(GraphicsDevice& device) {
     // Add entities button
@@ -683,7 +683,7 @@ void PartitionScene::createSpeedControls(GraphicsDevice& device) {
     pauseButton.setScreenPosition(0.49f, 0.95f);
     pauseButton.setNormalTint(Vec4(0.8f, 0.2f, 0.2f, 0.9f));
     pauseButton.setOnClickCallback([this]() {
-        setSimulationSpeed(dx3d::SimulationSpeed::Paused);
+        setSimulationSpeed(TheEngine::SimulationSpeed::Paused);
     });
     m_pauseButton = &pauseButton;
 
@@ -694,7 +694,7 @@ void PartitionScene::createSpeedControls(GraphicsDevice& device) {
     playButton.setScreenPosition(0.515f, 0.95f);
     playButton.setNormalTint(Vec4(0.2f, 0.8f, 0.2f, 0.9f));
     playButton.setOnClickCallback([this]() {
-        setSimulationSpeed(dx3d::SimulationSpeed::Normal);
+        setSimulationSpeed(TheEngine::SimulationSpeed::Normal);
     });
     m_playButton = &playButton;
 
@@ -705,10 +705,10 @@ void PartitionScene::createSpeedControls(GraphicsDevice& device) {
     fastForwardButton.setScreenPosition(0.545f, 0.95f);
     fastForwardButton.setNormalTint(Vec4(0.2f, 0.2f, 0.8f, 0.9f));
     fastForwardButton.setOnClickCallback([this]() {
-        if (m_simulationSpeed == dx3d::SimulationSpeed::Fast) {
-            setSimulationSpeed(dx3d::SimulationSpeed::VeryFast);
+        if (m_simulationSpeed == TheEngine::SimulationSpeed::Fast) {
+            setSimulationSpeed(TheEngine::SimulationSpeed::VeryFast);
         } else {
-            setSimulationSpeed(dx3d::SimulationSpeed::Fast);
+            setSimulationSpeed(TheEngine::SimulationSpeed::Fast);
         }
     });
     m_fastForwardButton = &fastForwardButton;

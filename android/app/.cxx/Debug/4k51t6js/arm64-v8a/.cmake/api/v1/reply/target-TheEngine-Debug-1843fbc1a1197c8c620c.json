@@ -1,0 +1,617 @@
+{
+	"artifacts" : 
+	[
+		{
+			"path" : "D:/TheEngine/TheEngine/android/app/build/intermediates/cxx/Debug/4k51t6js/obj/arm64-v8a/libTheEngine.so"
+		}
+	],
+	"backtrace" : 1,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_library",
+			"target_link_options",
+			"target_link_libraries",
+			"target_compile_definitions",
+			"target_include_directories",
+			"target_sources"
+		],
+		"files" : 
+		[
+			"CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 10,
+				"parent" : 0
+			},
+			{
+				"command" : 1,
+				"file" : 0,
+				"line" : 62,
+				"parent" : 0
+			},
+			{
+				"command" : 2,
+				"file" : 0,
+				"line" : 67,
+				"parent" : 0
+			},
+			{
+				"command" : 3,
+				"file" : 0,
+				"line" : 49,
+				"parent" : 0
+			},
+			{
+				"command" : 4,
+				"file" : 0,
+				"line" : 41,
+				"parent" : 0
+			},
+			{
+				"command" : 5,
+				"file" : 0,
+				"line" : 39,
+				"parent" : 0
+			}
+		]
+	},
+	"compileGroups" : 
+	[
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : "-g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC"
+				},
+				{
+					"fragment" : "-std=c++20"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 4,
+					"define" : "IMGUI_IMPL_OPENGL_ES3"
+				},
+				{
+					"backtrace" : 4,
+					"define" : "THEENGINE_PLATFORM_ANDROID"
+				},
+				{
+					"define" : "TheEngine_EXPORTS"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 5,
+					"path" : "C:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue"
+				},
+				{
+					"backtrace" : 5,
+					"path" : "D:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include"
+				},
+				{
+					"backtrace" : 5,
+					"path" : "D:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source"
+				},
+				{
+					"backtrace" : 5,
+					"path" : "D:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking"
+				},
+				{
+					"backtrace" : 5,
+					"path" : "D:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends"
+				}
+			],
+			"language" : "CXX",
+			"languageStandard" : 
+			{
+				"backtraces" : 
+				[
+					1
+				],
+				"standard" : "20"
+			},
+			"sourceIndexes" : 
+			[
+				0,
+				2,
+				3,
+				4,
+				5,
+				6,
+				7,
+				8,
+				9,
+				10,
+				11,
+				12,
+				13,
+				14,
+				15,
+				16,
+				17,
+				18,
+				19,
+				20,
+				21,
+				22,
+				23,
+				24,
+				25,
+				26,
+				27,
+				28,
+				29,
+				30,
+				31,
+				32,
+				33,
+				34,
+				35,
+				36,
+				37,
+				38,
+				39,
+				40,
+				41,
+				42,
+				43,
+				44
+			],
+			"sysroot" : 
+			{
+				"path" : "C:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot"
+			}
+		},
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : "-g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 4,
+					"define" : "IMGUI_IMPL_OPENGL_ES3"
+				},
+				{
+					"backtrace" : 4,
+					"define" : "THEENGINE_PLATFORM_ANDROID"
+				},
+				{
+					"define" : "TheEngine_EXPORTS"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 5,
+					"path" : "C:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue"
+				},
+				{
+					"backtrace" : 5,
+					"path" : "D:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include"
+				},
+				{
+					"backtrace" : 5,
+					"path" : "D:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source"
+				},
+				{
+					"backtrace" : 5,
+					"path" : "D:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking"
+				},
+				{
+					"backtrace" : 5,
+					"path" : "D:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends"
+				}
+			],
+			"language" : "C",
+			"sourceIndexes" : 
+			[
+				1
+			],
+			"sysroot" : 
+			{
+				"path" : "C:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot"
+			}
+		}
+	],
+	"id" : "TheEngine::@6890427a1f51a3e7e1df",
+	"link" : 
+	{
+		"commandFragments" : 
+		[
+			{
+				"fragment" : "-static-libstdc++ -Wl,--build-id=sha1 -Wl,--fatal-warnings -Wl,--gc-sections -Wl,--no-undefined -Qunused-arguments",
+				"role" : "flags"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "-Wl,-z,max-page-size=16384",
+				"role" : "flags"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "-Wl,-z,common-page-size=16384",
+				"role" : "flags"
+			},
+			{
+				"backtrace" : 3,
+				"fragment" : "C:\\Users\\cjrea\\AppData\\Local\\Android\\Sdk\\ndk\\25.1.8937393\\toolchains\\llvm\\prebuilt\\windows-x86_64\\sysroot\\usr\\lib\\aarch64-linux-android\\30\\liblog.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 3,
+				"fragment" : "C:\\Users\\cjrea\\AppData\\Local\\Android\\Sdk\\ndk\\25.1.8937393\\toolchains\\llvm\\prebuilt\\windows-x86_64\\sysroot\\usr\\lib\\aarch64-linux-android\\30\\libandroid.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 3,
+				"fragment" : "C:\\Users\\cjrea\\AppData\\Local\\Android\\Sdk\\ndk\\25.1.8937393\\toolchains\\llvm\\prebuilt\\windows-x86_64\\sysroot\\usr\\lib\\aarch64-linux-android\\30\\libEGL.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 3,
+				"fragment" : "C:\\Users\\cjrea\\AppData\\Local\\Android\\Sdk\\ndk\\25.1.8937393\\toolchains\\llvm\\prebuilt\\windows-x86_64\\sysroot\\usr\\lib\\aarch64-linux-android\\30\\libGLESv3.so",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "-latomic -lm",
+				"role" : "libraries"
+			}
+		],
+		"language" : "CXX",
+		"sysroot" : 
+		{
+			"path" : "C:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot"
+		}
+	},
+	"name" : "TheEngine",
+	"nameOnDisk" : "libTheEngine.so",
+	"paths" : 
+	{
+		"build" : ".",
+		"source" : "."
+	},
+	"sourceGroups" : 
+	[
+		{
+			"name" : "Source Files",
+			"sourceIndexes" : 
+			[
+				0,
+				1,
+				2,
+				3,
+				4,
+				5,
+				6,
+				7,
+				8,
+				9,
+				10,
+				11,
+				12,
+				13,
+				14,
+				15,
+				16,
+				17,
+				18,
+				19,
+				20,
+				21,
+				22,
+				23,
+				24,
+				25,
+				26,
+				27,
+				28,
+				29,
+				30,
+				31,
+				32,
+				33,
+				34,
+				35,
+				36,
+				37,
+				38,
+				39,
+				40,
+				41,
+				42,
+				43,
+				44
+			]
+		}
+	],
+	"sources" : 
+	[
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "main_android.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "C:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue/android_native_app_glue.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Include/Libraries/imgui-docking/imgui.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Include/Libraries/imgui-docking/imgui_draw.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Include/Libraries/imgui-docking/imgui_widgets.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Include/Libraries/imgui-docking/imgui_tables.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Include/Libraries/imgui-docking/backends/imgui_impl_android.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Include/Libraries/imgui-docking/backends/imgui_impl_opengl3.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Include/Libraries/stb/stb_image.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 6,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Core/AndroidPlatform.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 6,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Core/Base.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 6,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Core/Input.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 6,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Core/Logger.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 6,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Core/Scene.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 6,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Source/TheEngine/DataStructures/AABBTree.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 6,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Source/TheEngine/DataStructures/KDTree.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 6,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Source/TheEngine/DataStructures/Octree.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 6,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Source/TheEngine/DataStructures/Quadtree.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 6,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Game/Android/AndroidGame.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 6,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Game/Display.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 6,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Game/Game.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 6,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Game/SceneHelper.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 6,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Game/Scenes/TestScenes/TestScene.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 6,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Game/Scenes/TestScenes/ThreeDTestScene.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 6,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/Abstraction/RenderBackendFactory.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 6,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/Camera.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 6,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/DirectWriteText.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 6,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/FBXLoader.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 6,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/GraphicsEngine.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 6,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/LineRenderer.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 6,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/Mesh.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 6,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/OpenGLES/OpenGLESContext.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 6,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/OpenGLES/OpenGLESDevice.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 6,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/OpenGLES/OpenGLESRenderBackend.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 6,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/OpenGLES/OpenGLESSwapChain.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 6,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/SpriteComponent.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 6,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/Texture2D.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 6,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Math/DefaultMathBackend.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 6,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Math/GLMMathBackend.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 6,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Math/Geometry.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 6,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Math/MathBackend.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 6,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Math/Types.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 6,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Physics/AABBPhysics.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 6,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Physics/PhysicsSystem.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 6,
+			"compileGroupIndex" : 0,
+			"path" : "D:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Window/Android/AndroidWindow.cpp",
+			"sourceGroupIndex" : 0
+		}
+	],
+	"type" : "SHARED_LIBRARY"
+}

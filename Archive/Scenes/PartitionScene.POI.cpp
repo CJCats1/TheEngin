@@ -1,10 +1,10 @@
-#include <DX3D/Game/Scenes/PartitionScene.h>
-#include <DX3D/Graphics/LineRenderer.h>
+#include <TheEngine/Game/Scenes/PartitionScene.h>
+#include <TheEngine/Graphics/LineRenderer.h>
 #include <random>
 #include <algorithm>
 #include <cmath>
 
-using namespace dx3d;
+using namespace TheEngine;
 
 void PartitionScene::addPointOfInterest(const Vec2& position, const std::string& name) {
     PointOfInterest poi;

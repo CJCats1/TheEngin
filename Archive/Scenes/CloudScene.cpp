@@ -1,23 +1,23 @@
-#include <DX3D/Game/Scenes/CloudScene.h>
-#include <DX3D/Graphics/SpriteComponent.h>
-#include <DX3D/Graphics/GraphicsEngine.h>
-#include <DX3D/Graphics/SwapChain.h>
-#include <DX3D/Graphics/Camera.h>
-#include <DX3D/Graphics/LineRenderer.h>
-#include <DX3D/Components/Mesh3DComponent.h>
-#include <DX3D/Graphics/Mesh.h>
-#include <DX3D/Graphics/Texture2D.h>
-#include <DX3D/Core/Input.h>
-#include <DX3D/Graphics/DirectWriteText.h>
-#include <DX3D/Components/ButtonComponent.h>
-#include <DX3D/Components/PanelComponent.h>
+#include <TheEngine/Game/Scenes/CloudScene.h>
+#include <TheEngine/Graphics/SpriteComponent.h>
+#include <TheEngine/Graphics/GraphicsEngine.h>
+#include <TheEngine/Graphics/SwapChain.h>
+#include <TheEngine/Graphics/Camera.h>
+#include <TheEngine/Graphics/LineRenderer.h>
+#include <TheEngine/Components/Mesh3DComponent.h>
+#include <TheEngine/Graphics/Mesh.h>
+#include <TheEngine/Graphics/Texture2D.h>
+#include <TheEngine/Core/Input.h>
+#include <TheEngine/Graphics/DirectWriteText.h>
+#include <TheEngine/Components/ButtonComponent.h>
+#include <TheEngine/Components/PanelComponent.h>
 #include <random>
 #include <iostream>
 #include <imgui.h>
 #include <cmath>
 #include <float.h>
 
-using namespace dx3d;
+using namespace TheEngine;
 
 void CloudScene::load(GraphicsEngine& engine) {
     auto& device = engine.getGraphicsDevice();
@@ -84,7 +84,7 @@ void CloudScene::createGroundPlane(GraphicsDevice& device) {
     if (groundMesh) {
         // Apply a simple texture to the ground
         std::wstring groundTexturePath;
-        groundTexturePath.assign(L"DX3D/Assets/Textures/beam.png");
+        groundTexturePath.assign(L"TheEngine/Assets/Textures/beam.png");
         auto groundTexture = Texture2D::LoadTexture2D(device.getD3DDevice(), groundTexturePath.c_str());
         if (groundTexture) {
             groundMesh->setTexture(groundTexture);
@@ -106,8 +106,8 @@ void CloudScene::createSunEntity(GraphicsDevice& device) {
     initializeSuns();
     
     // Load existing textures
-    std::wstring nodeTexturePath = L"DX3D/Assets/Textures/node.png";
-    std::wstring bloomTexturePath = L"DX3D/Assets/Textures/MetaballFalloff.png";
+    std::wstring nodeTexturePath = L"TheEngine/Assets/Textures/node.png";
+    std::wstring bloomTexturePath = L"TheEngine/Assets/Textures/MetaballFalloff.png";
 
     // Create sprites for both suns using the component methods
     m_sun1.createSprites(device, *m_entityManager, nodeTexturePath, bloomTexturePath);

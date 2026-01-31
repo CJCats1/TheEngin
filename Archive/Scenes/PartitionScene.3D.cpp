@@ -1,14 +1,14 @@
-#include <DX3D/Game/Scenes/PartitionScene.h>
-#include <DX3D/Game/Game.h>
-#include <DX3D/Components/Mesh3DComponent.h>
-#include <DX3D/Graphics/Mesh.h>
-#include <DX3D/Graphics/Texture2D.h>
-#include <DX3D/Graphics/FBXLoader.h>
-#include <DX3D/Math/Geometry.h>
+#include <TheEngine/Game/Scenes/PartitionScene.h>
+#include <TheEngine/Game/Game.h>
+#include <TheEngine/Components/Mesh3DComponent.h>
+#include <TheEngine/Graphics/Mesh.h>
+#include <TheEngine/Graphics/Texture2D.h>
+#include <TheEngine/Graphics/FBXLoader.h>
+#include <TheEngine/Math/Geometry.h>
 #include <set>
 #include <iostream>
 #include <Windows.h>
-using namespace dx3d;
+using namespace TheEngine;
 
 // 3D Mode Implementation
 void PartitionScene::toggle3DMode() {
@@ -367,7 +367,7 @@ void PartitionScene::createTest3DEntities(GraphicsDevice& device) {
         Vec3 velocity(velDist(gen), velDist(gen), velDist(gen));
         
         // Create a sphere mesh from FBX and apply beam texture
-        auto mesh = Mesh::CreateFromFBX(device, "DX3D/Assets/Models/Sphere.fbx");
+        auto mesh = Mesh::CreateFromFBX(device, "TheEngine/Assets/Models/Sphere.fbx");
         if (!mesh) {
             // Fallback to cube if sphere loading fails
             mesh = Mesh::CreateCube(device, 2.0f);
@@ -375,7 +375,7 @@ void PartitionScene::createTest3DEntities(GraphicsDevice& device) {
         
         // Apply beam texture to the mesh
         std::wstring beamTexturePath;
-        beamTexturePath.assign(L"DX3D/Assets/Textures/beam.png");
+        beamTexturePath.assign(L"TheEngine/Assets/Textures/beam.png");
         auto beamTexture = Texture2D::LoadTexture2D(device.getD3DDevice(), beamTexturePath.c_str());
         if (beamTexture) {
             mesh->setTexture(beamTexture);
@@ -430,7 +430,7 @@ void PartitionScene::createTest3DEntities(GraphicsDevice& device) {
     if (groundMesh) {
         // Apply a simple texture or color to the ground
         std::wstring groundTexturePath;
-        groundTexturePath.assign(L"DX3D/Assets/Textures/beam.png"); // Reuse beam texture for now
+        groundTexturePath.assign(L"TheEngine/Assets/Textures/beam.png"); // Reuse beam texture for now
         auto groundTexture = Texture2D::LoadTexture2D(device.getD3DDevice(), groundTexturePath.c_str());
         if (groundTexture) {
             groundMesh->setTexture(groundTexture);
@@ -476,7 +476,7 @@ void PartitionScene::addUnit3DEntity(GraphicsDevice& device) {
     if (mesh) {
         // Apply beam texture
         std::wstring beamTexturePath;
-        beamTexturePath.assign(L"DX3D/Assets/Textures/beam.png");
+        beamTexturePath.assign(L"TheEngine/Assets/Textures/beam.png");
         auto beamTexture = Texture2D::LoadTexture2D(device.getD3DDevice(), beamTexturePath.c_str());
         if (beamTexture) {
             mesh->setTexture(beamTexture);
@@ -543,9 +543,9 @@ void PartitionScene::addRandom3DEntities(GraphicsDevice& device, int count) {
         Vec3 size(sizeDist(gen), sizeDist(gen), sizeDist(gen));
         Vec3 velocity(velDist(gen), velDist(gen), velDist(gen));
 
-        auto mesh = Mesh::CreateFromFBX(device, "DX3D/Assets/Models/Sphere.fbx");
+        auto mesh = Mesh::CreateFromFBX(device, "TheEngine/Assets/Models/Sphere.fbx");
         if (!mesh) mesh = Mesh::CreateCube(device, 2.0f);
-        std::wstring beamTexturePath; beamTexturePath.assign(L"DX3D/Assets/Textures/beam.png");
+        std::wstring beamTexturePath; beamTexturePath.assign(L"TheEngine/Assets/Textures/beam.png");
         auto beamTexture = Texture2D::LoadTexture2D(device.getD3DDevice(), beamTexturePath.c_str());
         if (beamTexture) mesh->setTexture(beamTexture);
 

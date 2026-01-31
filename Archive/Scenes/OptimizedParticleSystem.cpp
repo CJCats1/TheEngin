@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace dx3d
+namespace TheEngine
 {
     void OptimizedParticleSystem::updateSpatialGrid()
     {

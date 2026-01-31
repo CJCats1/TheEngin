@@ -1,22 +1,22 @@
 #include <thread>
-#include <DX3D/Math/Geometry.h>
-#include <DX3D/Game/Scenes/SPHFluidSimulationScene.h>
-#include <DX3D/Graphics/GraphicsEngine.h>
-#include <DX3D/Graphics/SwapChain.h>
-#include <DX3D/Graphics/Camera.h>
-#include <DX3D/Graphics/SpriteComponent.h>
-#include <DX3D/Graphics/LineRenderer.h>
-#include <DX3D/Graphics/Texture2D.h>
-#include <DX3D/Core/Input.h>
-#include <DX3D/Components/FirmGuyComponent.h>
-#include <DX3D/Components/FirmGuySystem.h>
+#include <TheEngine/Math/Geometry.h>
+#include <TheEngine/Game/Scenes/SPHFluidSimulationScene.h>
+#include <TheEngine/Graphics/GraphicsEngine.h>
+#include <TheEngine/Graphics/SwapChain.h>
+#include <TheEngine/Graphics/Camera.h>
+#include <TheEngine/Graphics/SpriteComponent.h>
+#include <TheEngine/Graphics/LineRenderer.h>
+#include <TheEngine/Graphics/Texture2D.h>
+#include <TheEngine/Core/Input.h>
+#include <TheEngine/Components/FirmGuyComponent.h>
+#include <TheEngine/Components/FirmGuySystem.h>
 #include <imgui.h>
 #include <cmath>
 #include <sstream>
 #include <algorithm>
 #include <cstdio>
 
-using namespace dx3d;
+using namespace TheEngine;
 
 static inline float lerp(float a, float b, float t) { return a + (b - a) * t; }
 
@@ -41,7 +41,7 @@ void SPHFluidSimulationScene::load(GraphicsEngine& engine)
     m_entityManager = std::make_unique<EntityManager>();
 
     // Preload node texture for Sprites mode
-    m_nodeTexture = Texture2D::LoadTexture2D(device.getD3DDevice(), L"DX3D/Assets/Textures/node.png");
+    m_nodeTexture = Texture2D::LoadTexture2D(device.getD3DDevice(), L"TheEngine/Assets/Textures/node.png");
 
     // Camera
     createCamera(engine);
@@ -105,7 +105,7 @@ void SPHFluidSimulationScene::createBoundaries()
     auto addBoundary = [&](const std::string& name, const Vec2& pos, float w, float h)
     {
         auto& e = m_entityManager->createEntity(name);
-        auto& s = e.addComponent<SpriteComponent>(*m_graphicsDevice, L"DX3D/Assets/Textures/beam.png", w, h);
+        auto& s = e.addComponent<SpriteComponent>(*m_graphicsDevice, L"TheEngine/Assets/Textures/beam.png", w, h);
         s.setPosition(pos.x, pos.y, 0.0f);
         s.setTint(Vec4(0.3f, 0.3f, 0.3f, 0.8f));
         
@@ -138,7 +138,7 @@ void SPHFluidSimulationScene::createBall()
 
     Vec2 startPos = Vec2(-m_domainWidth * 0.3f, m_domainHeight * 0.2f);
     auto& e = m_entityManager->createEntity(m_ballEntityName);
-    auto& s = e.addComponent<SpriteComponent>(*m_graphicsDevice, L"DX3D/Assets/Textures/node.png", m_ballRadius*2.0f, m_ballRadius*2.0f);
+    auto& s = e.addComponent<SpriteComponent>(*m_graphicsDevice, L"TheEngine/Assets/Textures/node.png", m_ballRadius*2.0f, m_ballRadius*2.0f);
     s.setPosition(startPos.x, startPos.y, 0.0f);
     s.setTint(Vec4(0.95f, 0.95f, 0.95f, 1.0f));
     s.setVisible(m_ballEnabled); // Set initial visibility
@@ -179,7 +179,7 @@ void SPHFluidSimulationScene::spawnParticles()
             p.entityName = "SPHParticle_" + std::to_string(id++);
 
             auto& e = m_entityManager->createEntity(p.entityName);
-            auto& s = e.addComponent<SpriteComponent>(*m_graphicsDevice, L"DX3D/Assets/Textures/MetaballFalloff.png", m_particleRadius * 2.0f, m_particleRadius * 2.0f);
+            auto& s = e.addComponent<SpriteComponent>(*m_graphicsDevice, L"TheEngine/Assets/Textures/MetaballFalloff.png", m_particleRadius * 2.0f, m_particleRadius * 2.0f);
             s.setPosition(p.position.x, p.position.y, 0.0f);
             s.setTint(Vec4(0.2f, 0.6f, 1.0f, 1.0f));
             m_particles.push_back(p);
@@ -1073,7 +1073,7 @@ void SPHFluidSimulationScene::addParticlesAt(const Vec2& worldPos, int count, fl
         p.entityName = "SPHParticle_" + std::to_string(startIdx + i);
 
         auto& e = m_entityManager->createEntity(p.entityName);
-        auto& s = e.addComponent<SpriteComponent>(*m_graphicsDevice, L"DX3D/Assets/Textures/MetaballFalloff.png", m_particleRadius * 2.0f, m_particleRadius * 2.0f);
+        auto& s = e.addComponent<SpriteComponent>(*m_graphicsDevice, L"TheEngine/Assets/Textures/MetaballFalloff.png", m_particleRadius * 2.0f, m_particleRadius * 2.0f);
         s.setPosition(p.position.x, p.position.y, 0.0f);
         s.setTint(Vec4(0.2f, 0.6f, 1.0f, 1.0f));
         m_particles.push_back(p);
@@ -1992,7 +1992,7 @@ void SPHFluidSimulationScene::renderMetaballField(GraphicsEngine& engine, Device
     static std::shared_ptr<Texture2D> metaballTexture = nullptr;
     if (!metaballTexture)
     {
-        metaballTexture = Texture2D::LoadTexture2D(engine.getGraphicsDevice().getD3DDevice(), L"DX3D/Assets/Textures/MetaballFalloff.png");
+        metaballTexture = Texture2D::LoadTexture2D(engine.getGraphicsDevice().getD3DDevice(), L"TheEngine/Assets/Textures/MetaballFalloff.png");
     }
     
     // Render each particle using the MetaballFalloff.png texture with velocity colors

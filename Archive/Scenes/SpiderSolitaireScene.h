@@ -1,15 +1,15 @@
 #pragma once
-#include <DX3D/Core/Scene.h>
-#include <DX3D/Core/EntityManager.h>
-#include <DX3D/Graphics/GraphicsEngine.h>
-#include <DX3D/Components/CardComponent.h>
-#include <DX3D/Components/CardPhysicsComponent.h>
-#include <DX3D/Graphics/LineRenderer.h>
+#include <TheEngine/Core/Scene.h>
+#include <TheEngine/Core/EntityManager.h>
+#include <TheEngine/Graphics/GraphicsEngine.h>
+#include <TheEngine/Components/CardComponent.h>
+#include <TheEngine/Components/CardPhysicsComponent.h>
+#include <TheEngine/Graphics/LineRenderer.h>
 #include <memory>
 #include <vector>
 #include <stack>
 
-namespace dx3d {
+namespace TheEngine {
     enum class SpiderDifficulty {
         OneSuit,    // Only Spades
         TwoSuit,    // Spades and Hearts

@@ -1,7 +1,7 @@
 #pragma once
-#include <DX3D/Math/Geometry.h>
+#include <TheEngine/Math/Geometry.h>
 
-namespace dx3d {
+namespace TheEngine {
     class DraggableComponent {
     public:
         DraggableComponent() = default;

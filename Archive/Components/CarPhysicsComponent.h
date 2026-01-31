@@ -1,13 +1,13 @@
 #pragma once
-#include <DX3D/Math/Geometry.h>
-#include <DX3D/Core/Entity.h>
+#include <TheEngine/Math/Geometry.h>
+#include <TheEngine/Core/Entity.h>
 #include <vector>
 
-namespace dx3d {
+namespace TheEngine {
     class EntityManager;
 }
 
-namespace dx3d {
+namespace TheEngine {
     class Entity;
     class NodeComponent;
     class BeamComponent;

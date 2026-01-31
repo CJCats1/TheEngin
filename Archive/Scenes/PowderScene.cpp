@@ -1,17 +1,17 @@
-#include <DX3D/Game/Scenes/PowderScene.h>
-#include <DX3D/Graphics/GraphicsEngine.h>
-#include <DX3D/Graphics/SwapChain.h>
-#include <DX3D/Graphics/Camera.h>
-#include <DX3D/Graphics/SpriteComponent.h>
-#include <DX3D/Graphics/LineRenderer.h>
-#include <DX3D/Core/Input.h>
+#include <TheEngine/Game/Scenes/PowderScene.h>
+#include <TheEngine/Graphics/GraphicsEngine.h>
+#include <TheEngine/Graphics/SwapChain.h>
+#include <TheEngine/Graphics/Camera.h>
+#include <TheEngine/Graphics/SpriteComponent.h>
+#include <TheEngine/Graphics/LineRenderer.h>
+#include <TheEngine/Core/Input.h>
 #include <imgui.h>
 #include <cmath>
 #include <algorithm>
 #include <cstdlib>
 #include <cstdio>
 
-using namespace dx3d;
+using namespace TheEngine;
 
 void PowderScene::load(GraphicsEngine& engine)
 {
@@ -20,7 +20,7 @@ void PowderScene::load(GraphicsEngine& engine)
     m_entityManager = std::make_unique<EntityManager>();
 
     // Load texture
-    m_nodeTexture = Texture2D::LoadTexture2D(device.getD3DDevice(), L"DX3D/Assets/Textures/node.png");
+    m_nodeTexture = Texture2D::LoadTexture2D(device.getD3DDevice(), L"TheEngine/Assets/Textures/node.png");
 
     // Create camera
     createCamera(engine);
@@ -2846,7 +2846,7 @@ void PowderScene::renderParticles(GraphicsEngine& engine, DeviceContext& ctx)
             auto& e = m_entityManager->createEntity(name);
             auto& s = e.addComponent<SpriteComponent>(
                 *m_graphicsDevice, 
-                L"DX3D/Assets/Textures/node.png", 
+                L"TheEngine/Assets/Textures/node.png", 
                 m_cellSize, 
                 m_cellSize);
             s.setVisible(false);
@@ -2925,7 +2925,7 @@ void PowderScene::renderAirVelocity(GraphicsEngine& engine, DeviceContext& ctx)
             auto& e = m_entityManager->createEntity(name);
             auto& s = e.addComponent<SpriteComponent>(
                 *m_graphicsDevice, 
-                L"DX3D/Assets/Textures/node.png", 
+                L"TheEngine/Assets/Textures/node.png", 
                 m_cellSize, 
                 m_cellSize);
             s.setVisible(false);
@@ -3037,7 +3037,7 @@ void PowderScene::renderAirPressure(GraphicsEngine& engine, DeviceContext& ctx)
             auto& e = m_entityManager->createEntity(name);
             auto& s = e.addComponent<SpriteComponent>(
                 *m_graphicsDevice, 
-                L"DX3D/Assets/Textures/node.png", 
+                L"TheEngine/Assets/Textures/node.png", 
                 m_cellSize, 
                 m_cellSize);
             s.setVisible(false);

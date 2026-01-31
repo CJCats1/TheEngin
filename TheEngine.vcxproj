@@ -74,16 +74,16 @@
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>Bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>Intermediate\$(Platform)\$(Configuration)\</IntDir>
-    <IncludePath>DX3D/Include;DX3D/Source;DX3D/Include/Libraries/imgui-docking;DX3D/Include/Libraries/imgui-docking/backends;DX3D/Include/Libraries/implot-master;DX3D/Include/Libraries/imgui-docking/examples/libs/glfw/include;$(ProjectDir)vcpkg_installed\x64-windows\include;$(IncludePath)$(WindowsSDK_IncludePath)</IncludePath>
+    <IncludePath>TheEngine/Include;TheEngine/Source;TheEngine/Include/Libraries/imgui-docking;TheEngine/Include/Libraries/imgui-docking/backends;TheEngine/Include/Libraries/implot-master;TheEngine/Include/Libraries/imgui-docking/examples/libs/glfw/include;$(ProjectDir)vcpkg_installed\x64-windows\include;$(IncludePath)$(WindowsSDK_IncludePath)</IncludePath>
   </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>DX3D/Include;DX3D/Source;DX3D/Include/Libraries/imgui-docking;DX3D/Include/Libraries/imgui-docking/backends;DX3D/Include/Libraries/implot-master;DX3D/Include/Libraries/imgui-docking/examples/libs/glfw/include;$(ProjectDir)vcpkg_installed\x64-windows\include;$(IncludePath)$(WindowsSDK_IncludePath)</IncludePath>
+    <IncludePath>TheEngine/Include;TheEngine/Source;TheEngine/Include/Libraries/imgui-docking;TheEngine/Include/Libraries/imgui-docking/backends;TheEngine/Include/Libraries/implot-master;TheEngine/Include/Libraries/imgui-docking/examples/libs/glfw/include;$(ProjectDir)vcpkg_installed\x64-windows\include;$(IncludePath)$(WindowsSDK_IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;DX3D_ENABLE_OPENGL;DX3D_USE_GLM;IMGUI_IMPL_OPENGL_LOADER_GLAD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;THEENGINE_ENABLE_OPENGL;THEENGINE_USE_GLM;IMGUI_IMPL_OPENGL_LOADER_GLAD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -97,7 +97,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;DX3D_ENABLE_OPENGL;DX3D_USE_GLM;IMGUI_IMPL_OPENGL_LOADER_GLAD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;THEENGINE_ENABLE_OPENGL;THEENGINE_USE_GLM;IMGUI_IMPL_OPENGL_LOADER_GLAD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -111,7 +111,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;NOMINMAX;DX3D_ENABLE_OPENGL;DX3D_USE_GLM;IMGUI_IMPL_OPENGL_LOADER_GLAD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;NOMINMAX;THEENGINE_ENABLE_OPENGL;THEENGINE_USE_GLM;IMGUI_IMPL_OPENGL_LOADER_GLAD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
@@ -130,7 +130,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;DX3D_ENABLE_OPENGL;DX3D_USE_GLM;IMGUI_IMPL_OPENGL_LOADER_GLAD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;THEENGINE_ENABLE_OPENGL;THEENGINE_USE_GLM;IMGUI_IMPL_OPENGL_LOADER_GLAD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalOptions>/FS %(AdditionalOptions)</AdditionalOptions>
@@ -147,136 +147,136 @@
     <ResourceCompile Include="TheEngine.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="DX3D\Source\DX3D\DataStructures\AABBTree.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\DataStructures\KDTree.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\DataStructures\Octree.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\DataStructures\Quadtree.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\Core\Input.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\Core\Scene.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\Game\Display.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\Core\Base.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\Game\Game.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\Graphics\ShadowMap.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\Graphics\SkyboxRenderer.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\Graphics\OpenGL\OpenGLRenderBackend.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\Graphics\OpenGL\OpenGLDevice.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\Graphics\OpenGL\OpenGLContext.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\Graphics\OpenGL\OpenGLSwapChain.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\Math\Geometry.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\Math\DefaultMathBackend.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\Math\MathBackend.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\Math\GLMMathBackend.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\Math\Types.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\Game\Scenes\TestScenes\TestScene.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\Game\SceneHelper.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\Physics\AABBPhysics.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\Game\Win32\Win32Game.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\Graphics\Camera.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\Graphics\DeviceContext.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\Graphics\DirectWriteText.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\Graphics\FBXLoader.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\Graphics\GraphicsDevice.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\Graphics\GraphicsEngine.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\Graphics\Abstraction\RenderBackendFactory.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\Graphics\DirectX11\DirectX11RenderBackend.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\Graphics\GraphicsPipelineState.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\Graphics\IndexBuffer.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\Graphics\LineRenderer.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\Graphics\Mesh.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\Graphics\ShaderBinary.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\Graphics\SpriteComponent.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\Graphics\SwapChain.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\Graphics\Texture2D.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\Graphics\VertexBuffer.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\Graphics\VertexShaderSignature.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\DataStructures\AABBTree.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\DataStructures\KDTree.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\DataStructures\Octree.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\DataStructures\Quadtree.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\Core\Input.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\Core\Scene.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\Game\Display.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\Core\Base.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\Game\Game.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\Graphics\ShadowMap.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\Graphics\SkyboxRenderer.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\Graphics\OpenGL\OpenGLRenderBackend.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\Graphics\OpenGL\OpenGLDevice.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\Graphics\OpenGL\OpenGLContext.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\Graphics\OpenGL\OpenGLSwapChain.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\Math\Geometry.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\Math\DefaultMathBackend.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\Math\MathBackend.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\Math\GLMMathBackend.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\Math\Types.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\Game\Scenes\TestScenes\TestScene.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\Game\SceneHelper.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\Physics\AABBPhysics.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\Game\Win32\Win32Game.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\Graphics\Camera.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\Graphics\DeviceContext.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\Graphics\DirectWriteText.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\Graphics\FBXLoader.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\Graphics\GraphicsDevice.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\Graphics\GraphicsEngine.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\Graphics\Abstraction\RenderBackendFactory.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\Graphics\DirectX11\DirectX11RenderBackend.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\Graphics\GraphicsPipelineState.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\Graphics\IndexBuffer.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\Graphics\LineRenderer.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\Graphics\Mesh.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\Graphics\ShaderBinary.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\Graphics\SpriteComponent.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\Graphics\SwapChain.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\Graphics\Texture2D.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\Graphics\VertexBuffer.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\Graphics\VertexShaderSignature.cpp" />
     <ClCompile Include="Game\main.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\Window\Win32\Win32Window.cpp" />
-    <ClCompile Include="DX3D\Source\DX3D\Core\Logger.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\Window\Win32\Win32Window.cpp" />
+    <ClCompile Include="TheEngine\Source\TheEngine\Core\Logger.cpp" />
     <!-- ImGui core (docking branch) -->
-    <ClCompile Include="DX3D\Include\Libraries\imgui-docking\imgui.cpp" />
-    <ClCompile Include="DX3D\Include\Libraries\imgui-docking\imgui_draw.cpp" />
-    <ClCompile Include="DX3D\Include\Libraries\imgui-docking\imgui_widgets.cpp" />
-    <ClCompile Include="DX3D\Include\Libraries\imgui-docking\imgui_tables.cpp" />
+    <ClCompile Include="TheEngine\Include\Libraries\imgui-docking\imgui.cpp" />
+    <ClCompile Include="TheEngine\Include\Libraries\imgui-docking\imgui_draw.cpp" />
+    <ClCompile Include="TheEngine\Include\Libraries\imgui-docking\imgui_widgets.cpp" />
+    <ClCompile Include="TheEngine\Include\Libraries\imgui-docking\imgui_tables.cpp" />
     <!-- ImGui backends -->
-    <ClCompile Include="DX3D\Include\Libraries\imgui-docking\backends\imgui_impl_win32.cpp" />
-    <ClCompile Include="DX3D\Include\Libraries\imgui-docking\backends\imgui_impl_dx11.cpp" />
-    <ClCompile Include="DX3D\Include\Libraries\imgui-docking\backends\imgui_impl_glfw.cpp" />
-    <ClCompile Include="DX3D\Include\Libraries\imgui-docking\backends\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="TheEngine\Include\Libraries\imgui-docking\backends\imgui_impl_win32.cpp" />
+    <ClCompile Include="TheEngine\Include\Libraries\imgui-docking\backends\imgui_impl_dx11.cpp" />
+    <ClCompile Include="TheEngine\Include\Libraries\imgui-docking\backends\imgui_impl_glfw.cpp" />
+    <ClCompile Include="TheEngine\Include\Libraries\imgui-docking\backends\imgui_impl_opengl3.cpp" />
     <!-- ImGui demo (needed by ImPlot demo) -->
-    <ClCompile Include="DX3D\Include\Libraries\imgui-docking\imgui_demo.cpp" />
+    <ClCompile Include="TheEngine\Include\Libraries\imgui-docking\imgui_demo.cpp" />
     <!-- ImPlot (optional) -->
-    <ClCompile Include="DX3D\Include\Libraries\implot-master\implot.cpp" />
-    <ClCompile Include="DX3D\Include\Libraries\implot-master\implot_items.cpp" />
-    <ClCompile Include="DX3D\Include\Libraries\implot-master\implot_demo.cpp" />
+    <ClCompile Include="TheEngine\Include\Libraries\implot-master\implot.cpp" />
+    <ClCompile Include="TheEngine\Include\Libraries\implot-master\implot_items.cpp" />
+    <ClCompile Include="TheEngine\Include\Libraries\implot-master\implot_demo.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="DX3D\Include\DX3D\Game\Display.h" />
-    <ClInclude Include="DX3D\Include\DX3D\All.h" />
-    <ClInclude Include="DX3D\Include\DX3D\Core\Base.h" />
-    <ClInclude Include="DX3D\Include\DX3D\Core\Common.h" />
-    <ClInclude Include="DX3D\Include\DX3D\Core\Core.h" />
-    <ClInclude Include="DX3D\Include\DX3D\Math\Geometry.h" />
-    <ClInclude Include="DX3D\Include\DX3D\Math\Types.h" />
-    <ClInclude Include="DX3D\Include\DX3D\Math\Backend\MathBackend.h" />
-    <ClInclude Include="DX3D\Include\DX3D\Window\Window.h" />
-    <ClInclude Include="DX3D\Include\DX3D\Game\Game.h" />
-    <ClInclude Include="DX3D\Include\DX3D\Core\Logger.h" />
-    <ClInclude Include="DX3D\Source\DX3D\DataStructures\AABBTree.h" />
-    <ClInclude Include="DX3D\Include\DX3D\Graphics\Abstraction\GraphicsHandles.h" />
-    <ClInclude Include="DX3D\Include\DX3D\Graphics\Abstraction\RenderDevice.h" />
-    <ClInclude Include="DX3D\Include\DX3D\Graphics\Abstraction\RenderContext.h" />
-    <ClInclude Include="DX3D\Include\DX3D\Graphics\Abstraction\RenderSwapChain.h" />
-    <ClInclude Include="DX3D\Include\DX3D\Graphics\Abstraction\RenderBackend.h" />
-    <ClInclude Include="DX3D\Include\DX3D\Graphics\Abstraction\RenderBackendFactory.h" />
-    <ClInclude Include="DX3D\Include\DX3D\Graphics\Abstraction\RenderResources.h" />
-    <ClInclude Include="DX3D\Source\DX3D\Graphics\SkyboxRenderer.h" />
-    <ClInclude Include="DX3D\Source\DX3D\Graphics\DirectX11\DirectX11RenderBackend.h" />
-    <ClInclude Include="DX3D\Source\DX3D\Graphics\OpenGL\OpenGLRenderBackend.h" />
-    <ClInclude Include="DX3D\Source\DX3D\Graphics\OpenGL\OpenGLDevice.h" />
-    <ClInclude Include="DX3D\Source\DX3D\Graphics\OpenGL\OpenGLContext.h" />
-    <ClInclude Include="DX3D\Source\DX3D\Graphics\OpenGL\OpenGLSwapChain.h" />
-    <ClInclude Include="DX3D\Source\DX3D\DataStructures\KDTree.h" />
-    <ClInclude Include="DX3D\Source\DX3D\DataStructures\Octree.h" />
-    <ClInclude Include="DX3D\Source\DX3D\DataStructures\Quadtree.h" />
-    <ClInclude Include="DX3D\Source\DX3D\Core\ComponentManager.h" />
-    <ClInclude Include="DX3D\Source\DX3D\Core\Entity.h" />
-    <ClInclude Include="DX3D\Source\DX3D\Core\EntityManager.h" />
-    <ClInclude Include="DX3D\Source\DX3D\Core\Input.h" />
-    <ClInclude Include="DX3D\Source\DX3D\Core\Scene.h" />
-    <ClInclude Include="DX3D\Source\DX3D\Core\SystemManager.h" />
-    <ClInclude Include="DX3D\Source\DX3D\Core\TransformComponent.h" />
-    <ClInclude Include="DX3D\Source\DX3D\Game\Scenes\TestScenes\TestScene.h" />
-    <ClInclude Include="DX3D\Source\DX3D\Graphics\Camera.h" />
-    <ClInclude Include="DX3D\Source\DX3D\Graphics\DeviceContext.h" />
-    <ClInclude Include="DX3D\Source\DX3D\Graphics\DirectWriteText.h" />
-    <ClInclude Include="DX3D\Source\DX3D\Graphics\FBXLoader.h" />
-    <ClInclude Include="DX3D\Source\DX3D\Graphics\GraphicsDevice.h" />
-    <ClInclude Include="DX3D\Source\DX3D\Graphics\GraphicsEngine.h" />
-    <ClInclude Include="DX3D\Source\DX3D\Graphics\GraphicsLogUtils.h" />
-    <ClInclude Include="DX3D\Source\DX3D\Graphics\GraphicsPipelineState.h" />
-    <ClInclude Include="DX3D\Source\DX3D\Graphics\GraphicsResource.h" />
-    <ClInclude Include="DX3D\Source\DX3D\Graphics\GraphicsUtils.h" />
-    <ClInclude Include="DX3D\Source\DX3D\Graphics\IndexBuffer.h" />
-    <ClInclude Include="DX3D\Source\DX3D\Graphics\LineRenderer.h" />
-    <ClInclude Include="DX3D\Source\DX3D\Graphics\Mesh.h" />
-    <ClInclude Include="DX3D\Source\DX3D\Graphics\ShaderBinary.h" />
-    <ClInclude Include="DX3D\Source\DX3D\Graphics\ShadowMap.h" />
-    <ClInclude Include="DX3D\Source\DX3D\Graphics\SpriteComponent.h" />
-    <ClInclude Include="DX3D\Source\DX3D\Graphics\SwapChain.h" />
-    <ClInclude Include="DX3D\Source\DX3D\Graphics\Texture2D.h" />
-    <ClInclude Include="DX3D\Source\DX3D\Graphics\TextUtilities.h" />
-    <ClInclude Include="DX3D\Source\DX3D\Graphics\VertexBuffer.h" />
-    <ClInclude Include="DX3D\Source\DX3D\Graphics\VertexShaderSignature.h" />
-    <ClInclude Include="DX3D\Source\DX3D\Systems\AdvancedSlicingSystem.h" />
-    <ClInclude Include="DX3D\Source\DX3D\Systems\DynamicAABBTree.h" />
-    <ClInclude Include="DX3D\Source\DX3D\Systems\Collision.h" />
-    <ClInclude Include="DX3D\Source\DX3D\Systems\PhysicsWorld.h" />
+    <ClInclude Include="TheEngine\Include\TheEngine\Game\Display.h" />
+    <ClInclude Include="TheEngine\Include\TheEngine\All.h" />
+    <ClInclude Include="TheEngine\Include\TheEngine\Core\Base.h" />
+    <ClInclude Include="TheEngine\Include\TheEngine\Core\Common.h" />
+    <ClInclude Include="TheEngine\Include\TheEngine\Core\Core.h" />
+    <ClInclude Include="TheEngine\Include\TheEngine\Math\Geometry.h" />
+    <ClInclude Include="TheEngine\Include\TheEngine\Math\Types.h" />
+    <ClInclude Include="TheEngine\Include\TheEngine\Math\Backend\MathBackend.h" />
+    <ClInclude Include="TheEngine\Include\TheEngine\Window\Window.h" />
+    <ClInclude Include="TheEngine\Include\TheEngine\Game\Game.h" />
+    <ClInclude Include="TheEngine\Include\TheEngine\Core\Logger.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\DataStructures\AABBTree.h" />
+    <ClInclude Include="TheEngine\Include\TheEngine\Graphics\Abstraction\GraphicsHandles.h" />
+    <ClInclude Include="TheEngine\Include\TheEngine\Graphics\Abstraction\RenderDevice.h" />
+    <ClInclude Include="TheEngine\Include\TheEngine\Graphics\Abstraction\RenderContext.h" />
+    <ClInclude Include="TheEngine\Include\TheEngine\Graphics\Abstraction\RenderSwapChain.h" />
+    <ClInclude Include="TheEngine\Include\TheEngine\Graphics\Abstraction\RenderBackend.h" />
+    <ClInclude Include="TheEngine\Include\TheEngine\Graphics\Abstraction\RenderBackendFactory.h" />
+    <ClInclude Include="TheEngine\Include\TheEngine\Graphics\Abstraction\RenderResources.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\Graphics\SkyboxRenderer.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\Graphics\DirectX11\DirectX11RenderBackend.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\Graphics\OpenGL\OpenGLRenderBackend.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\Graphics\OpenGL\OpenGLDevice.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\Graphics\OpenGL\OpenGLContext.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\Graphics\OpenGL\OpenGLSwapChain.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\DataStructures\KDTree.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\DataStructures\Octree.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\DataStructures\Quadtree.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\Core\ComponentManager.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\Core\Entity.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\Core\EntityManager.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\Core\Input.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\Core\Scene.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\Core\SystemManager.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\Core\TransformComponent.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\Game\Scenes\TestScenes\TestScene.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\Graphics\Camera.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\Graphics\DeviceContext.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\Graphics\DirectWriteText.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\Graphics\FBXLoader.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\Graphics\GraphicsDevice.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\Graphics\GraphicsEngine.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\Graphics\GraphicsLogUtils.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\Graphics\GraphicsPipelineState.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\Graphics\GraphicsResource.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\Graphics\GraphicsUtils.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\Graphics\IndexBuffer.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\Graphics\LineRenderer.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\Graphics\Mesh.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\Graphics\ShaderBinary.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\Graphics\ShadowMap.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\Graphics\SpriteComponent.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\Graphics\SwapChain.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\Graphics\Texture2D.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\Graphics\TextUtilities.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\Graphics\VertexBuffer.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\Graphics\VertexShaderSignature.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\Systems\AdvancedSlicingSystem.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\Systems\DynamicAABBTree.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\Systems\Collision.h" />
+    <ClInclude Include="TheEngine\Source\TheEngine\Systems\PhysicsWorld.h" />
     <!-- Optional header entries for ImGui/ImPlot (docking) -->
-    <ClInclude Include="DX3D\Include\Libraries\imgui-docking\imgui.h" />
-    <ClInclude Include="DX3D\Include\Libraries\imgui-docking\imgui_internal.h" />
-    <ClInclude Include="DX3D\Include\Libraries\imgui-docking\backends\imgui_impl_win32.h" />
-    <ClInclude Include="DX3D\Include\Libraries\imgui-docking\backends\imgui_impl_dx11.h" />
-    <ClInclude Include="DX3D\Include\Libraries\implot-master\implot.h" />
+    <ClInclude Include="TheEngine\Include\Libraries\imgui-docking\imgui.h" />
+    <ClInclude Include="TheEngine\Include\Libraries\imgui-docking\imgui_internal.h" />
+    <ClInclude Include="TheEngine\Include\Libraries\imgui-docking\backends\imgui_impl_win32.h" />
+    <ClInclude Include="TheEngine\Include\Libraries\imgui-docking\backends\imgui_impl_dx11.h" />
+    <ClInclude Include="TheEngine\Include\Libraries\implot-master\implot.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

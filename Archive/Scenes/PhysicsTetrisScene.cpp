@@ -1,18 +1,18 @@
-﻿#include <DX3D/Game/Scenes/PhysicsTetrisScene.h>
-#include <DX3D/Graphics/SpriteComponent.h>
-#include <DX3D/Graphics/GraphicsEngine.h>
-#include <DX3D/Graphics/SwapChain.h>
-#include <DX3D/Graphics/Camera.h>
-#include <DX3D/Components/PhysicsComponent.h>
-#include <DX3D/Components/SoftGuyComponent.h>
-#include <DX3D/Core/Input.h>
+#include <TheEngine/Game/Scenes/PhysicsTetrisScene.h>
+#include <TheEngine/Graphics/SpriteComponent.h>
+#include <TheEngine/Graphics/GraphicsEngine.h>
+#include <TheEngine/Graphics/SwapChain.h>
+#include <TheEngine/Graphics/Camera.h>
+#include <TheEngine/Components/PhysicsComponent.h>
+#include <TheEngine/Components/SoftGuyComponent.h>
+#include <TheEngine/Core/Input.h>
 #include <iostream>
 #include <set>
 #include <iomanip>
 #include <sstream>
 #include <imgui.h>
 
-using namespace dx3d;
+using namespace TheEngine;
 
 void PhysicsTetrisScene::load(GraphicsEngine& engine) {
     auto& device = engine.getGraphicsDevice();
@@ -182,7 +182,7 @@ void PhysicsTetrisScene::createPlayField() {
     auto& leftMarker = m_entityManager->createEntity("LeftBoundaryMarker");
     auto& leftSprite = leftMarker.addComponent<SpriteComponent>(
         device,
-        L"DX3D/Assets/Textures/beam.png",
+        L"TheEngine/Assets/Textures/beam.png",
         WALL_THICKNESS, PLAY_FIELD_HEIGHT
     );
     leftSprite.setPosition(-PLAY_FIELD_WIDTH / 2 - WALL_THICKNESS / 2, 0.0f, 0.0f);
@@ -192,7 +192,7 @@ void PhysicsTetrisScene::createPlayField() {
     auto& rightMarker = m_entityManager->createEntity("RightBoundaryMarker");
     auto& rightSprite = rightMarker.addComponent<SpriteComponent>(
         device,
-        L"DX3D/Assets/Textures/beam.png",
+        L"TheEngine/Assets/Textures/beam.png",
         WALL_THICKNESS, PLAY_FIELD_HEIGHT
     );
     rightSprite.setPosition(PLAY_FIELD_WIDTH / 2 + WALL_THICKNESS / 2, 0.0f, 0.0f);
@@ -202,7 +202,7 @@ void PhysicsTetrisScene::createPlayField() {
     auto& bottomMarker = m_entityManager->createEntity("BottomBoundaryMarker");
     auto& bottomSprite = bottomMarker.addComponent<SpriteComponent>(
         device,
-        L"DX3D/Assets/Textures/beam.png",
+        L"TheEngine/Assets/Textures/beam.png",
         PLAY_FIELD_WIDTH + 2 * WALL_THICKNESS, WALL_THICKNESS
     );
     bottomSprite.setPosition(0.0f, -PLAY_FIELD_HEIGHT / 2 - WALL_THICKNESS / 2, 0.0f);
@@ -224,7 +224,7 @@ void PhysicsTetrisScene::createFirmGuyBoundaries() {
     // Add visual sprite for left wall
     auto& leftSprite = leftWall.addComponent<SpriteComponent>(
         *m_graphicsDevice,
-        L"DX3D/Assets/Textures/beam.png",
+        L"TheEngine/Assets/Textures/beam.png",
         WALL_THICKNESS, PLAY_FIELD_HEIGHT
     );
     leftSprite.setPosition(-PLAY_FIELD_WIDTH / 2 - WALL_THICKNESS / 2, 0.0f, 0.0f);
@@ -242,7 +242,7 @@ void PhysicsTetrisScene::createFirmGuyBoundaries() {
     // Add visual sprite for right wall
     auto& rightSprite = rightWall.addComponent<SpriteComponent>(
         *m_graphicsDevice,
-        L"DX3D/Assets/Textures/beam.png",
+        L"TheEngine/Assets/Textures/beam.png",
         WALL_THICKNESS, PLAY_FIELD_HEIGHT
     );
     rightSprite.setPosition(PLAY_FIELD_WIDTH / 2 + WALL_THICKNESS / 2, 0.0f, 0.0f);
@@ -260,7 +260,7 @@ void PhysicsTetrisScene::createFirmGuyBoundaries() {
     // Add visual sprite for bottom wall
     auto& bottomSprite = bottomWall.addComponent<SpriteComponent>(
         *m_graphicsDevice,
-        L"DX3D/Assets/Textures/beam.png",
+        L"TheEngine/Assets/Textures/beam.png",
         PLAY_FIELD_WIDTH, WALL_THICKNESS
     );
     bottomSprite.setPosition(0.0f, -PLAY_FIELD_HEIGHT / 2 - WALL_THICKNESS / 2, 0.0f);
@@ -346,7 +346,7 @@ void PhysicsTetrisScene::spawnTetrimino(TetriminoType type, Vec2 position) {
     auto& anchorEntity = m_entityManager->createEntity("WorldOriginAnchor");
     auto& anchorSprite = anchorEntity.addComponent<SpriteComponent>(
         *m_graphicsDevice,
-        L"DX3D/Assets/Textures/node.png",
+        L"TheEngine/Assets/Textures/node.png",
         1.0f, 1.0f  // Tiny size
     );
     anchorSprite.setPosition(0.0f, 0.0f, 0.0f); // World origin
@@ -369,7 +369,7 @@ std::string PhysicsTetrisScene::createTetriminoNodes(const TetriminoData& data, 
 
         auto& sprite = nodeEntity.addComponent<SpriteComponent>(
             *m_graphicsDevice,
-            L"DX3D/Assets/Textures/node.png",
+            L"TheEngine/Assets/Textures/node.png",
             NODE_SIZE, NODE_SIZE
         );
         sprite.setPosition(nodePos.x, nodePos.y, 0.0f);
@@ -399,7 +399,7 @@ void PhysicsTetrisScene::createTetriminoBeams(const TetriminoData& data, const s
 
         auto& sprite = beamEntity.addComponent<SpriteComponent>(
             *m_graphicsDevice,
-            L"DX3D/Assets/Textures/beam.png",
+            L"TheEngine/Assets/Textures/beam.png",
             1.0f, 1.0f
         );
 
@@ -1902,7 +1902,7 @@ float PhysicsTetrisScene::calculateAngularVelocityFromNodes(const std::vector<Ve
     Vec2 vel2 = nodeVelocities[1];
     
     // Calculate angular velocity using cross product
-    // ω = (r × v) / |r|²
+    // ? = (r × v) / |r|²
     float angularVel1 = (pos1.x * vel1.y - pos1.y * vel1.x) / (pos1.length() * pos1.length() + 0.001f);
     float angularVel2 = (pos2.x * vel2.y - pos2.y * vel2.x) / (pos2.length() * pos2.length() + 0.001f);
     

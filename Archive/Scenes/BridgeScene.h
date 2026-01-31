@@ -1,11 +1,11 @@
 #pragma once
-#include <DX3D/Core/Scene.h>
-#include <DX3D/Core/EntityManager.h>
-#include <DX3D/Graphics/GraphicsEngine.h>
+#include <TheEngine/Core/Scene.h>
+#include <TheEngine/Core/EntityManager.h>
+#include <TheEngine/Graphics/GraphicsEngine.h>
 #include <memory>
 #include <chrono>
 
-namespace dx3d {
+namespace TheEngine {
     enum class SceneMode {
         Build,
         Simulating

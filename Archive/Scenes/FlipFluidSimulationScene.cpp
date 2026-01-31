@@ -1,16 +1,16 @@
-#include <DX3D/Game/Scenes/FlipFluidSimulationScene.h>
-#include <DX3D/Graphics/GraphicsEngine.h>
-#include <DX3D/Graphics/SwapChain.h>
-#include <DX3D/Graphics/Camera.h>
-#include <DX3D/Graphics/SpriteComponent.h>
-#include <DX3D/Graphics/LineRenderer.h>
+#include <TheEngine/Game/Scenes/FlipFluidSimulationScene.h>
+#include <TheEngine/Graphics/GraphicsEngine.h>
+#include <TheEngine/Graphics/SwapChain.h>
+#include <TheEngine/Graphics/Camera.h>
+#include <TheEngine/Graphics/SpriteComponent.h>
+#include <TheEngine/Graphics/LineRenderer.h>
 #include <imgui.h>
 #include <cmath>
 #include <sstream>
 #include <algorithm>
 #include <cstdio>
 
-using namespace dx3d;
+using namespace TheEngine;
 
 static inline float lerp(float a, float b, float t) { return a + (b - a) * t; }
 
@@ -22,7 +22,7 @@ void FlipFluidSimulationScene::load(GraphicsEngine& engine)
     m_entityManager = std::make_unique<EntityManager>();
 
     // Preload node texture for Sprites mode
-    m_nodeTexture = Texture2D::LoadTexture2D(device.getD3DDevice(), L"DX3D/Assets/Textures/node.png");
+    m_nodeTexture = Texture2D::LoadTexture2D(device.getD3DDevice(), L"TheEngine/Assets/Textures/node.png");
 
     // Camera
     createCamera(engine);
@@ -110,7 +110,7 @@ void FlipFluidSimulationScene::createBoundaries()
         auto& e = m_entityManager->createEntity(name);
         
         // Add visual sprite
-        auto& s = e.addComponent<SpriteComponent>(*m_graphicsDevice, L"DX3D/Assets/Textures/beam.png", w, h);
+        auto& s = e.addComponent<SpriteComponent>(*m_graphicsDevice, L"TheEngine/Assets/Textures/beam.png", w, h);
         s.setPosition(pos.x, pos.y, 0.0f);
         s.setTint(Vec4(0.3f, 0.3f, 0.3f, 0.8f));
         
@@ -161,7 +161,7 @@ void FlipFluidSimulationScene::spawnParticles()
             p.entityName = "Particle_" + std::to_string(id++);
 
             auto& e = m_entityManager->createEntity(p.entityName);
-            auto& s = e.addComponent<SpriteComponent>(*m_graphicsDevice, L"DX3D/Assets/Textures/MetaballFalloff.png", m_particleRadius * 2.0f, m_particleRadius * 2.0f);
+            auto& s = e.addComponent<SpriteComponent>(*m_graphicsDevice, L"TheEngine/Assets/Textures/MetaballFalloff.png", m_particleRadius * 2.0f, m_particleRadius * 2.0f);
             s.setPosition(p.position.x, p.position.y, 0.0f);
             s.setTint(Vec4(0.2f, 0.6f, 1.0f, 1.0f));
             
@@ -1240,7 +1240,7 @@ void FlipFluidSimulationScene::addParticlesAt(const Vec2& worldPos, int count, f
         p.entityName = "Particle_" + std::to_string(startIdx + i);
 
         auto& e = m_entityManager->createEntity(p.entityName);
-        auto& s = e.addComponent<SpriteComponent>(*m_graphicsDevice, L"DX3D/Assets/Textures/MetaballFalloff.png", m_particleRadius * 2.0f, m_particleRadius * 2.0f);
+        auto& s = e.addComponent<SpriteComponent>(*m_graphicsDevice, L"TheEngine/Assets/Textures/MetaballFalloff.png", m_particleRadius * 2.0f, m_particleRadius * 2.0f);
         s.setPosition(p.position.x, p.position.y, 0.0f);
         s.setTint(Vec4(0.2f, 0.6f, 1.0f, 1.0f));
         
@@ -1278,7 +1278,7 @@ void FlipFluidSimulationScene::ensureWorldAnchor()
     auto& anchor = m_entityManager->createEntity("WorldOriginAnchor");
     auto& sprite = anchor.addComponent<SpriteComponent>(
         *m_graphicsDevice,
-        L"DX3D/Assets/Textures/node.png",
+        L"TheEngine/Assets/Textures/node.png",
         1.0f, 1.0f);
     sprite.setPosition(0.0f, 0.0f, 0.0f);
     sprite.setTint(Vec4(1.0f, 1.0f, 1.0f, 0.0f));
@@ -1486,7 +1486,7 @@ void FlipFluidSimulationScene::createMetaballQuad()
     auto& metaballEntity = m_entityManager->createEntity(m_metaballQuadEntity);
     auto& sprite = metaballEntity.addComponent<SpriteComponent>(
         *m_graphicsDevice,
-        L"DX3D/Assets/Textures/node.png", // We'll use a simple texture as base
+        L"TheEngine/Assets/Textures/node.png", // We'll use a simple texture as base
         GraphicsEngine::getWindowWidth(),
         GraphicsEngine::getWindowHeight()
     );
@@ -1631,7 +1631,7 @@ void FlipFluidSimulationScene::createMetaballFalloffTexture()
     {
         m_metaballFalloffTexture = Texture2D::LoadTexture2D(
             m_graphicsDevice->getD3DDevice(),
-            L"DX3D/Assets/Textures/MetaballFalloff.png"
+            L"TheEngine/Assets/Textures/MetaballFalloff.png"
         );
     }
 }
@@ -1655,7 +1655,7 @@ void FlipFluidSimulationScene::renderMetaballField(GraphicsEngine& engine, Devic
     static std::shared_ptr<Texture2D> metaballTexture = nullptr;
     if (!metaballTexture)
     {
-        metaballTexture = Texture2D::LoadTexture2D(engine.getGraphicsDevice().getD3DDevice(), L"DX3D/Assets/Textures/MetaballFalloff.png");
+        metaballTexture = Texture2D::LoadTexture2D(engine.getGraphicsDevice().getD3DDevice(), L"TheEngine/Assets/Textures/MetaballFalloff.png");
     }
     
     // Render each particle using the MetaballFalloff.png texture with velocity colors
@@ -2098,7 +2098,7 @@ void FlipFluidSimulationScene::createBall()
 
     Vec2 startPos = m_boxCenter + Vec2(-m_boxHalf.x * 0.3f, m_boxHalf.y * 0.2f);
     auto& e = m_entityManager->createEntity(m_ballEntityName);
-    auto& s = e.addComponent<SpriteComponent>(*m_graphicsDevice, L"DX3D/Assets/Textures/node.png", m_ballRadius*2.0f, m_ballRadius*2.0f);
+    auto& s = e.addComponent<SpriteComponent>(*m_graphicsDevice, L"TheEngine/Assets/Textures/node.png", m_ballRadius*2.0f, m_ballRadius*2.0f);
     s.setPosition(startPos.x, startPos.y, 0.0f);
     s.setTint(Vec4(0.95f, 0.95f, 0.95f, 1.0f));
     s.setVisible(m_ballEnabled); // Set initial visibility

@@ -1,24 +1,24 @@
 #include "SpiderSolitaireScene.h"
-#include <DX3D/Graphics/SpriteComponent.h>
-#include <DX3D/Graphics/GraphicsEngine.h>
-#include <DX3D/Graphics/SwapChain.h>
-#include <DX3D/Graphics/Camera.h>
-#include <DX3D/Components/AnimationComponent.h>
-#include <DX3D/Core/Input.h>
-#include <DX3D/Graphics/DirectWriteText.h>
-#include <DX3D/Components/ButtonComponent.h>
-#include <DX3D/Components/DraggableComponent.h>
-#include <DX3D/Components/ColliderComponent.h>
-#include <DX3D/Components/CardComponent.h>
-#include <DX3D/Components/CardFrameComponent.h>
-#include <DX3D/Graphics/LineRenderer.h>
+#include <TheEngine/Graphics/SpriteComponent.h>
+#include <TheEngine/Graphics/GraphicsEngine.h>
+#include <TheEngine/Graphics/SwapChain.h>
+#include <TheEngine/Graphics/Camera.h>
+#include <TheEngine/Components/AnimationComponent.h>
+#include <TheEngine/Core/Input.h>
+#include <TheEngine/Graphics/DirectWriteText.h>
+#include <TheEngine/Components/ButtonComponent.h>
+#include <TheEngine/Components/DraggableComponent.h>
+#include <TheEngine/Components/ColliderComponent.h>
+#include <TheEngine/Components/CardComponent.h>
+#include <TheEngine/Components/CardFrameComponent.h>
+#include <TheEngine/Graphics/LineRenderer.h>
 #include <iostream>
 #include <algorithm>
 #include <random>
 #include <cmath>
 #include <imgui.h>
 
-using namespace dx3d;
+using namespace TheEngine;
 
 // CardStack implementation
 void CardStack::addCard(Entity* card, float zSpacing) {
@@ -152,7 +152,7 @@ void SpiderSolitaireScene::load(GraphicsEngine& engine) {
     for (int i = 0; i < numDeals; ++i) {
         auto& fakeStock = m_entityManager->createEntity("StockIndicator_" + std::to_string(i));
         auto& sprite = fakeStock.addComponent<SpriteComponent>(
-            device, L"DX3D/Assets/Textures/CardSpriteSheet.png", CARD_WIDTH, CARD_HEIGHT
+            device, L"TheEngine/Assets/Textures/CardSpriteSheet.png", CARD_WIDTH, CARD_HEIGHT
         );
 
         sprite.setupSpritesheet(13, 6);
@@ -176,7 +176,7 @@ void SpiderSolitaireScene::load(GraphicsEngine& engine) {
     auto& anchorEntity = m_entityManager->createEntity("WorldOriginAnchor");
     auto& anchorSprite = anchorEntity.addComponent<SpriteComponent>(
         *m_graphicsDevice,
-        L"DX3D/Assets/Textures/node.png",
+        L"TheEngine/Assets/Textures/node.png",
         1.0f, 1.0f  // Tiny size
     );
     anchorSprite.setPosition(0.0f, 0.0f, 100.0f); // World origin
@@ -213,7 +213,7 @@ void SpiderSolitaireScene::createEmptySpots(GraphicsDevice& device) {
     for (int i = 0; i < 10; ++i) {
         auto& emptySpot = m_entityManager->createEntity("TableauEmpty_" + std::to_string(i));
         auto& sprite = emptySpot.addComponent<SpriteComponent>(
-            device, L"DX3D/Assets/Textures/CardSpriteSheet.png", CARD_WIDTH, CARD_HEIGHT
+            device, L"TheEngine/Assets/Textures/CardSpriteSheet.png", CARD_WIDTH, CARD_HEIGHT
         );
 
         sprite.setupSpritesheet(13, 6);
@@ -235,7 +235,7 @@ void SpiderSolitaireScene::createEmptySpots(GraphicsDevice& device) {
     for (int i = 0; i < 8; ++i) {
         auto& emptySpot = m_entityManager->createEntity("FoundationEmpty_" + std::to_string(i));
         auto& sprite = emptySpot.addComponent<SpriteComponent>(
-            device, L"DX3D/Assets/Textures/CardSpriteSheet.png", CARD_WIDTH, CARD_HEIGHT
+            device, L"TheEngine/Assets/Textures/CardSpriteSheet.png", CARD_WIDTH, CARD_HEIGHT
         );
 
         sprite.setupSpritesheet(13, 6);
@@ -255,7 +255,7 @@ void SpiderSolitaireScene::createEmptySpots(GraphicsDevice& device) {
     // Create empty spot for stock pile (shows when stock is completely empty)
     auto& stockEmptySpot = m_entityManager->createEntity("StockEmpty");
     auto& stockSprite = stockEmptySpot.addComponent<SpriteComponent>(
-        device, L"DX3D/Assets/Textures/CardSpriteSheet.png", CARD_WIDTH, CARD_HEIGHT
+        device, L"TheEngine/Assets/Textures/CardSpriteSheet.png", CARD_WIDTH, CARD_HEIGHT
     );
 
     stockSprite.setupSpritesheet(13, 6);
@@ -302,7 +302,7 @@ void SpiderSolitaireScene::createCards(GraphicsDevice& device) {
 
                 // Add sprite component
                 auto& cardSprite = cardEntity.addComponent<SpriteComponent>(
-                    device, L"DX3D/Assets/Textures/CardSpriteSheet.png", CARD_WIDTH, CARD_HEIGHT
+                    device, L"TheEngine/Assets/Textures/CardSpriteSheet.png", CARD_WIDTH, CARD_HEIGHT
                 );
 
                 cardSprite.setupSpritesheet(13, 6);
@@ -1168,7 +1168,7 @@ void SpiderSolitaireScene::updateStockIndicators() {
         auto& fakeStock = m_entityManager->createEntity("StockIndicator_" + std::to_string(i));
         auto& sprite = fakeStock.addComponent<SpriteComponent>(
             *m_graphicsDevice,
-            L"DX3D/Assets/Textures/CardSpriteSheet.png",
+            L"TheEngine/Assets/Textures/CardSpriteSheet.png",
             CARD_WIDTH, CARD_HEIGHT
         );
 

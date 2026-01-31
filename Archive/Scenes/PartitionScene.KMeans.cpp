@@ -1,9 +1,9 @@
-#include <DX3D/Game/Scenes/PartitionScene.h>
+#include <TheEngine/Game/Scenes/PartitionScene.h>
 #include <algorithm>
 #include <limits>
 #include <random>
 
-using namespace dx3d;
+using namespace TheEngine;
 
 void PartitionScene::performKMeansClustering() {
     if (m_movingEntities.empty()) return;

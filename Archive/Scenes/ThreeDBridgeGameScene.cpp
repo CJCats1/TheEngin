@@ -1,17 +1,17 @@
 #include "ThreeDBridgeGameScene.h"
 
-void dx3d::ThreeDBridgeGameScene::load(GraphicsEngine& engine)
+void TheEngine::ThreeDBridgeGameScene::load(GraphicsEngine& engine)
 {
 }
 
-void dx3d::ThreeDBridgeGameScene::update(float dt)
+void TheEngine::ThreeDBridgeGameScene::update(float dt)
 {
 }
 
-void dx3d::ThreeDBridgeGameScene::render(GraphicsEngine& engine, SwapChain& swapChain)
+void TheEngine::ThreeDBridgeGameScene::render(GraphicsEngine& engine, SwapChain& swapChain)
 {
 }
 
-void dx3d::ThreeDBridgeGameScene::fixedUpdate(float dt)
+void TheEngine::ThreeDBridgeGameScene::fixedUpdate(float dt)
 {
 }

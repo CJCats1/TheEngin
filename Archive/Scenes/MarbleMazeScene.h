@@ -1,10 +1,10 @@
 #pragma once
-#include <DX3D/Core/Scene.h>
-#include <DX3D/Math/Geometry.h>
-#include <DX3D/Graphics/Camera.h>
+#include <TheEngine/Core/Scene.h>
+#include <TheEngine/Math/Geometry.h>
+#include <TheEngine/Graphics/Camera.h>
 #include <memory>
 
-namespace dx3d {
+namespace TheEngine {
     class EntityManager;
     class GraphicsEngine;
     class SwapChain;
@@ -14,7 +14,7 @@ namespace dx3d {
     class Physics3DComponent;
 }
 
-namespace dx3d {
+namespace TheEngine {
     class MarbleMazeScene : public Scene {
     public:
         void load(GraphicsEngine& engine) override;

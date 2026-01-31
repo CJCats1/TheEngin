@@ -10,17 +10,17 @@ set(THEENGINE_ROOT ${CMAKE_CURRENT_LIST_DIR}/../../../../..)
 add_library(TheEngine SHARED
     main_android.cpp
     ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c
-    ${THEENGINE_ROOT}/DX3D/Include/Libraries/imgui-docking/imgui.cpp
-    ${THEENGINE_ROOT}/DX3D/Include/Libraries/imgui-docking/imgui_draw.cpp
-    ${THEENGINE_ROOT}/DX3D/Include/Libraries/imgui-docking/imgui_widgets.cpp
-    ${THEENGINE_ROOT}/DX3D/Include/Libraries/imgui-docking/imgui_tables.cpp
-    ${THEENGINE_ROOT}/DX3D/Include/Libraries/imgui-docking/backends/imgui_impl_android.cpp
-    ${THEENGINE_ROOT}/DX3D/Include/Libraries/imgui-docking/backends/imgui_impl_opengl3.cpp
-    ${THEENGINE_ROOT}/DX3D/Include/Libraries/stb/stb_image.cpp
+    ${THEENGINE_ROOT}/TheEngine/Include/Libraries/imgui-docking/imgui.cpp
+    ${THEENGINE_ROOT}/TheEngine/Include/Libraries/imgui-docking/imgui_draw.cpp
+    ${THEENGINE_ROOT}/TheEngine/Include/Libraries/imgui-docking/imgui_widgets.cpp
+    ${THEENGINE_ROOT}/TheEngine/Include/Libraries/imgui-docking/imgui_tables.cpp
+    ${THEENGINE_ROOT}/TheEngine/Include/Libraries/imgui-docking/backends/imgui_impl_android.cpp
+    ${THEENGINE_ROOT}/TheEngine/Include/Libraries/imgui-docking/backends/imgui_impl_opengl3.cpp
+    ${THEENGINE_ROOT}/TheEngine/Include/Libraries/stb/stb_image.cpp
 )
 
 file(GLOB_RECURSE ENGINE_SOURCES
-    ${THEENGINE_ROOT}/DX3D/Source/DX3D/*.cpp
+    ${THEENGINE_ROOT}/TheEngine/Source/TheEngine/*.cpp
 )
 list(FILTER ENGINE_SOURCES EXCLUDE REGEX "/Win32/")
 list(FILTER ENGINE_SOURCES EXCLUDE REGEX "/DirectX11/")
@@ -40,14 +40,14 @@ target_sources(TheEngine PRIVATE ${ENGINE_SOURCES})
 
 target_include_directories(TheEngine PRIVATE
     ${ANDROID_NDK}/sources/android/native_app_glue
-    ${THEENGINE_ROOT}/DX3D/Include
-    ${THEENGINE_ROOT}/DX3D/Source
-    ${THEENGINE_ROOT}/DX3D/Include/Libraries/imgui-docking
-    ${THEENGINE_ROOT}/DX3D/Include/Libraries/imgui-docking/backends
+    ${THEENGINE_ROOT}/TheEngine/Include
+    ${THEENGINE_ROOT}/TheEngine/Source
+    ${THEENGINE_ROOT}/TheEngine/Include/Libraries/imgui-docking
+    ${THEENGINE_ROOT}/TheEngine/Include/Libraries/imgui-docking/backends
 )
 
 target_compile_definitions(TheEngine PRIVATE
-    DX3D_PLATFORM_ANDROID
+    THEENGINE_PLATFORM_ANDROID
     IMGUI_IMPL_OPENGL_ES3
 )
 

@@ -50,364 +50,364 @@ cmake_ninja_workdir = D$:/TheEngine/TheEngine/android/app/.cxx/Debug/4k51t6js/ar
 build cmake_object_order_depends_target_TheEngine: phony || CMakeFiles/TheEngine.dir
 
 build CMakeFiles/TheEngine.dir/main_android.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/android/app/src/main/cpp/main_android.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
   DEP_FILE = CMakeFiles\TheEngine.dir\main_android.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
   OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir
 
 build CMakeFiles/TheEngine.dir/C_/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue/android_native_app_glue.c.o: C_COMPILER__TheEngine_Debug C$:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue/android_native_app_glue.c || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
   DEP_FILE = CMakeFiles\TheEngine.dir\C_\Users\cjrea\AppData\Local\Android\Sdk\ndk\25.1.8937393\sources\android\native_app_glue\android_native_app_glue.c.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
   OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\C_\Users\cjrea\AppData\Local\Android\Sdk\ndk\25.1.8937393\sources\android\native_app_glue
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Include/Libraries/imgui-docking/imgui.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Include/Libraries/imgui-docking/imgui.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Include\Libraries\imgui-docking\imgui.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Include/Libraries/imgui-docking/imgui.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Include/Libraries/imgui-docking/imgui.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Include\Libraries\imgui-docking\imgui.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Include\Libraries\imgui-docking
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Include\Libraries\imgui-docking
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Include/Libraries/imgui-docking/imgui_draw.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Include/Libraries/imgui-docking/imgui_draw.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Include\Libraries\imgui-docking\imgui_draw.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Include/Libraries/imgui-docking/imgui_draw.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Include/Libraries/imgui-docking/imgui_draw.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Include\Libraries\imgui-docking\imgui_draw.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Include\Libraries\imgui-docking
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Include\Libraries\imgui-docking
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Include/Libraries/imgui-docking/imgui_widgets.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Include/Libraries/imgui-docking/imgui_widgets.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Include\Libraries\imgui-docking\imgui_widgets.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Include/Libraries/imgui-docking/imgui_widgets.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Include/Libraries/imgui-docking/imgui_widgets.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Include\Libraries\imgui-docking\imgui_widgets.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Include\Libraries\imgui-docking
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Include\Libraries\imgui-docking
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Include/Libraries/imgui-docking/imgui_tables.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Include/Libraries/imgui-docking/imgui_tables.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Include\Libraries\imgui-docking\imgui_tables.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Include/Libraries/imgui-docking/imgui_tables.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Include/Libraries/imgui-docking/imgui_tables.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Include\Libraries\imgui-docking\imgui_tables.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Include\Libraries\imgui-docking
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Include\Libraries\imgui-docking
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Include/Libraries/imgui-docking/backends/imgui_impl_android.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Include/Libraries/imgui-docking/backends/imgui_impl_android.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Include\Libraries\imgui-docking\backends\imgui_impl_android.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Include/Libraries/imgui-docking/backends/imgui_impl_android.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Include/Libraries/imgui-docking/backends/imgui_impl_android.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Include\Libraries\imgui-docking\backends\imgui_impl_android.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Include\Libraries\imgui-docking\backends
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Include\Libraries\imgui-docking\backends
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Include/Libraries/imgui-docking/backends/imgui_impl_opengl3.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Include/Libraries/imgui-docking/backends/imgui_impl_opengl3.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Include\Libraries\imgui-docking\backends\imgui_impl_opengl3.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Include/Libraries/imgui-docking/backends/imgui_impl_opengl3.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Include/Libraries/imgui-docking/backends/imgui_impl_opengl3.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Include\Libraries\imgui-docking\backends\imgui_impl_opengl3.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Include\Libraries\imgui-docking\backends
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Include\Libraries\imgui-docking\backends
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Include/Libraries/stb/stb_image.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Include/Libraries/stb/stb_image.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Include\Libraries\stb\stb_image.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Include/Libraries/stb/stb_image.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Include/Libraries/stb/stb_image.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Include\Libraries\stb\stb_image.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Include\Libraries\stb
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Include\Libraries\stb
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Core/AndroidPlatform.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Source/DX3D/Core/AndroidPlatform.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Core\AndroidPlatform.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Core/AndroidPlatform.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Core/AndroidPlatform.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Core\AndroidPlatform.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Core
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Core
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Core/Base.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Source/DX3D/Core/Base.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Core\Base.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Core/Base.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Core/Base.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Core\Base.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Core
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Core
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Core/Input.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Source/DX3D/Core/Input.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Core\Input.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Core/Input.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Core/Input.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Core\Input.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Core
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Core
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Core/Logger.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Source/DX3D/Core/Logger.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Core\Logger.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Core/Logger.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Core/Logger.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Core\Logger.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Core
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Core
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Core/Scene.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Source/DX3D/Core/Scene.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Core\Scene.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Core/Scene.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Core/Scene.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Core\Scene.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Core
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Core
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/DataStructures/AABBTree.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Source/DX3D/DataStructures/AABBTree.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\DataStructures\AABBTree.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/DataStructures/AABBTree.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Source/TheEngine/DataStructures/AABBTree.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\DataStructures\AABBTree.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\DataStructures
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\DataStructures
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/DataStructures/KDTree.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Source/DX3D/DataStructures/KDTree.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\DataStructures\KDTree.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/DataStructures/KDTree.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Source/TheEngine/DataStructures/KDTree.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\DataStructures\KDTree.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\DataStructures
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\DataStructures
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/DataStructures/Octree.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Source/DX3D/DataStructures/Octree.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\DataStructures\Octree.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/DataStructures/Octree.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Source/TheEngine/DataStructures/Octree.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\DataStructures\Octree.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\DataStructures
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\DataStructures
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/DataStructures/Quadtree.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Source/DX3D/DataStructures/Quadtree.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\DataStructures\Quadtree.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/DataStructures/Quadtree.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Source/TheEngine/DataStructures/Quadtree.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\DataStructures\Quadtree.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\DataStructures
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\DataStructures
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Game/Android/AndroidGame.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Source/DX3D/Game/Android/AndroidGame.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Game\Android\AndroidGame.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Game/Android/AndroidGame.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Game/Android/AndroidGame.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Game\Android\AndroidGame.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Game\Android
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Game\Android
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Game/Display.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Source/DX3D/Game/Display.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Game\Display.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Game/Display.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Game/Display.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Game\Display.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Game
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Game
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Game/Game.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Source/DX3D/Game/Game.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Game\Game.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Game/Game.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Game/Game.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Game\Game.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Game
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Game
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Game/SceneHelper.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Source/DX3D/Game/SceneHelper.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Game\SceneHelper.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Game/SceneHelper.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Game/SceneHelper.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Game\SceneHelper.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Game
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Game
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Game/Scenes/TestScenes/TestScene.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Source/DX3D/Game/Scenes/TestScenes/TestScene.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Game\Scenes\TestScenes\TestScene.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Game/Scenes/TestScenes/TestScene.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Game/Scenes/TestScenes/TestScene.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Game\Scenes\TestScenes\TestScene.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Game\Scenes\TestScenes
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Game\Scenes\TestScenes
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Game/Scenes/TestScenes/ThreeDTestScene.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Source/DX3D/Game/Scenes/TestScenes/ThreeDTestScene.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Game\Scenes\TestScenes\ThreeDTestScene.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Game/Scenes/TestScenes/ThreeDTestScene.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Game/Scenes/TestScenes/ThreeDTestScene.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Game\Scenes\TestScenes\ThreeDTestScene.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Game\Scenes\TestScenes
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Game\Scenes\TestScenes
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Graphics/Abstraction/RenderBackendFactory.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Source/DX3D/Graphics/Abstraction/RenderBackendFactory.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Graphics\Abstraction\RenderBackendFactory.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/Abstraction/RenderBackendFactory.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/Abstraction/RenderBackendFactory.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\Abstraction\RenderBackendFactory.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Graphics\Abstraction
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\Abstraction
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Graphics/Camera.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Source/DX3D/Graphics/Camera.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Graphics\Camera.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/Camera.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/Camera.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\Camera.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Graphics
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Graphics/DirectWriteText.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Source/DX3D/Graphics/DirectWriteText.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Graphics\DirectWriteText.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/DirectWriteText.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/DirectWriteText.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\DirectWriteText.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Graphics
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Graphics/FBXLoader.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Source/DX3D/Graphics/FBXLoader.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Graphics\FBXLoader.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/FBXLoader.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/FBXLoader.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\FBXLoader.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Graphics
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Graphics/GraphicsEngine.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Source/DX3D/Graphics/GraphicsEngine.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Graphics\GraphicsEngine.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/GraphicsEngine.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/GraphicsEngine.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\GraphicsEngine.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Graphics
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Graphics/LineRenderer.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Source/DX3D/Graphics/LineRenderer.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Graphics\LineRenderer.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/LineRenderer.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/LineRenderer.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\LineRenderer.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Graphics
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Graphics/Mesh.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Source/DX3D/Graphics/Mesh.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Graphics\Mesh.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/Mesh.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/Mesh.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\Mesh.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Graphics
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Graphics/OpenGLES/OpenGLESContext.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Source/DX3D/Graphics/OpenGLES/OpenGLESContext.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Graphics\OpenGLES\OpenGLESContext.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/OpenGLES/OpenGLESContext.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/OpenGLES/OpenGLESContext.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\OpenGLES\OpenGLESContext.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Graphics\OpenGLES
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\OpenGLES
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Graphics/OpenGLES/OpenGLESDevice.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Source/DX3D/Graphics/OpenGLES/OpenGLESDevice.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Graphics\OpenGLES\OpenGLESDevice.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/OpenGLES/OpenGLESDevice.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/OpenGLES/OpenGLESDevice.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\OpenGLES\OpenGLESDevice.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Graphics\OpenGLES
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\OpenGLES
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Graphics/OpenGLES/OpenGLESRenderBackend.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Source/DX3D/Graphics/OpenGLES/OpenGLESRenderBackend.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Graphics\OpenGLES\OpenGLESRenderBackend.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/OpenGLES/OpenGLESRenderBackend.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/OpenGLES/OpenGLESRenderBackend.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\OpenGLES\OpenGLESRenderBackend.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Graphics\OpenGLES
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\OpenGLES
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Graphics/OpenGLES/OpenGLESSwapChain.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Source/DX3D/Graphics/OpenGLES/OpenGLESSwapChain.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Graphics\OpenGLES\OpenGLESSwapChain.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/OpenGLES/OpenGLESSwapChain.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/OpenGLES/OpenGLESSwapChain.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\OpenGLES\OpenGLESSwapChain.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Graphics\OpenGLES
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\OpenGLES
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Graphics/SpriteComponent.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Source/DX3D/Graphics/SpriteComponent.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Graphics\SpriteComponent.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/SpriteComponent.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/SpriteComponent.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\SpriteComponent.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Graphics
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Graphics/Texture2D.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Source/DX3D/Graphics/Texture2D.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Graphics\Texture2D.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/Texture2D.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/Texture2D.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\Texture2D.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Graphics
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Math/DefaultMathBackend.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Source/DX3D/Math/DefaultMathBackend.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Math\DefaultMathBackend.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Math/DefaultMathBackend.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Math/DefaultMathBackend.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Math\DefaultMathBackend.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Math
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Math
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Math/GLMMathBackend.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Source/DX3D/Math/GLMMathBackend.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Math\GLMMathBackend.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Math/GLMMathBackend.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Math/GLMMathBackend.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Math\GLMMathBackend.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Math
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Math
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Math/Geometry.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Source/DX3D/Math/Geometry.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Math\Geometry.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Math/Geometry.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Math/Geometry.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Math\Geometry.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Math
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Math
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Math/MathBackend.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Source/DX3D/Math/MathBackend.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Math\MathBackend.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Math/MathBackend.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Math/MathBackend.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Math\MathBackend.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Math
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Math
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Math/Types.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Source/DX3D/Math/Types.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Math\Types.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Math/Types.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Math/Types.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Math\Types.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Math
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Math
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Physics/AABBPhysics.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Source/DX3D/Physics/AABBPhysics.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Physics\AABBPhysics.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Physics/AABBPhysics.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Physics/AABBPhysics.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Physics\AABBPhysics.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Physics
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Physics
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Physics/PhysicsSystem.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Source/DX3D/Physics/PhysicsSystem.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Physics\PhysicsSystem.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Physics/PhysicsSystem.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Physics/PhysicsSystem.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Physics\PhysicsSystem.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Physics
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Physics
 
-build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Window/Android/AndroidWindow.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/DX3D/Source/DX3D/Window/Android/AndroidWindow.cpp || cmake_object_order_depends_target_TheEngine
-  DEFINES = -DDX3D_PLATFORM_ANDROID -DIMGUI_IMPL_OPENGL_ES3 -DTheEngine_EXPORTS
-  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Window\Android\AndroidWindow.cpp.o.d
+build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Window/Android/AndroidWindow.cpp.o: CXX_COMPILER__TheEngine_Debug D$:/TheEngine/TheEngine/TheEngine/Source/TheEngine/Window/Android/AndroidWindow.cpp || cmake_object_order_depends_target_TheEngine
+  DEFINES = -DIMGUI_IMPL_OPENGL_ES3 -DTHEENGINE_PLATFORM_ANDROID -DTheEngine_EXPORTS
+  DEP_FILE = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Window\Android\AndroidWindow.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info  -fPIC -std=c++20
-  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../DX3D/Include/Libraries/imgui-docking/backends
+  INCLUDES = -IC:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Source -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking -ID:/TheEngine/TheEngine/android/app/src/main/cpp/../../../../../TheEngine/Include/Libraries/imgui-docking/backends
   OBJECT_DIR = CMakeFiles\TheEngine.dir
-  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\DX3D\Source\DX3D\Window\Android
+  OBJECT_FILE_DIR = CMakeFiles\TheEngine.dir\D_\TheEngine\TheEngine\TheEngine\Source\TheEngine\Window\Android
 
 
 # =============================================================================
@@ -417,7 +417,7 @@ build CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Window/An
 #############################################
 # Link the shared library D:\TheEngine\TheEngine\android\app\build\intermediates\cxx\Debug\4k51t6js\obj\arm64-v8a\libTheEngine.so
 
-build D$:/TheEngine/TheEngine/android/app/build/intermediates/cxx/Debug/4k51t6js/obj/arm64-v8a/libTheEngine.so: CXX_SHARED_LIBRARY_LINKER__TheEngine_Debug CMakeFiles/TheEngine.dir/main_android.cpp.o CMakeFiles/TheEngine.dir/C_/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue/android_native_app_glue.c.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Include/Libraries/imgui-docking/imgui.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Include/Libraries/imgui-docking/imgui_draw.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Include/Libraries/imgui-docking/imgui_widgets.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Include/Libraries/imgui-docking/imgui_tables.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Include/Libraries/imgui-docking/backends/imgui_impl_android.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Include/Libraries/imgui-docking/backends/imgui_impl_opengl3.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Include/Libraries/stb/stb_image.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Core/AndroidPlatform.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Core/Base.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Core/Input.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Core/Logger.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Core/Scene.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/DataStructures/AABBTree.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/DataStructures/KDTree.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/DataStructures/Octree.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/DataStructures/Quadtree.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Game/Android/AndroidGame.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Game/Display.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Game/Game.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Game/SceneHelper.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Game/Scenes/TestScenes/TestScene.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Game/Scenes/TestScenes/ThreeDTestScene.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Graphics/Abstraction/RenderBackendFactory.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Graphics/Camera.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Graphics/DirectWriteText.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Graphics/FBXLoader.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Graphics/GraphicsEngine.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Graphics/LineRenderer.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Graphics/Mesh.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Graphics/OpenGLES/OpenGLESContext.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Graphics/OpenGLES/OpenGLESDevice.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Graphics/OpenGLES/OpenGLESRenderBackend.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Graphics/OpenGLES/OpenGLESSwapChain.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Graphics/SpriteComponent.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Graphics/Texture2D.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Math/DefaultMathBackend.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Math/GLMMathBackend.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Math/Geometry.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Math/MathBackend.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Math/Types.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Physics/AABBPhysics.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Physics/PhysicsSystem.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/DX3D/Source/DX3D/Window/Android/AndroidWindow.cpp.o | C$:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/aarch64-linux-android/30/liblog.so C$:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/aarch64-linux-android/30/libandroid.so C$:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/aarch64-linux-android/30/libEGL.so C$:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/aarch64-linux-android/30/libGLESv3.so
+build D$:/TheEngine/TheEngine/android/app/build/intermediates/cxx/Debug/4k51t6js/obj/arm64-v8a/libTheEngine.so: CXX_SHARED_LIBRARY_LINKER__TheEngine_Debug CMakeFiles/TheEngine.dir/main_android.cpp.o CMakeFiles/TheEngine.dir/C_/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue/android_native_app_glue.c.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Include/Libraries/imgui-docking/imgui.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Include/Libraries/imgui-docking/imgui_draw.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Include/Libraries/imgui-docking/imgui_widgets.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Include/Libraries/imgui-docking/imgui_tables.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Include/Libraries/imgui-docking/backends/imgui_impl_android.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Include/Libraries/imgui-docking/backends/imgui_impl_opengl3.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Include/Libraries/stb/stb_image.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Core/AndroidPlatform.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Core/Base.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Core/Input.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Core/Logger.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Core/Scene.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/DataStructures/AABBTree.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/DataStructures/KDTree.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/DataStructures/Octree.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/DataStructures/Quadtree.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Game/Android/AndroidGame.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Game/Display.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Game/Game.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Game/SceneHelper.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Game/Scenes/TestScenes/TestScene.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Game/Scenes/TestScenes/ThreeDTestScene.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/Abstraction/RenderBackendFactory.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/Camera.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/DirectWriteText.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/FBXLoader.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/GraphicsEngine.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/LineRenderer.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/Mesh.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/OpenGLES/OpenGLESContext.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/OpenGLES/OpenGLESDevice.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/OpenGLES/OpenGLESRenderBackend.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/OpenGLES/OpenGLESSwapChain.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/SpriteComponent.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Graphics/Texture2D.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Math/DefaultMathBackend.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Math/GLMMathBackend.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Math/Geometry.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Math/MathBackend.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Math/Types.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Physics/AABBPhysics.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Physics/PhysicsSystem.cpp.o CMakeFiles/TheEngine.dir/D_/TheEngine/TheEngine/TheEngine/Source/TheEngine/Window/Android/AndroidWindow.cpp.o | C$:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/aarch64-linux-android/30/liblog.so C$:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/aarch64-linux-android/30/libandroid.so C$:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/aarch64-linux-android/30/libEGL.so C$:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/aarch64-linux-android/30/libGLESv3.so
   LANGUAGE_COMPILE_FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++20 -frtti -fexceptions -fno-limit-debug-info
   LINK_FLAGS = -static-libstdc++ -Wl,--build-id=sha1 -Wl,--fatal-warnings -Wl,--gc-sections -Wl,--no-undefined -Qunused-arguments    -Wl,-z,max-page-size=16384 -Wl,-z,common-page-size=16384
   LINK_LIBRARIES = C:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/aarch64-linux-android/30/liblog.so  C:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/aarch64-linux-android/30/libandroid.so  C:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/aarch64-linux-android/30/libEGL.so  C:/Users/cjrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/aarch64-linux-android/30/libGLESv3.so  -latomic -lm

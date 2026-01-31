@@ -1,10 +1,10 @@
-#include <DX3D/Components/SunComponent.h>
-#include <DX3D/Graphics/Texture2D.h>
-#include <DX3D/Core/EntityManager.h>
-#include <DX3D/Graphics/GraphicsDevice.h>
+#include <TheEngine/Components/SunComponent.h>
+#include <TheEngine/Graphics/Texture2D.h>
+#include <TheEngine/Core/EntityManager.h>
+#include <TheEngine/Graphics/GraphicsDevice.h>
 #include <iostream>
 
-namespace dx3d
+namespace TheEngine
 {
     SunComponent::SunComponent() {
         // Initialize with default values

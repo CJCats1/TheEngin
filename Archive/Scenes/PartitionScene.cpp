@@ -1,20 +1,20 @@
-#include <DX3D/Game/Scenes/PartitionScene.h>
-#include <DX3D/Graphics/SpriteComponent.h>
-#include <DX3D/Graphics/GraphicsEngine.h>
-#include <DX3D/Graphics/SwapChain.h>
-#include <DX3D/Graphics/Camera.h>
-#include <DX3D/Graphics/LineRenderer.h>
-#include <DX3D/Components/Quadtree.h>
-#include <DX3D/Components/AABBTree.h>
-#include <DX3D/Components/KDTree.h>
-#include <DX3D/Components/Octree.h>
-#include <DX3D/Core/Input.h>
-#include <DX3D/Graphics/DirectWriteText.h>
-#include <DX3D/Components/ButtonComponent.h>
-#include <DX3D/Components/PanelComponent.h>
-#include <DX3D/Components/Mesh3DComponent.h>
-#include <DX3D/Graphics/Mesh.h>
-#include <DX3D/Graphics/Texture2D.h>
+#include <TheEngine/Game/Scenes/PartitionScene.h>
+#include <TheEngine/Graphics/SpriteComponent.h>
+#include <TheEngine/Graphics/GraphicsEngine.h>
+#include <TheEngine/Graphics/SwapChain.h>
+#include <TheEngine/Graphics/Camera.h>
+#include <TheEngine/Graphics/LineRenderer.h>
+#include <TheEngine/Components/Quadtree.h>
+#include <TheEngine/Components/AABBTree.h>
+#include <TheEngine/Components/KDTree.h>
+#include <TheEngine/Components/Octree.h>
+#include <TheEngine/Core/Input.h>
+#include <TheEngine/Graphics/DirectWriteText.h>
+#include <TheEngine/Components/ButtonComponent.h>
+#include <TheEngine/Components/PanelComponent.h>
+#include <TheEngine/Components/Mesh3DComponent.h>
+#include <TheEngine/Graphics/Mesh.h>
+#include <TheEngine/Graphics/Texture2D.h>
 #include <random>
 #include <iostream>
 #include <limits>
@@ -24,7 +24,7 @@
 #include <set>
 #include <imgui.h>
 
-using namespace dx3d;
+using namespace TheEngine;
 
 void PartitionScene::load(GraphicsEngine& engine) {
     auto& device = engine.getGraphicsDevice();
@@ -117,7 +117,7 @@ void PartitionScene::load(GraphicsEngine& engine) {
     auto& anchorEntity = m_entityManager->createEntity("WorldOriginAnchor");
     auto& anchorSprite = anchorEntity.addComponent<SpriteComponent>(
         device,
-        L"DX3D/Assets/Textures/node.png",
+        L"TheEngine/Assets/Textures/node.png",
         1.0f, 1.0f  // Tiny size
     );
     anchorSprite.setPosition(0.0f, 0.0f, 0.0f); // World origin
@@ -158,7 +158,7 @@ void PartitionScene::createTestEntities(GraphicsDevice& device) {
 
         auto& sprite = entity.addComponent<SpriteComponent>(
             device,
-            L"DX3D/Assets/Textures/node.png",
+            L"TheEngine/Assets/Textures/node.png",
             size.x,
             size.y
         );
@@ -184,36 +184,36 @@ void PartitionScene::createTestEntities(GraphicsDevice& device) {
 }
 
 
-void PartitionScene::setSimulationSpeed(dx3d::SimulationSpeed speed) {
+void PartitionScene::setSimulationSpeed(TheEngine::SimulationSpeed speed) {
     m_simulationSpeed = speed;
     
     // Update speed multiplier based on simulation speed
     switch (speed) {
-        case dx3d::SimulationSpeed::Paused:
+        case TheEngine::SimulationSpeed::Paused:
             m_simulationSpeedMultiplier = 0.0f;
             break;
-        case dx3d::SimulationSpeed::Normal:
+        case TheEngine::SimulationSpeed::Normal:
             m_simulationSpeedMultiplier = 1.0f;
             break;
-        case dx3d::SimulationSpeed::Fast:
+        case TheEngine::SimulationSpeed::Fast:
             m_simulationSpeedMultiplier = 2.0f;
             break;
-        case dx3d::SimulationSpeed::VeryFast:
+        case TheEngine::SimulationSpeed::VeryFast:
             m_simulationSpeedMultiplier = 4.0f;
             break;
     }
     
     // Update button states
     if (m_pauseButton) {
-        m_pauseButton->setNormalTint(speed == dx3d::SimulationSpeed::Paused ? 
+        m_pauseButton->setNormalTint(speed == TheEngine::SimulationSpeed::Paused ? 
             Vec4(1.0f, 0.5f, 0.5f, 0.9f) : Vec4(0.8f, 0.2f, 0.2f, 0.9f));
     }
     if (m_playButton) {
-        m_playButton->setNormalTint(speed == dx3d::SimulationSpeed::Normal ? 
+        m_playButton->setNormalTint(speed == TheEngine::SimulationSpeed::Normal ? 
             Vec4(0.5f, 1.0f, 0.5f, 0.9f) : Vec4(0.2f, 0.8f, 0.2f, 0.9f));
     }
     if (m_fastForwardButton) {
-        m_fastForwardButton->setNormalTint((speed == dx3d::SimulationSpeed::Fast || speed == dx3d::SimulationSpeed::VeryFast) ? 
+        m_fastForwardButton->setNormalTint((speed == TheEngine::SimulationSpeed::Fast || speed == TheEngine::SimulationSpeed::VeryFast) ? 
             Vec4(0.5f, 0.5f, 1.0f, 0.9f) : Vec4(0.2f, 0.2f, 0.8f, 0.9f));
     }
 }
@@ -223,7 +223,7 @@ void PartitionScene::updateSpeedControls() {
     
     // Update speed indicator text
     std::wstring speedText = L"Speed: ";
-    if (m_simulationSpeed == dx3d::SimulationSpeed::Paused) {
+    if (m_simulationSpeed == TheEngine::SimulationSpeed::Paused) {
         speedText += L"Paused";
     } else {
         speedText += std::to_wstring(static_cast<int>(m_simulationSpeedMultiplier * 10) / 10.0f) + L"x";
@@ -250,7 +250,7 @@ void PartitionScene::addRandomEntities() {
 
         auto& sprite = entity.addComponent<SpriteComponent>(
             device,
-            L"DX3D/Assets/Textures/node.png",
+            L"TheEngine/Assets/Textures/node.png",
             size.x,
             size.y
         );
@@ -640,7 +640,7 @@ void PartitionScene::addEntityAtPosition(const Vec2& worldPos) {
 
     auto& sprite = entity.addComponent<SpriteComponent>(
         device,
-        L"DX3D/Assets/Textures/node.png",
+        L"TheEngine/Assets/Textures/node.png",
         size.x,
         size.y
     );
@@ -733,7 +733,7 @@ void PartitionScene::generateConcentricCirclesDataset() {
             auto& entity = m_entityManager->createEntity("TestEntity" + std::to_string(m_entityCounter));
             auto& sprite = entity.addComponent<SpriteComponent>(
                 device,
-                L"DX3D/Assets/Textures/node.png",
+                L"TheEngine/Assets/Textures/node.png",
                 size.x,
                 size.y
             );
@@ -839,7 +839,7 @@ void PartitionScene::generateConcentricCirclesDatasetLight() {
             auto& entity = m_entityManager->createEntity("TestEntity" + std::to_string(m_entityCounter));
             auto& sprite = entity.addComponent<SpriteComponent>(
                 device,
-                L"DX3D/Assets/Textures/node.png",
+                L"TheEngine/Assets/Textures/node.png",
                 size.x,
                 size.y
             );

@@ -1,25 +1,25 @@
 #pragma once
-#include <DX3D/Core/EntityManager.h>
-#include <DX3D/Core/Scene.h>
-#include <DX3D/Graphics/Camera.h>
-#include <DX3D/Graphics/GraphicsEngine.h>
-#include <DX3D/Graphics/SpriteComponent.h>
-#include <DX3D/Graphics/LineRenderer.h>
-#include <DX3D/Graphics/DirectWriteText.h>
-#include <DX3D/Components/Quadtree.h>
-#include <DX3D/Components/AABBTree.h>
-#include <DX3D/Components/KDTree.h>
-#include <DX3D/Components/Octree.h>
-#include <DX3D/Components/ButtonComponent.h>
-#include <DX3D/Components/PanelComponent.h>
-#include <DX3D/Core/Input.h>
-#include <DX3D/Graphics/ShadowMap.h>
+#include <TheEngine/Core/EntityManager.h>
+#include <TheEngine/Core/Scene.h>
+#include <TheEngine/Graphics/Camera.h>
+#include <TheEngine/Graphics/GraphicsEngine.h>
+#include <TheEngine/Graphics/SpriteComponent.h>
+#include <TheEngine/Graphics/LineRenderer.h>
+#include <TheEngine/Graphics/DirectWriteText.h>
+#include <TheEngine/Components/Quadtree.h>
+#include <TheEngine/Components/AABBTree.h>
+#include <TheEngine/Components/KDTree.h>
+#include <TheEngine/Components/Octree.h>
+#include <TheEngine/Components/ButtonComponent.h>
+#include <TheEngine/Components/PanelComponent.h>
+#include <TheEngine/Core/Input.h>
+#include <TheEngine/Graphics/ShadowMap.h>
 #include <memory>
 #include <set>
 #include <vector>
 #include <random>
  
-namespace dx3d
+namespace TheEngine
 {
     enum class SimulationSpeed { Paused, Normal, Fast, VeryFast };
 
@@ -157,7 +157,7 @@ namespace dx3d
         void updateQuadtreeVisualization();
         void createSpeedControls(GraphicsDevice& device);
         void updateSpeedControls();
-        void setSimulationSpeed(dx3d::SimulationSpeed speed);
+        void setSimulationSpeed(TheEngine::SimulationSpeed speed);
         void respawnWorldAnchorSprite();
         void updateCameraMovement(float dt);
         void updateOffsetControls(float dt);

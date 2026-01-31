@@ -1,20 +1,20 @@
 #pragma once
-#include <DX3D/Core/Scene.h>
-#include <DX3D/Graphics/Camera.h>
-#include <DX3D/Graphics/SpriteComponent.h>
-#include <DX3D/Graphics/GraphicsEngine.h>
-#include <DX3D/Core/Input.h>
-#include <DX3D/Components/AnimationComponent.h>
-#include <DX3D/Components/ButtonComponent.h>
-#include <DX3D/Components/PanelComponent.h>
-#include <DX3D/Graphics/DirectWriteText.h>
-#include <DX3D/Core/EntityManager.h>
-#include <DX3D/Components/PhysicsComponent.h>
-#include <DX3D/Components/FirmGuyComponent.h>
-#include <DX3D/Components/FirmGuySystem.h>
-#include <DX3D/Components/SpringGuyComponent.h>
-#include <DX3D/Components/SoftGuyComponent.h>
-#include <DX3D/Components/FrameComponent.h>
+#include <TheEngine/Core/Scene.h>
+#include <TheEngine/Graphics/Camera.h>
+#include <TheEngine/Graphics/SpriteComponent.h>
+#include <TheEngine/Graphics/GraphicsEngine.h>
+#include <TheEngine/Core/Input.h>
+#include <TheEngine/Components/AnimationComponent.h>
+#include <TheEngine/Components/ButtonComponent.h>
+#include <TheEngine/Components/PanelComponent.h>
+#include <TheEngine/Graphics/DirectWriteText.h>
+#include <TheEngine/Core/EntityManager.h>
+#include <TheEngine/Components/PhysicsComponent.h>
+#include <TheEngine/Components/FirmGuyComponent.h>
+#include <TheEngine/Components/FirmGuySystem.h>
+#include <TheEngine/Components/SpringGuyComponent.h>
+#include <TheEngine/Components/SoftGuyComponent.h>
+#include <TheEngine/Components/FrameComponent.h>
 #include <vector>
 #include <random>
 #include <memory>
@@ -22,8 +22,8 @@
 #include <string>
 #include <unordered_map>
 #include <map>
-#include <DX3D/Graphics/LineRenderer.h>
-namespace dx3d
+#include <TheEngine/Graphics/LineRenderer.h>
+namespace TheEngine
 {
     enum class TetriminoType {
         I_PIECE,

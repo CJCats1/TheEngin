@@ -22,18 +22,17 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#include <DX3D/All.h>
-#include <DX3D/Graphics/GraphicsEngine.h>
+#include <TheEngine/All.h>
+#include <TheEngine/Graphics/GraphicsEngine.h>
+#include <TheEngine/Game/Scenes/TestScenes/TestScene.h>
 #include <windows.h>
 
 int main()
 {
 	try
 	{
-		//need to change this so I can resize the window
-		dx3d::Game game({ {1280,720},dx3d::Logger::LogLevel::Info });
-		//game.setScene(std::make_unique<dx3d::TestScene>());
-
+		TheEngine::Game game({ {1280,720}, TheEngine::Logger::LogLevel::Info });
+		game.setScene(std::make_unique<TheEngine::TestScene>());
 		game.run();
 	}
 	catch (const std::runtime_error& e)

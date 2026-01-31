@@ -1,19 +1,19 @@
-#include <DX3D/Game/Scenes/MarbleMazeScene.h>
-#include <DX3D/Core/EntityManager.h>
-#include <DX3D/Graphics/GraphicsEngine.h>
-#include <DX3D/Graphics/SwapChain.h>
-#include <DX3D/Core/Input.h>
-#include <DX3D/Graphics/Mesh.h>
-#include <DX3D/Graphics/Camera.h>
-#include <DX3D/Graphics/Texture2D.h>
-#include <DX3D/Components/Mesh3DComponent.h>
-#include <DX3D/Components/Physics3DComponent.h>
-#include <DX3D/Core/Entity.h>
+#include <TheEngine/Game/Scenes/MarbleMazeScene.h>
+#include <TheEngine/Core/EntityManager.h>
+#include <TheEngine/Graphics/GraphicsEngine.h>
+#include <TheEngine/Graphics/SwapChain.h>
+#include <TheEngine/Core/Input.h>
+#include <TheEngine/Graphics/Mesh.h>
+#include <TheEngine/Graphics/Camera.h>
+#include <TheEngine/Graphics/Texture2D.h>
+#include <TheEngine/Components/Mesh3DComponent.h>
+#include <TheEngine/Components/Physics3DComponent.h>
+#include <TheEngine/Core/Entity.h>
 #include <algorithm>
 #include <cmath>
 #include <windows.h>
 
-using namespace dx3d;
+using namespace TheEngine;
 
 void MarbleMazeScene::load(GraphicsEngine& engine)
 {
@@ -23,7 +23,7 @@ void MarbleMazeScene::load(GraphicsEngine& engine)
     m_entityManager = std::unique_ptr<EntityManager>(new EntityManager());
     
     // Load beam texture
-    std::wstring beamPath = L"D:/TheEngine/TheEngine/DX3D/Assets/Textures/beam.png";
+    std::wstring beamPath = L"D:/TheEngine/TheEngine/TheEngine/Assets/Textures/beam.png";
     m_beamTexture = Texture2D::LoadTexture2D(device.getD3DDevice(), beamPath.c_str());
     
     // Create marble entity with physics

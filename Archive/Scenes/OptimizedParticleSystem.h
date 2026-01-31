@@ -3,7 +3,7 @@
 #include <array>
 #include <memory>
 
-namespace dx3d
+namespace TheEngine
 {
     // LiquidFun-inspired optimized particle system
     class OptimizedParticleSystem

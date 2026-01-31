@@ -1,10 +1,10 @@
-#include <DX3D/Game/Scenes/PartitionScene.h>
-#include <DX3D/Graphics/LineRenderer.h>
-#include <DX3D/Graphics/SpriteComponent.h>
-#include <DX3D/Math/Geometry.h>
+#include <TheEngine/Game/Scenes/PartitionScene.h>
+#include <TheEngine/Graphics/LineRenderer.h>
+#include <TheEngine/Graphics/SpriteComponent.h>
+#include <TheEngine/Math/Geometry.h>
 #include <cmath>
 
-using namespace dx3d;
+using namespace TheEngine;
 
 void PartitionScene::updateQuadtreeVisualization() {
     if (!m_lineRenderer) return;
@@ -304,7 +304,7 @@ void PartitionScene::respawnWorldAnchorSprite() {
     auto& anchorEntity = m_entityManager->createEntity("WorldOriginAnchor");
     auto& anchorSprite = anchorEntity.addComponent<SpriteComponent>(
         device,
-        L"DX3D/Assets/Textures/node.png",
+        L"TheEngine/Assets/Textures/node.png",
         1.0f,
         1.0f
     );

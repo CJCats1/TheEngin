@@ -1,9 +1,9 @@
 #pragma once
-#include <DX3D/Math/Geometry.h>
+#include <TheEngine/Math/Geometry.h>
 #include <iostream>
 #include "CardFrameComponent.h"
 
-namespace dx3d {
+namespace TheEngine {
     enum class PhysicsMode {
         NORMAL,      // Normal springy behavior
         CELEBRATION, // Enhanced physics for celebrations

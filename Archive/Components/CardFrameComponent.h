@@ -1,7 +1,7 @@
 #pragma once
-#include <DX3D/Math/Geometry.h>
+#include <TheEngine/Math/Geometry.h>
 
-namespace dx3d {
+namespace TheEngine {
     // Frame component for card rigid body reference - similar to FrameComponent in PhysicsTetrisScene
     class CardFrameComponent {
     public:

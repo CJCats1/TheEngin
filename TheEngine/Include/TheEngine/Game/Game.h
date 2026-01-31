@@ -1,0 +1,70 @@
+/*MIT License
+
+C++ 3D Game Tutorial Series (https://github.com/PardCode/CPP-3D-Game-Tutorial-Series)
+
+Copyright (c) 2019-2025, PardCode
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.*/
+
+#pragma once
+#include <TheEngine/Core/Base.h>
+#include <TheEngine/Core/Core.h>
+#include <chrono>
+#include <memory>
+#include <string>
+
+// Forward declarations
+namespace TheEngine {
+    class SwapChain;
+}
+namespace TheEngine
+{
+    enum class SceneType { None };
+	class Scene;
+
+	class Game : public Base
+	{
+	public:
+		explicit Game(const GameDesc& desc);
+		virtual ~Game() override;
+
+		virtual void run() final;
+		void setScene(std::unique_ptr<Scene> scene);
+		void onKeyDown(int keyCode);
+		void onKeyUp(int keyCode);
+		void ImguiRebuild();
+		void SetImguiRebuild(bool rebuild) { imguiRebuild = rebuild; }
+		
+		// Static method to trigger ImGui rebuild from scenes
+		static void TriggerImguiRebuild();
+	private:
+		void onInternalUpdate();
+		std::chrono::steady_clock::time_point m_lastFrameTime;
+		SceneType m_currentSceneType = SceneType::None;
+		std::unique_ptr<Logger> m_loggerPtr{};
+		std::unique_ptr<GraphicsEngine> m_graphicsEngine{};
+		std::unique_ptr<Display> m_display{};
+		std::unique_ptr<Scene> m_activeScene{};
+		bool m_isRunning{ true };
+		bool imguiRebuild{ false };
+		
+		// Static reference to current Game instance
+		static Game* s_currentInstance;
+	};
+}

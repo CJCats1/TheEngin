@@ -2,12 +2,12 @@
 #pragma once
 #include <vector>
 #include <memory>
-#include <DX3D/Math/Geometry.h>
-#include <DX3D/Core/Entity.h>
-#include <DX3D/Components/TetrisPhysicsComponent.h>
-#include <DX3D/Graphics/SpriteComponent.h>
+#include <TheEngine/Math/Geometry.h>
+#include <TheEngine/Core/Entity.h>
+#include <TheEngine/Components/TetrisPhysicsComponent.h>
+#include <TheEngine/Graphics/SpriteComponent.h>
 
-namespace dx3d {
+namespace TheEngine {
 
     struct SliceData {
         std::vector<Vec2> vertices;

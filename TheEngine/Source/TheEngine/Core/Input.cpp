@@ -1,0 +1,228 @@
+#include <TheEngine/Core/Input.h>
+#if defined(_WIN32)
+#include <Windows.h>
+#endif
+
+using namespace TheEngine;
+
+//
+// Singleton
+//
+Input& Input::getInstance()
+{
+    static Input instance;
+    return instance;
+}
+
+//
+// Keyboard handling
+//
+void Input::setKeyDown(int keyCode)
+{
+    if (!m_keyStates[keyCode]) {
+        m_justPressed[keyCode] = true;
+
+    }
+    m_keyStates[keyCode] = true;
+}
+
+void Input::setKeyUp(int keyCode)
+{
+    if (m_keyStates[keyCode]) {
+        m_justReleased[keyCode] = true;
+    }
+    m_keyStates[keyCode] = false;
+}
+
+
+bool Input::isKeyDown(int keyCode) const
+{
+    auto it = m_keyStates.find(keyCode);
+    return (it != m_keyStates.end()) ? it->second : false;
+}
+
+bool Input::isKeyDown(Key key) const
+{
+    return isKeyDown(static_cast<int>(key));
+}
+
+bool Input::isKeyUp(int keyCode) const
+{
+    return !isKeyDown(keyCode);
+}
+
+bool Input::isKeyUp(Key key) const
+{
+    return isKeyUp(static_cast<int>(key));
+}
+
+bool Input::wasKeyJustPressed(int keyCode) const
+{
+    auto it = m_justPressed.find(keyCode);
+    bool result = it != m_justPressed.end() && it->second;
+
+
+    return result;
+}
+
+bool Input::wasKeyJustPressed(Key key) const
+{
+    return wasKeyJustPressed(static_cast<int>(key));
+}
+
+bool Input::wasKeyJustReleased(int keyCode) const
+{
+    auto it = m_justReleased.find(keyCode);
+    return it != m_justReleased.end() && it->second;
+}
+
+bool Input::wasKeyJustReleased(Key key) const
+{
+    return wasKeyJustReleased(static_cast<int>(key));
+}
+
+//
+// Per-frame update
+//
+void Input::update()
+{
+
+    // Store previous states
+    m_previousKeyStates = m_keyStates;
+    m_prevMouseStates = m_mouseStates;
+
+    // Clear "just pressed/released" flags for next frame
+    m_justPressed.clear();
+    m_justReleased.clear();
+    m_mouseJustPressed.clear();
+    m_mouseJustReleased.clear();
+}
+
+//
+// Reset all keys
+//
+void Input::reset()
+{
+    m_keyStates.clear();
+    m_previousKeyStates.clear();
+    m_justPressed.clear();
+    m_justReleased.clear();
+
+    m_mouseStates.clear();
+    m_prevMouseStates.clear();
+    m_mouseJustPressed.clear();
+    m_mouseJustReleased.clear();
+}
+
+void Input::setMouseDown(MouseClick button)
+{
+    if (!m_mouseStates[button]) {
+        m_mouseJustPressed[button] = true;
+    }
+    m_mouseStates[button] = true;
+}
+
+void Input::setMouseUp(MouseClick button)
+{
+    if (m_mouseStates[button]) {
+        m_mouseJustReleased[button] = true;
+    }
+    m_mouseStates[button] = false;
+}
+
+bool Input::isMouseDown(MouseClick button) const
+{
+    auto it = m_mouseStates.find(button);
+    return it != m_mouseStates.end() ? it->second : false;
+}
+
+bool Input::isMouseUp(MouseClick button) const
+{
+    return !isMouseDown(button);
+}
+
+bool Input::wasMouseJustPressed(MouseClick button) const
+{
+    auto it = m_mouseJustPressed.find(button);
+    return it != m_mouseJustPressed.end() ? it->second : false;
+}
+
+bool Input::wasMouseJustReleased(MouseClick button) const
+{
+    auto it = m_mouseJustReleased.find(button);
+    return it != m_mouseJustReleased.end() ? it->second : false;
+}
+
+Vec2 Input::getMousePosition() const
+{
+#if defined(_WIN32)
+    POINT cursorPos;
+    GetCursorPos(&cursorPos);
+
+    // If we have a window handle, convert to client coordinates
+    if (m_windowHandle && ScreenToClient(m_windowHandle, &cursorPos))
+    {
+        return Vec2((float)cursorPos.x, (float)cursorPos.y);
+    }
+
+    // Fallback to screen coordinates
+    return Vec2((float)cursorPos.x, (float)cursorPos.y);
+#else
+    return m_mousePosition;
+#endif
+}
+
+Vec2 Input::getMousePositionScreen() const
+{
+#if defined(_WIN32)
+    POINT cursorPos;
+    GetCursorPos(&cursorPos);
+    return Vec2((float)cursorPos.x, (float)cursorPos.y);
+#else
+    return m_mousePosition;
+#endif
+}
+Vec2 Input::getMousePositionClient() const
+{
+#if defined(_WIN32)
+    POINT cursorPos;
+    GetCursorPos(&cursorPos);
+
+    if (m_windowHandle && ScreenToClient(m_windowHandle, &cursorPos))
+    {
+        return Vec2((float)cursorPos.x, (float)cursorPos.y);
+    }
+
+    return Vec2((float)cursorPos.x, (float)cursorPos.y); // fallback
+#else
+    return m_mousePosition;
+#endif
+}
+
+Vec2 Input::getMousePositionNDC() const
+{
+#if defined(_WIN32)
+    Vec2 clientPos = getMousePositionClient();
+
+    RECT rect;
+    GetClientRect(m_windowHandle, &rect);
+    float width = (float)(rect.right - rect.left);
+    float height = (float)(rect.bottom - rect.top);
+
+    // Normalize 0..1 (left=0, right=1, top=0, bottom=1)
+    float u = clientPos.x / width;
+    float v = clientPos.y / height;
+
+    // Flip origin: bottom-right = (0,0), top-right = (1,1)
+    v = 1.0f - v;   // flip Y so top=1, bottom=0
+
+    return Vec2(u, v);
+#else
+    return Vec2(0.0f, 0.0f);
+#endif
+}
+
+void Input::setMousePosition(const Vec2& position)
+{
+    m_mousePosition = position;
+}

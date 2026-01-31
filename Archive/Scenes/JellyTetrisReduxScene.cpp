@@ -1,16 +1,16 @@
-#include <DX3D/Game/Scenes/JellyTetrisReduxScene.h>
-#include <DX3D/Graphics/SpriteComponent.h>
-#include <DX3D/Graphics/GraphicsEngine.h>
-#include <DX3D/Graphics/SwapChain.h>
-#include <DX3D/Graphics/Camera.h>
-#include <DX3D/Core/Input.h>
-#include <DX3D/Components/PhysicsComponent.h>
+#include <TheEngine/Game/Scenes/JellyTetrisReduxScene.h>
+#include <TheEngine/Graphics/SpriteComponent.h>
+#include <TheEngine/Graphics/GraphicsEngine.h>
+#include <TheEngine/Graphics/SwapChain.h>
+#include <TheEngine/Graphics/Camera.h>
+#include <TheEngine/Core/Input.h>
+#include <TheEngine/Components/PhysicsComponent.h>
 #include <iostream>
 #include <imgui.h>
 #include <cmath>
 #include <chrono>
 
-using namespace dx3d;
+using namespace TheEngine;
 
 
 void JellyTetrisReduxScene::load(GraphicsEngine& engine) {
@@ -136,7 +136,7 @@ void JellyTetrisReduxScene::createPlayField() {
     auto& leftMarker = m_entityManager->createEntity("LeftBoundaryMarker");
     auto& leftSprite = leftMarker.addComponent<SpriteComponent>(
         device,
-        L"DX3D/Assets/Textures/beam.png",
+        L"TheEngine/Assets/Textures/beam.png",
         WALL_THICKNESS, PLAY_FIELD_HEIGHT
     );
     leftSprite.setPosition(-fieldWidth / 2 - WALL_THICKNESS / 2, 0.0f, 0.0f);
@@ -146,7 +146,7 @@ void JellyTetrisReduxScene::createPlayField() {
     auto& rightMarker = m_entityManager->createEntity("RightBoundaryMarker");
     auto& rightSprite = rightMarker.addComponent<SpriteComponent>(
         device,
-        L"DX3D/Assets/Textures/beam.png",
+        L"TheEngine/Assets/Textures/beam.png",
         WALL_THICKNESS, PLAY_FIELD_HEIGHT
     );
     rightSprite.setPosition(fieldWidth / 2 + WALL_THICKNESS / 2, 0.0f, 0.0f);
@@ -156,7 +156,7 @@ void JellyTetrisReduxScene::createPlayField() {
     auto& bottomMarker = m_entityManager->createEntity("BottomBoundaryMarker");
     auto& bottomSprite = bottomMarker.addComponent<SpriteComponent>(
         device,
-        L"DX3D/Assets/Textures/beam.png",
+        L"TheEngine/Assets/Textures/beam.png",
         fieldWidth + 2 * WALL_THICKNESS, WALL_THICKNESS
     );
     bottomSprite.setPosition(0.0f, -PLAY_FIELD_HEIGHT / 2 - WALL_THICKNESS / 2, 0.0f);
@@ -211,7 +211,7 @@ std::string JellyTetrisReduxScene::createTetriminoNodes(const JellyTetriminoData
 
                 auto& sprite = nodeEntity.addComponent<SpriteComponent>(
                     *m_graphicsDevice,
-                    L"DX3D/Assets/Textures/node.png",
+                    L"TheEngine/Assets/Textures/node.png",
                     NODE_SIZE * 0.8f, NODE_SIZE * 0.8f  // Make nodes more visible
                 );
                 sprite.setPosition(nodePos.x, nodePos.y, 0.0f);
@@ -288,7 +288,7 @@ void JellyTetrisReduxScene::createTetriminoBeams(const JellyTetriminoData& data,
 
             auto& sprite = beamEntity.addComponent<SpriteComponent>(
                 *m_graphicsDevice,
-                L"DX3D/Assets/Textures/beam.png",
+                L"TheEngine/Assets/Textures/beam.png",
                 0.5f, 0.5f  // Make beams smaller and more reasonable
             );
 

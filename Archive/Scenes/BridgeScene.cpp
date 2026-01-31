@@ -1,19 +1,19 @@
-﻿#include <DX3D/Game/Scenes/BridgeScene.h>
-#include <DX3D/Graphics/SpriteComponent.h>
-#include <DX3D/Graphics/GraphicsEngine.h>
-#include <DX3D/Graphics/SwapChain.h>
-#include <DX3D/Graphics/Camera.h>
-#include <DX3D/Components/PhysicsComponent.h>
-#include <DX3D/Core/Input.h>
-#include <DX3D/Graphics/DirectWriteText.h>
-#include <DX3D/Components/ButtonComponent.h>
-#include <DX3D/Components/PanelComponent.h>
+#include <TheEngine/Game/Scenes/BridgeScene.h>
+#include <TheEngine/Graphics/SpriteComponent.h>
+#include <TheEngine/Graphics/GraphicsEngine.h>
+#include <TheEngine/Graphics/SwapChain.h>
+#include <TheEngine/Graphics/Camera.h>
+#include <TheEngine/Components/PhysicsComponent.h>
+#include <TheEngine/Core/Input.h>
+#include <TheEngine/Graphics/DirectWriteText.h>
+#include <TheEngine/Components/ButtonComponent.h>
+#include <TheEngine/Components/PanelComponent.h>
 #include <iostream>
 // ImGui demo
 #include <imgui.h>
 #include <implot.h>
 
-using namespace dx3d;
+using namespace TheEngine;
 void BridgeScene::resetBridge() {
     std::vector<std::string> entitiesToRemove;
 
@@ -213,7 +213,7 @@ void BridgeScene::createNode(Vec2 position, bool fixed, const std::string& name)
     // Visual component
     auto& sprite = nodeEntity.addComponent<SpriteComponent>(
         device,
-        L"DX3D/Assets/Textures/node.png",
+        L"TheEngine/Assets/Textures/node.png",
         28.0f, 28.0f
     );
     sprite.setPosition(position.x, position.y, 0.0f);
@@ -235,7 +235,7 @@ void BridgeScene::createBeam(const std::string& node1Name, const std::string& no
     // Visual component
     auto& sprite = beamEntity.addComponent<SpriteComponent>(
         device,
-        L"DX3D/Assets/Textures/beam.png",
+        L"TheEngine/Assets/Textures/beam.png",
         1.0f, 1.0f
     );
 
@@ -377,7 +377,7 @@ void BridgeScene::render(GraphicsEngine& engine, SwapChain& swapChain) {
     // Present is handled centrally after ImGui rendering
 }
 
-void dx3d::BridgeScene::fixedUpdate(float dt)
+void TheEngine::BridgeScene::fixedUpdate(float dt)
 {
     if (m_isSimulationRunning) {
         PhysicsSystem::updateNodes(*m_entityManager, dt);
@@ -430,7 +430,7 @@ void BridgeScene::handleBuildMode() {
                 // Highlight node
                 auto redTexture = Texture2D::LoadTexture2D(
                     m_graphicsDevice->getD3DDevice(),
-                    L"DX3D/Assets/Textures/nodeRed.png"
+                    L"TheEngine/Assets/Textures/nodeRed.png"
                 );
                 entity->getComponent<SpriteComponent>()->setTexture(redTexture);
 
@@ -444,7 +444,7 @@ void BridgeScene::handleBuildMode() {
                 // Reset to normal texture
                 auto normalTexture = Texture2D::LoadTexture2D(
                     m_graphicsDevice->getD3DDevice(),
-                    L"DX3D/Assets/Textures/node.png"
+                    L"TheEngine/Assets/Textures/node.png"
                 );
                 entity->getComponent<SpriteComponent>()->setTexture(normalTexture);
             }
@@ -578,7 +578,7 @@ void BridgeScene::handleDeleteMode() {
             // Highlight node in red
             auto redTexture = Texture2D::LoadTexture2D(
                 m_graphicsDevice->getD3DDevice(),
-                L"DX3D/Assets/Textures/nodeRed.png"
+                L"TheEngine/Assets/Textures/nodeRed.png"
             );
             entity->getComponent<SpriteComponent>()->setTexture(redTexture);
 
@@ -649,7 +649,7 @@ void BridgeScene::resetAllNodeAndBeamTextures() {
     for (auto* entity : nodes) {
         auto normalTexture = Texture2D::LoadTexture2D(
             m_graphicsDevice->getD3DDevice(),
-            L"DX3D/Assets/Textures/node.png"
+            L"TheEngine/Assets/Textures/node.png"
         );
         entity->getComponent<SpriteComponent>()->setTexture(normalTexture);
     }

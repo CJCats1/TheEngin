@@ -1,0 +1,62 @@
+/*MIT License
+
+C++ 3D Game Tutorial Series (https://github.com/PardCode/CPP-3D-Game-Tutorial-Series)
+
+Copyright (c) 2019-2025, PardCode
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.*/
+
+#pragma once
+#include <TheEngine/Core/Common.h>
+
+
+namespace TheEngine
+{
+	class Base
+	{
+	public:
+		explicit Base(const BaseDesc& desc);
+		virtual ~Base();
+		virtual Logger& getLogger() noexcept final;
+
+	protected:
+		Base(const Base&) = delete;
+		Base(Base&&) = delete;
+		Base& operator = (const Base&) = delete;
+		Base& operator=(Base&&) = delete;
+
+	protected:
+		Logger& m_logger;
+	};
+}
+
+#define THEENGINE_LOG_INFO(message)\
+		THEENGINE_LOG(getLogger(),Logger::LogLevel::Info, message)
+
+#define THEENGINE_LOG_WARNING(message)\
+		THEENGINE_LOG(getLogger(),Logger::LogLevel::Warning, message)
+
+#define THEENGINE_LOG_ERROR(message)\
+		THEENGINE_LOG(getLogger(),Logger::LogLevel::Error, message)
+
+#define THEENGINE_LOG_THROW_ERROR(message)\
+		THEENGINE_LOG_THROW(getLogger(),std::runtime_error, Logger::LogLevel::Error, message)
+
+#define THEENGINE_LOG_THROW_INVALID_ARG(message)\
+		THEENGINE_LOG_THROW(getLogger(),std::invalid_argument, Logger::LogLevel::Error, message)

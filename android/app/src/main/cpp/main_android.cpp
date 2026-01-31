@@ -2,10 +2,10 @@
 #include <android/native_window.h>
 #include <android/log.h>
 #include <android_native_app_glue.h>
-#include <DX3D/Core/AndroidPlatform.h>
-#include <DX3D/Core/Input.h>
-#include <DX3D/Math/Geometry.h>
-#include <DX3D/Game/Game.h>
+#include <TheEngine/Core/AndroidPlatform.h>
+#include <TheEngine/Core/Input.h>
+#include <TheEngine/Math/Geometry.h>
+#include <TheEngine/Game/Game.h>
 #include <backends/imgui_impl_android.h>
 #include <android/input.h>
 
@@ -27,28 +27,28 @@ namespace
 
             const float x = AMotionEvent_getX(event, 0);
             const float y = AMotionEvent_getY(event, 0);
-            dx3d::Input::getInstance().setMousePosition(dx3d::Vec2(x, y));
+            TheEngine::Input::getInstance().setMousePosition(TheEngine::Vec2(x, y));
 
             if (masked == AMOTION_EVENT_ACTION_DOWN || masked == AMOTION_EVENT_ACTION_POINTER_DOWN)
             {
                 if (pointerCount >= 2)
                 {
-                    dx3d::Input::getInstance().setMouseDown(dx3d::MouseClick::RightMouse);
+                    TheEngine::Input::getInstance().setMouseDown(TheEngine::MouseClick::RightMouse);
                 }
                 else
                 {
-                    dx3d::Input::getInstance().setMouseDown(dx3d::MouseClick::LeftMouse);
+                    TheEngine::Input::getInstance().setMouseDown(TheEngine::MouseClick::LeftMouse);
                 }
             }
             else if (masked == AMOTION_EVENT_ACTION_UP || masked == AMOTION_EVENT_ACTION_POINTER_UP)
             {
                 if (pointerCount >= 2)
                 {
-                    dx3d::Input::getInstance().setMouseUp(dx3d::MouseClick::RightMouse);
+                    TheEngine::Input::getInstance().setMouseUp(TheEngine::MouseClick::RightMouse);
                 }
                 else
                 {
-                    dx3d::Input::getInstance().setMouseUp(dx3d::MouseClick::LeftMouse);
+                    TheEngine::Input::getInstance().setMouseUp(TheEngine::MouseClick::LeftMouse);
                 }
             }
             // MOVE events just update position (already done above)
@@ -59,11 +59,11 @@ namespace
             const int32_t keyCode = AKeyEvent_getKeyCode(event);
             if (action == AKEY_EVENT_ACTION_DOWN)
             {
-                dx3d::Input::getInstance().setKeyDown(keyCode);
+                TheEngine::Input::getInstance().setKeyDown(keyCode);
             }
             else if (action == AKEY_EVENT_ACTION_UP)
             {
-                dx3d::Input::getInstance().setKeyUp(keyCode);
+                TheEngine::Input::getInstance().setKeyUp(keyCode);
             }
         }
         
@@ -81,11 +81,11 @@ namespace
         switch (cmd)
         {
         case APP_CMD_INIT_WINDOW:
-            dx3d::platform::setNativeWindow(app->window);
+            TheEngine::platform::setNativeWindow(app->window);
             __android_log_print(ANDROID_LOG_INFO, kLogTag, "Window initialized");
             break;
         case APP_CMD_TERM_WINDOW:
-            dx3d::platform::setNativeWindow(nullptr);
+            TheEngine::platform::setNativeWindow(nullptr);
             __android_log_print(ANDROID_LOG_INFO, kLogTag, "Window terminated");
             break;
         case APP_CMD_GAINED_FOCUS:
@@ -104,8 +104,8 @@ void android_main(android_app* app)
 {
     app->onAppCmd = onAppCmd;
     app->onInputEvent = onInputEvent;
-    dx3d::platform::setAssetManager(app->activity->assetManager);
-    dx3d::platform::setAndroidApp(app);
+    TheEngine::platform::setAssetManager(app->activity->assetManager);
+    TheEngine::platform::setAndroidApp(app);
 
     __android_log_print(ANDROID_LOG_INFO, kLogTag, "TheEngine Android stub starting");
 
@@ -129,13 +129,13 @@ void android_main(android_app* app)
         }
     }
 
-    dx3d::platform::setNativeWindow(app->window);
+    TheEngine::platform::setNativeWindow(app->window);
     
     // Get actual window dimensions from ANativeWindow
     int windowWidth = ANativeWindow_getWidth(app->window);
     int windowHeight = ANativeWindow_getHeight(app->window);
     __android_log_print(ANDROID_LOG_INFO, kLogTag, "Window dimensions: %dx%d", windowWidth, windowHeight);
     
-    dx3d::Game game({ {static_cast<dx3d::i32>(windowWidth), static_cast<dx3d::i32>(windowHeight)}, dx3d::Logger::LogLevel::Info });
+    TheEngine::Game game({ {static_cast<TheEngine::i32>(windowWidth), static_cast<TheEngine::i32>(windowHeight)}, TheEngine::Logger::LogLevel::Info });
     game.run();
 }

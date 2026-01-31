@@ -1,11 +1,11 @@
 #pragma once
-#include <DX3D/Core/Entity.h>
-#include <DX3D/Core/EntityManager.h>
-#include <DX3D/Graphics/SpriteComponent.h>
-#include <DX3D/Math/Geometry.h>
+#include <TheEngine/Core/Entity.h>
+#include <TheEngine/Core/EntityManager.h>
+#include <TheEngine/Graphics/SpriteComponent.h>
+#include <TheEngine/Math/Geometry.h>
 #include <string>
 
-namespace dx3d
+namespace TheEngine
 {
     class GraphicsDevice;
     class Entity;
