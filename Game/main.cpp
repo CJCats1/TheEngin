@@ -24,7 +24,7 @@ SOFTWARE.*/
 
 #include <TheEngine/All.h>
 #include <TheEngine/Graphics/GraphicsEngine.h>
-#include <TheEngine/Game/Scenes/TestScenes/TestScene.h>
+#include "Scenes/TestScenes/TestScene.h"
 #include <windows.h>
 
 int main()

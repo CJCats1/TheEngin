@@ -7,7 +7,7 @@ namespace TheEngine
     class IndexBuffer;
     class IRenderContext;
 
-    class IRenderDevice
+    class THEENGINE_API IRenderDevice
     {
     public:
         virtual ~IRenderDevice() = default;

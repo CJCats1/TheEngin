@@ -1,0 +1,340 @@
+﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(538,5): warning MSB8028: The intermediate directory (Intermediate\x64\Debug\) contains files shared from another project (DirectXGame.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+  TestScene.cpp
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Core\Entity.h(82,21): warning C4251: 'TheEngine::Entity::m_name': 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>' needs to have dll-interface to be used by clients of 'TheEngine::Entity'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
+      see declaration of 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Core\Entity.h(83,84): warning C4251: 'TheEngine::Entity::m_components': 'std::unordered_map<std::type_index,std::shared_ptr<TheEngine::Entity::ComponentWrapperBase>,std::hash<std::type_index>,std::equal_to<std::type_index>,std::allocator<std::pair<const std::type_index,std::shared_ptr<TheEngine::Entity::ComponentWrapperBase>>>>' needs to have dll-interface to be used by clients of 'TheEngine::Entity'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\unordered_map(61,7):
+      see declaration of 'std::unordered_map<std::type_index,std::shared_ptr<TheEngine::Entity::ComponentWrapperBase>,std::hash<std::type_index>,std::equal_to<std::type_index>,std::allocator<std::pair<const std::type_index,std::shared_ptr<TheEngine::Entity::ComponentWrapperBase>>>>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Core\EntityManager.h(86,46): warning C4251: 'TheEngine::EntityManager::m_entities': 'std::vector<std::unique_ptr<TheEngine::Entity,std::default_delete<TheEngine::Entity>>,std::allocator<std::unique_ptr<TheEngine::Entity,std::default_delete<TheEngine::Entity>>>>' needs to have dll-interface to be used by clients of 'TheEngine::EntityManager'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\vector(442,7):
+      see declaration of 'std::vector<std::unique_ptr<TheEngine::Entity,std::default_delete<TheEngine::Entity>>,std::allocator<std::unique_ptr<TheEngine::Entity,std::default_delete<TheEngine::Entity>>>>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Core\EntityManager.h(87,50): warning C4251: 'TheEngine::EntityManager::m_namedEntities': 'std::unordered_map<std::string,TheEngine::Entity *,std::hash<std::string>,std::equal_to<std::string>,std::allocator<std::pair<const std::string,TheEngine::Entity *>>>' needs to have dll-interface to be used by clients of 'TheEngine::EntityManager'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\unordered_map(61,7):
+      see declaration of 'std::unordered_map<std::string,TheEngine::Entity *,std::hash<std::string>,std::equal_to<std::string>,std::allocator<std::pair<const std::string,TheEngine::Entity *>>>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\Texture2D.h(919,58): warning C4251: 'TheEngine::Texture2D::m_srv': 'Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>' needs to have dll-interface to be used by clients of 'TheEngine::Texture2D'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\winrt\wrl\client.h(210,7):
+      see declaration of 'Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\Mesh.h(68,25): warning C4251: 'TheEngine::Mesh::m_vb': 'std::shared_ptr<TheEngine::IRenderVertexBuffer>' needs to have dll-interface to be used by clients of 'TheEngine::Mesh'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
+      see declaration of 'std::shared_ptr<TheEngine::IRenderVertexBuffer>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\Mesh.h(69,25): warning C4251: 'TheEngine::Mesh::m_ib': 'std::shared_ptr<TheEngine::IRenderIndexBuffer>' needs to have dll-interface to be used by clients of 'TheEngine::Mesh'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
+      see declaration of 'std::shared_ptr<TheEngine::IRenderIndexBuffer>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\Mesh.h(71,39): warning C4251: 'TheEngine::Mesh::m_texture': 'std::shared_ptr<TheEngine::Texture2D>' needs to have dll-interface to be used by clients of 'TheEngine::Mesh'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
+      see declaration of 'std::shared_ptr<TheEngine::Texture2D>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Core\TransformComponent.h(137,14): warning C4251: 'TheEngine::TransformComponent::m_position': 'TheEngine::Vec3' needs to have dll-interface to be used by clients of 'TheEngine::TransformComponent'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      D:\TheEngine\TheEngine\TheEngine\Include\TheEngine\Math\Types.h(49,11):
+      see declaration of 'TheEngine::Vec3'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Core\TransformComponent.h(138,14): warning C4251: 'TheEngine::TransformComponent::m_rotation': 'TheEngine::Vec3' needs to have dll-interface to be used by clients of 'TheEngine::TransformComponent'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      D:\TheEngine\TheEngine\TheEngine\Include\TheEngine\Math\Types.h(49,11):
+      see declaration of 'TheEngine::Vec3'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Core\TransformComponent.h(139,14): warning C4251: 'TheEngine::TransformComponent::m_scale': 'TheEngine::Vec3' needs to have dll-interface to be used by clients of 'TheEngine::TransformComponent'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      D:\TheEngine\TheEngine\TheEngine\Include\TheEngine\Math\Types.h(49,11):
+      see declaration of 'TheEngine::Vec3'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Core\TransformComponent.h(141,22): warning C4251: 'TheEngine::TransformComponent::m_worldMatrix': 'TheEngine::Mat4' needs to have dll-interface to be used by clients of 'TheEngine::TransformComponent'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      D:\TheEngine\TheEngine\TheEngine\Include\TheEngine\Math\Types.h(125,11):
+      see declaration of 'TheEngine::Mat4'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\SpriteComponent.h(80,14): warning C4251: 'TheEngine::SpriteComponent::m_screenPosition': 'TheEngine::Vec2' needs to have dll-interface to be used by clients of 'TheEngine::SpriteComponent'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      D:\TheEngine\TheEngine\TheEngine\Include\TheEngine\Math\Types.h(7,12):
+      see declaration of 'TheEngine::Vec2'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\SpriteComponent.h(171,31): warning C4251: 'TheEngine::SpriteComponent::m_mesh': 'std::shared_ptr<TheEngine::Mesh>' needs to have dll-interface to be used by clients of 'TheEngine::SpriteComponent'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
+      see declaration of 'std::shared_ptr<TheEngine::Mesh>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\SpriteComponent.h(172,36): warning C4251: 'TheEngine::SpriteComponent::m_texture': 'std::shared_ptr<TheEngine::Texture2D>' needs to have dll-interface to be used by clients of 'TheEngine::SpriteComponent'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
+      see declaration of 'std::shared_ptr<TheEngine::Texture2D>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\SpriteComponent.h(176,14): warning C4251: 'TheEngine::SpriteComponent::m_tint': 'TheEngine::Vec4' needs to have dll-interface to be used by clients of 'TheEngine::SpriteComponent'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      D:\TheEngine\TheEngine\TheEngine\Include\TheEngine\Math\Types.h(113,11):
+      see declaration of 'TheEngine::Vec4'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\GraphicsEngine.h(55,41): warning C4251: 'TheEngine::GraphicsEngine::m_renderBackend': 'std::unique_ptr<TheEngine::IRenderBackend,std::default_delete<TheEngine::IRenderBackend>>' needs to have dll-interface to be used by clients of 'TheEngine::GraphicsEngine'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(3347,7):
+      see declaration of 'std::unique_ptr<TheEngine::IRenderBackend,std::default_delete<TheEngine::IRenderBackend>>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\GraphicsEngine.h(56,40): warning C4251: 'TheEngine::GraphicsEngine::m_imguiBackend': 'std::unique_ptr<TheEngine::IImGuiBackend,std::default_delete<TheEngine::IImGuiBackend>>' needs to have dll-interface to be used by clients of 'TheEngine::GraphicsEngine'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(3347,7):
+      see declaration of 'std::unique_ptr<TheEngine::IImGuiBackend,std::default_delete<TheEngine::IImGuiBackend>>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\GraphicsEngine.h(57,25): warning C4251: 'TheEngine::GraphicsEngine::m_graphicsDevice': 'std::shared_ptr<TheEngine::IRenderDevice>' needs to have dll-interface to be used by clients of 'TheEngine::GraphicsEngine'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
+      see declaration of 'std::shared_ptr<TheEngine::IRenderDevice>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\GraphicsEngine.h(58,26): warning C4251: 'TheEngine::GraphicsEngine::m_deviceContext': 'std::shared_ptr<TheEngine::IRenderContext>' needs to have dll-interface to be used by clients of 'TheEngine::GraphicsEngine'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
+      see declaration of 'std::shared_ptr<TheEngine::IRenderContext>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\GraphicsEngine.h(60,47): warning C4251: 'TheEngine::GraphicsEngine::m_pipeline': 'std::shared_ptr<TheEngine::IRenderPipelineState>' needs to have dll-interface to be used by clients of 'TheEngine::GraphicsEngine'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
+      see declaration of 'std::shared_ptr<TheEngine::IRenderPipelineState>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\GraphicsEngine.h(61,47): warning C4251: 'TheEngine::GraphicsEngine::m_textPipeline': 'std::shared_ptr<TheEngine::IRenderPipelineState>' needs to have dll-interface to be used by clients of 'TheEngine::GraphicsEngine'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
+      see declaration of 'std::shared_ptr<TheEngine::IRenderPipelineState>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\GraphicsEngine.h(62,47): warning C4251: 'TheEngine::GraphicsEngine::m_pipeline3D': 'std::shared_ptr<TheEngine::IRenderPipelineState>' needs to have dll-interface to be used by clients of 'TheEngine::GraphicsEngine'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
+      see declaration of 'std::shared_ptr<TheEngine::IRenderPipelineState>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\GraphicsEngine.h(63,47): warning C4251: 'TheEngine::GraphicsEngine::m_backgroundDotsPipeline': 'std::shared_ptr<TheEngine::IRenderPipelineState>' needs to have dll-interface to be used by clients of 'TheEngine::GraphicsEngine'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
+      see declaration of 'std::shared_ptr<TheEngine::IRenderPipelineState>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\GraphicsEngine.h(64,47): warning C4251: 'TheEngine::GraphicsEngine::m_toonPipeline': 'std::shared_ptr<TheEngine::IRenderPipelineState>' needs to have dll-interface to be used by clients of 'TheEngine::GraphicsEngine'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
+      see declaration of 'std::shared_ptr<TheEngine::IRenderPipelineState>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\GraphicsEngine.h(65,47): warning C4251: 'TheEngine::GraphicsEngine::m_shadowMapPipeline': 'std::shared_ptr<TheEngine::IRenderPipelineState>' needs to have dll-interface to be used by clients of 'TheEngine::GraphicsEngine'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
+      see declaration of 'std::shared_ptr<TheEngine::IRenderPipelineState>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\GraphicsEngine.h(66,47): warning C4251: 'TheEngine::GraphicsEngine::m_shadowMapDebugPipeline': 'std::shared_ptr<TheEngine::IRenderPipelineState>' needs to have dll-interface to be used by clients of 'TheEngine::GraphicsEngine'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
+      see declaration of 'std::shared_ptr<TheEngine::IRenderPipelineState>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\GraphicsEngine.h(67,47): warning C4251: 'TheEngine::GraphicsEngine::m_linePipeline': 'std::shared_ptr<TheEngine::IRenderPipelineState>' needs to have dll-interface to be used by clients of 'TheEngine::GraphicsEngine'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
+      see declaration of 'std::shared_ptr<TheEngine::IRenderPipelineState>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\GraphicsEngine.h(68,47): warning C4251: 'TheEngine::GraphicsEngine::m_skyboxPipeline': 'std::shared_ptr<TheEngine::IRenderPipelineState>' needs to have dll-interface to be used by clients of 'TheEngine::GraphicsEngine'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
+      see declaration of 'std::shared_ptr<TheEngine::IRenderPipelineState>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\GraphicsEngine.h(69,31): warning C4251: 'TheEngine::GraphicsEngine::m_fullscreenQuad': 'std::shared_ptr<TheEngine::Mesh>' needs to have dll-interface to be used by clients of 'TheEngine::GraphicsEngine'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
+      see declaration of 'std::shared_ptr<TheEngine::Mesh>'
+  
+D:\TheEngine\TheEngine\TheEngine\Include\TheEngine\Physics\AABBPhysics.h(49,18): warning C4251: 'TheEngine::physics::AABB::pos': 'TheEngine::Vec2' needs to have dll-interface to be used by clients of 'TheEngine::physics::AABB'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      D:\TheEngine\TheEngine\TheEngine\Include\TheEngine\Math\Types.h(7,12):
+      see declaration of 'TheEngine::Vec2'
+  
+D:\TheEngine\TheEngine\TheEngine\Include\TheEngine\Physics\AABBPhysics.h(50,18): warning C4251: 'TheEngine::physics::AABB::half': 'TheEngine::Vec2' needs to have dll-interface to be used by clients of 'TheEngine::physics::AABB'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      D:\TheEngine\TheEngine\TheEngine\Include\TheEngine\Math\Types.h(7,12):
+      see declaration of 'TheEngine::Vec2'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\DirectWriteText.h(103,48): warning C4251: 'TheEngine::DirectWriteRenderer::m_writeFactory': 'Microsoft::WRL::ComPtr<IDWriteFactory>' needs to have dll-interface to be used by clients of 'TheEngine::DirectWriteRenderer'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\winrt\wrl\client.h(210,7):
+      see declaration of 'Microsoft::WRL::ComPtr<IDWriteFactory>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\DirectWriteText.h(104,47): warning C4251: 'TheEngine::DirectWriteRenderer::m_d2dFactory': 'Microsoft::WRL::ComPtr<ID2D1Factory1>' needs to have dll-interface to be used by clients of 'TheEngine::DirectWriteRenderer'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\winrt\wrl\client.h(210,7):
+      see declaration of 'Microsoft::WRL::ComPtr<ID2D1Factory1>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\DirectWriteText.h(105,45): warning C4251: 'TheEngine::DirectWriteRenderer::m_d2dDevice': 'Microsoft::WRL::ComPtr<ID2D1Device>' needs to have dll-interface to be used by clients of 'TheEngine::DirectWriteRenderer'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\winrt\wrl\client.h(210,7):
+      see declaration of 'Microsoft::WRL::ComPtr<ID2D1Device>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\DirectWriteText.h(106,52): warning C4251: 'TheEngine::DirectWriteRenderer::m_d2dContext': 'Microsoft::WRL::ComPtr<ID2D1DeviceContext>' needs to have dll-interface to be used by clients of 'TheEngine::DirectWriteRenderer'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\winrt\wrl\client.h(210,7):
+      see declaration of 'Microsoft::WRL::ComPtr<ID2D1DeviceContext>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\DirectWriteText.h(107,52): warning C4251: 'TheEngine::DirectWriteRenderer::m_wicFactory': 'Microsoft::WRL::ComPtr<IWICImagingFactory>' needs to have dll-interface to be used by clients of 'TheEngine::DirectWriteRenderer'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\winrt\wrl\client.h(210,7):
+      see declaration of 'Microsoft::WRL::ComPtr<IWICImagingFactory>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\DirectWriteText.h(189,14): warning C4251: 'TheEngine::TextComponent::m_screenPosition': 'TheEngine::Vec2' needs to have dll-interface to be used by clients of 'TheEngine::TextComponent'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      D:\TheEngine\TheEngine\TheEngine\Include\TheEngine\Math\Types.h(7,12):
+      see declaration of 'TheEngine::Vec2'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\DirectWriteText.h(191,44): warning C4251: 'TheEngine::TextComponent::m_textTexture': 'std::shared_ptr<TheEngine::Texture2D>' needs to have dll-interface to be used by clients of 'TheEngine::TextComponent'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
+      see declaration of 'std::shared_ptr<TheEngine::Texture2D>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\DirectWriteText.h(192,45): warning C4251: 'TheEngine::TextComponent::m_textMesh': 'std::shared_ptr<TheEngine::Mesh>' needs to have dll-interface to be used by clients of 'TheEngine::TextComponent'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
+      see declaration of 'std::shared_ptr<TheEngine::Mesh>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\DirectWriteText.h(198,22): warning C4251: 'TheEngine::TextComponent::m_text': 'std::basic_string<wchar_t,std::char_traits<wchar_t>,std::allocator<wchar_t>>' needs to have dll-interface to be used by clients of 'TheEngine::TextComponent'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
+      see declaration of 'std::basic_string<wchar_t,std::char_traits<wchar_t>,std::allocator<wchar_t>>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\DirectWriteText.h(199,22): warning C4251: 'TheEngine::TextComponent::m_fontFamily': 'std::basic_string<wchar_t,std::char_traits<wchar_t>,std::allocator<wchar_t>>' needs to have dll-interface to be used by clients of 'TheEngine::TextComponent'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xstring(541,7):
+      see declaration of 'std::basic_string<wchar_t,std::char_traits<wchar_t>,std::allocator<wchar_t>>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\DirectWriteText.h(203,14): warning C4251: 'TheEngine::TextComponent::m_color': 'TheEngine::Vec4' needs to have dll-interface to be used by clients of 'TheEngine::TextComponent'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      D:\TheEngine\TheEngine\TheEngine\Include\TheEngine\Math\Types.h(113,11):
+      see declaration of 'TheEngine::Vec4'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\DirectWriteText.h(227,53): warning C4251: 'TheEngine::TextSystem::s_renderer': 'std::unique_ptr<TheEngine::DirectWriteRenderer,std::default_delete<TheEngine::DirectWriteRenderer>>' needs to have dll-interface to be used by clients of 'TheEngine::TextSystem'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(3347,7):
+      see declaration of 'std::unique_ptr<TheEngine::DirectWriteRenderer,std::default_delete<TheEngine::DirectWriteRenderer>>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\Camera.h(48,14): warning C4251: 'TheEngine::Camera3D::m_position': 'TheEngine::Vec3' needs to have dll-interface to be used by clients of 'TheEngine::Camera3D'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      D:\TheEngine\TheEngine\TheEngine\Include\TheEngine\Math\Types.h(49,11):
+      see declaration of 'TheEngine::Vec3'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\Camera.h(49,14): warning C4251: 'TheEngine::Camera3D::m_target': 'TheEngine::Vec3' needs to have dll-interface to be used by clients of 'TheEngine::Camera3D'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      D:\TheEngine\TheEngine\TheEngine\Include\TheEngine\Math\Types.h(49,11):
+      see declaration of 'TheEngine::Vec3'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\Camera.h(50,14): warning C4251: 'TheEngine::Camera3D::m_up': 'TheEngine::Vec3' needs to have dll-interface to be used by clients of 'TheEngine::Camera3D'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      D:\TheEngine\TheEngine\TheEngine\Include\TheEngine\Math\Types.h(49,11):
+      see declaration of 'TheEngine::Vec3'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\Camera.h(106,14): warning C4251: 'TheEngine::Camera2D::m_projectionMatrix': 'TheEngine::Mat4' needs to have dll-interface to be used by clients of 'TheEngine::Camera2D'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      D:\TheEngine\TheEngine\TheEngine\Include\TheEngine\Math\Types.h(125,11):
+      see declaration of 'TheEngine::Mat4'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\LineRenderer.h(82,27): warning C4251: 'TheEngine::LineRenderer::m_lines': 'std::vector<TheEngine::Line,std::allocator<TheEngine::Line>>' needs to have dll-interface to be used by clients of 'TheEngine::LineRenderer'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\vector(442,7):
+      see declaration of 'std::vector<TheEngine::Line,std::allocator<TheEngine::Line>>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\LineRenderer.h(83,29): warning C4251: 'TheEngine::LineRenderer::m_lines3D': 'std::vector<TheEngine::Line3D,std::allocator<TheEngine::Line3D>>' needs to have dll-interface to be used by clients of 'TheEngine::LineRenderer'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\vector(442,7):
+      see declaration of 'std::vector<TheEngine::Line3D,std::allocator<TheEngine::Line3D>>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\LineRenderer.h(84,29): warning C4251: 'TheEngine::LineRenderer::m_vertices': 'std::vector<TheEngine::Vertex,std::allocator<TheEngine::Vertex>>' needs to have dll-interface to be used by clients of 'TheEngine::LineRenderer'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\vector(442,7):
+      see declaration of 'std::vector<TheEngine::Vertex,std::allocator<TheEngine::Vertex>>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\LineRenderer.h(85,27): warning C4251: 'TheEngine::LineRenderer::m_indices': 'std::vector<TheEngine::ui32,std::allocator<TheEngine::ui32>>' needs to have dll-interface to be used by clients of 'TheEngine::LineRenderer'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\vector(442,7):
+      see declaration of 'std::vector<TheEngine::ui32,std::allocator<TheEngine::ui32>>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\LineRenderer.h(87,25): warning C4251: 'TheEngine::LineRenderer::m_vertexBuffer': 'std::shared_ptr<TheEngine::IRenderVertexBuffer>' needs to have dll-interface to be used by clients of 'TheEngine::LineRenderer'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
+      see declaration of 'std::shared_ptr<TheEngine::IRenderVertexBuffer>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\LineRenderer.h(88,24): warning C4251: 'TheEngine::LineRenderer::m_indexBuffer': 'std::shared_ptr<TheEngine::IRenderIndexBuffer>' needs to have dll-interface to be used by clients of 'TheEngine::LineRenderer'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
+      see declaration of 'std::shared_ptr<TheEngine::IRenderIndexBuffer>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\LineRenderer.h(93,14): warning C4251: 'TheEngine::LineRenderer::m_position': 'TheEngine::Vec2' needs to have dll-interface to be used by clients of 'TheEngine::LineRenderer'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      D:\TheEngine\TheEngine\TheEngine\Include\TheEngine\Math\Types.h(7,12):
+      see declaration of 'TheEngine::Vec2'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\LineRenderer.h(95,14): warning C4251: 'TheEngine::LineRenderer::m_viewMatrix': 'TheEngine::Mat4' needs to have dll-interface to be used by clients of 'TheEngine::LineRenderer'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      D:\TheEngine\TheEngine\TheEngine\Include\TheEngine\Math\Types.h(125,11):
+      see declaration of 'TheEngine::Mat4'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\LineRenderer.h(96,14): warning C4251: 'TheEngine::LineRenderer::m_projMatrix': 'TheEngine::Mat4' needs to have dll-interface to be used by clients of 'TheEngine::LineRenderer'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      D:\TheEngine\TheEngine\TheEngine\Include\TheEngine\Math\Types.h(125,11):
+      see declaration of 'TheEngine::Mat4'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Core\Input.h(240,39): warning C4251: 'TheEngine::Input::m_keyStates': 'std::unordered_map<int,bool,std::hash<int>,std::equal_to<int>,std::allocator<std::pair<const int,bool>>>' needs to have dll-interface to be used by clients of 'TheEngine::Input'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\unordered_map(61,7):
+      see declaration of 'std::unordered_map<int,bool,std::hash<int>,std::equal_to<int>,std::allocator<std::pair<const int,bool>>>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Core\Input.h(241,39): warning C4251: 'TheEngine::Input::m_previousKeyStates': 'std::unordered_map<int,bool,std::hash<int>,std::equal_to<int>,std::allocator<std::pair<const int,bool>>>' needs to have dll-interface to be used by clients of 'TheEngine::Input'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\unordered_map(61,7):
+      see declaration of 'std::unordered_map<int,bool,std::hash<int>,std::equal_to<int>,std::allocator<std::pair<const int,bool>>>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Core\Input.h(242,39): warning C4251: 'TheEngine::Input::m_justPressed': 'std::unordered_map<int,bool,std::hash<int>,std::equal_to<int>,std::allocator<std::pair<const int,bool>>>' needs to have dll-interface to be used by clients of 'TheEngine::Input'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\unordered_map(61,7):
+      see declaration of 'std::unordered_map<int,bool,std::hash<int>,std::equal_to<int>,std::allocator<std::pair<const int,bool>>>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Core\Input.h(243,39): warning C4251: 'TheEngine::Input::m_justReleased': 'std::unordered_map<int,bool,std::hash<int>,std::equal_to<int>,std::allocator<std::pair<const int,bool>>>' needs to have dll-interface to be used by clients of 'TheEngine::Input'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\unordered_map(61,7):
+      see declaration of 'std::unordered_map<int,bool,std::hash<int>,std::equal_to<int>,std::allocator<std::pair<const int,bool>>>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Core\Input.h(245,46): warning C4251: 'TheEngine::Input::m_mouseStates': 'std::unordered_map<TheEngine::MouseClick,bool,std::hash<TheEngine::MouseClick>,std::equal_to<TheEngine::MouseClick>,std::allocator<std::pair<const TheEngine::MouseClick,bool>>>' needs to have dll-interface to be used by clients of 'TheEngine::Input'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\unordered_map(61,7):
+      see declaration of 'std::unordered_map<TheEngine::MouseClick,bool,std::hash<TheEngine::MouseClick>,std::equal_to<TheEngine::MouseClick>,std::allocator<std::pair<const TheEngine::MouseClick,bool>>>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Core\Input.h(246,46): warning C4251: 'TheEngine::Input::m_prevMouseStates': 'std::unordered_map<TheEngine::MouseClick,bool,std::hash<TheEngine::MouseClick>,std::equal_to<TheEngine::MouseClick>,std::allocator<std::pair<const TheEngine::MouseClick,bool>>>' needs to have dll-interface to be used by clients of 'TheEngine::Input'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\unordered_map(61,7):
+      see declaration of 'std::unordered_map<TheEngine::MouseClick,bool,std::hash<TheEngine::MouseClick>,std::equal_to<TheEngine::MouseClick>,std::allocator<std::pair<const TheEngine::MouseClick,bool>>>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Core\Input.h(247,46): warning C4251: 'TheEngine::Input::m_mouseJustPressed': 'std::unordered_map<TheEngine::MouseClick,bool,std::hash<TheEngine::MouseClick>,std::equal_to<TheEngine::MouseClick>,std::allocator<std::pair<const TheEngine::MouseClick,bool>>>' needs to have dll-interface to be used by clients of 'TheEngine::Input'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\unordered_map(61,7):
+      see declaration of 'std::unordered_map<TheEngine::MouseClick,bool,std::hash<TheEngine::MouseClick>,std::equal_to<TheEngine::MouseClick>,std::allocator<std::pair<const TheEngine::MouseClick,bool>>>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Core\Input.h(248,46): warning C4251: 'TheEngine::Input::m_mouseJustReleased': 'std::unordered_map<TheEngine::MouseClick,bool,std::hash<TheEngine::MouseClick>,std::equal_to<TheEngine::MouseClick>,std::allocator<std::pair<const TheEngine::MouseClick,bool>>>' needs to have dll-interface to be used by clients of 'TheEngine::Input'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\unordered_map(61,7):
+      see declaration of 'std::unordered_map<TheEngine::MouseClick,bool,std::hash<TheEngine::MouseClick>,std::equal_to<TheEngine::MouseClick>,std::allocator<std::pair<const TheEngine::MouseClick,bool>>>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Core\Input.h(250,14): warning C4251: 'TheEngine::Input::m_mousePosition': 'TheEngine::Vec2' needs to have dll-interface to be used by clients of 'TheEngine::Input'
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      D:\TheEngine\TheEngine\TheEngine\Include\TheEngine\Math\Types.h(7,12):
+      see declaration of 'TheEngine::Vec2'
+  
+D:\TheEngine\TheEngine\TheEngine\Include\Libraries\imgui-docking\imconfig.h(18,9): warning C4005: 'IMGUI_IMPL_OPENGL_LOADER_GLAD': macro redefinition
+  (compiling source file 'Game/Scenes/TestScenes/TestScene.cpp')
+      D:\TheEngine\TheEngine\TheEngine\Include\Libraries\imgui-docking\imconfig.h(18,9):
+      'IMGUI_IMPL_OPENGL_LOADER_GLAD' previously declared on the command line
+  
+  Game.vcxproj -> D:\TheEngine\TheEngine\Bin\x64\Debug\Game.exe
+  'pwsh.exe' is not recognized as an internal or external command,
+  operable program or batch file.

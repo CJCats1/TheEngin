@@ -1,5 +1,6 @@
 #pragma once
 #include <TheEngine/Math/Geometry.h>
+#include <TheEngine/Core/Export.h>
 #include <memory>
 #include <vector>
 
@@ -44,7 +45,7 @@ namespace TheEngine {
 
         // AABB with physics collision methods
         // Based on: https://noonat.github.io/intersect/#aabb-vs-aabb
-        struct AABB {
+        struct THEENGINE_API AABB {
             Vec2 pos;   // Center position (alias for center)
             Vec2 half;  // Half-extents (alias for halfSize)
 

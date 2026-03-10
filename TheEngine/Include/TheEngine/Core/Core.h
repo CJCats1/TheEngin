@@ -28,6 +28,7 @@ SOFTWARE.*/
 #define NOMINMAX
 #endif
 
+#include <TheEngine/Core/Export.h>
 #include <stdexcept>
 #include <memory>
 

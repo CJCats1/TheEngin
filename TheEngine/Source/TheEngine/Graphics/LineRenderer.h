@@ -25,7 +25,7 @@ namespace TheEngine {
         float thickness;
     };
 
-    class LineRenderer {
+    class THEENGINE_API LineRenderer {
     public:
         LineRenderer(IRenderDevice& device);
         ~LineRenderer() = default;

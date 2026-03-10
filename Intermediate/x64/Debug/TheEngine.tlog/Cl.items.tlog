@@ -18,7 +18,6 @@ D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Math\DefaultMathBackend.cpp;D:
 D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Math\MathBackend.cpp;D:\TheEngine\TheEngine\Intermediate\x64\Debug\MathBackend.obj
 D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Math\GLMMathBackend.cpp;D:\TheEngine\TheEngine\Intermediate\x64\Debug\GLMMathBackend.obj
 D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Math\Types.cpp;D:\TheEngine\TheEngine\Intermediate\x64\Debug\Types.obj
-D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Game\Scenes\TestScenes\TestScene.cpp;D:\TheEngine\TheEngine\Intermediate\x64\Debug\TestScene.obj
 D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Game\SceneHelper.cpp;D:\TheEngine\TheEngine\Intermediate\x64\Debug\SceneHelper.obj
 D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Physics\AABBPhysics.cpp;D:\TheEngine\TheEngine\Intermediate\x64\Debug\AABBPhysics.obj
 D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Game\Win32\Win32Game.cpp;D:\TheEngine\TheEngine\Intermediate\x64\Debug\Win32Game.obj
@@ -40,7 +39,6 @@ D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\SwapChain.cpp;D:\TheE
 D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\Texture2D.cpp;D:\TheEngine\TheEngine\Intermediate\x64\Debug\Texture2D.obj
 D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\VertexBuffer.cpp;D:\TheEngine\TheEngine\Intermediate\x64\Debug\VertexBuffer.obj
 D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\VertexShaderSignature.cpp;D:\TheEngine\TheEngine\Intermediate\x64\Debug\VertexShaderSignature.obj
-D:\TheEngine\TheEngine\Game\main.cpp;D:\TheEngine\TheEngine\Intermediate\x64\Debug\main.obj
 D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Window\Win32\Win32Window.cpp;D:\TheEngine\TheEngine\Intermediate\x64\Debug\Win32Window.obj
 D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Core\Logger.cpp;D:\TheEngine\TheEngine\Intermediate\x64\Debug\Logger.obj
 D:\TheEngine\TheEngine\TheEngine\Include\Libraries\imgui-docking\imgui.cpp;D:\TheEngine\TheEngine\Intermediate\x64\Debug\imgui.obj

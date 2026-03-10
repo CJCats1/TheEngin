@@ -11,7 +11,7 @@ namespace TheEngine
 {
     // Helper class to reduce code duplication in scene initialization
     // Provides common setup patterns used across multiple scenes
-    class SceneHelper
+    class THEENGINE_API SceneHelper
     {
     public:
         // Creates a default 2D camera with common settings

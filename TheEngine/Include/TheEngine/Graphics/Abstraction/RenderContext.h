@@ -10,7 +10,7 @@ namespace TheEngine
     class IRenderVertexBuffer;
     class IRenderIndexBuffer;
 
-    class IRenderContext
+    class THEENGINE_API IRenderContext
     {
     public:
         virtual ~IRenderContext() = default;

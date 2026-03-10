@@ -38,7 +38,7 @@ namespace TheEngine
     enum class SceneType { None };
 	class Scene;
 
-	class Game : public Base
+	class THEENGINE_API Game : public Base
 	{
 	public:
 		explicit Game(const GameDesc& desc);

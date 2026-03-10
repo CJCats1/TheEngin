@@ -1,4 +1,5 @@
 #pragma once
+#include <TheEngine/Core/Export.h>
 #include <unordered_map>
 #include <TheEngine/Math/Geometry.h>
 #include <iostream>
@@ -150,7 +151,7 @@ namespace TheEngine {
     };
 
 
-    class Input {
+    class THEENGINE_API Input {
     public:
         static Input& getInstance();
         void setWindowHandle(NativeWindowHandle hwnd) { m_windowHandle = hwnd; }

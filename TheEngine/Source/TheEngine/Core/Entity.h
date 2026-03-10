@@ -1,4 +1,5 @@
 #pragma once
+#include <TheEngine/Core/Export.h>
 #include <string>
 #include <unordered_map>
 #include <memory>
@@ -9,7 +10,7 @@
 namespace TheEngine {
     using EntityId = std::size_t;
 
-    class Entity {
+    class THEENGINE_API Entity {
     public:
         Entity(EntityId id, const std::string& name = "")
             : m_id(id), m_name(name) {

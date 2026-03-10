@@ -1,5 +1,6 @@
 #pragma once
 #include <TheEngine/Core/Entity.h>
+#include <TheEngine/Core/Export.h>
 #include <vector>
 #include <unordered_map>
 #include <memory>
@@ -7,9 +8,11 @@
 #include <algorithm>
 
 namespace TheEngine {
-    class EntityManager {
+    class THEENGINE_API EntityManager {
     public:
         EntityManager() : m_nextEntityId(1) {}
+        EntityManager(const EntityManager&) = delete;
+        EntityManager& operator=(const EntityManager&) = delete;
 
         // Create a new entity
         Entity& createEntity(const std::string& name = "") {
@@ -34,13 +37,16 @@ namespace TheEngine {
                 // Remove from named entities map
                 m_namedEntities.erase(it);
 
-                // Remove from entities vector
-                m_entities.erase(
-                    std::remove_if(m_entities.begin(), m_entities.end(),
-                        [entityToRemove](const std::unique_ptr<Entity>& entity) {
-                            return entity.get() == entityToRemove;
-                        }),
-                    m_entities.end());
+                // Remove from entities vector (swap-with-back-and-pop to avoid unique_ptr copy)
+                for (size_t i = 0; i < m_entities.size(); ++i) {
+                    if (m_entities[i].get() == entityToRemove) {
+                        if (i != m_entities.size() - 1) {
+                            m_entities[i] = std::move(m_entities.back());
+                        }
+                        m_entities.pop_back();
+                        break;
+                    }
+                }
 
                 return true;
             }

@@ -3,19 +3,19 @@
 
 namespace TheEngine
 {
-	class IRenderResource
+	class THEENGINE_API IRenderResource
 	{
 	public:
 		virtual ~IRenderResource() = default;
 	};
 
-	class IRenderPipelineState : public IRenderResource
+	class THEENGINE_API IRenderPipelineState : public IRenderResource
 	{
 	public:
 		~IRenderPipelineState() override = default;
 	};
 
-	class IRenderShaderBinary : public IRenderResource
+	class THEENGINE_API IRenderShaderBinary : public IRenderResource
 	{
 	public:
 		~IRenderShaderBinary() override = default;
@@ -23,7 +23,7 @@ namespace TheEngine
 		virtual ShaderType getType() const noexcept = 0;
 	};
 
-	class IRenderVertexShaderSignature : public IRenderResource
+	class THEENGINE_API IRenderVertexShaderSignature : public IRenderResource
 	{
 	public:
 		~IRenderVertexShaderSignature() override = default;
@@ -31,7 +31,7 @@ namespace TheEngine
 		virtual BinaryData getInputElementsData() const noexcept = 0;
 	};
 
-	class IRenderVertexBuffer : public IRenderResource
+	class THEENGINE_API IRenderVertexBuffer : public IRenderResource
 	{
 	public:
 		~IRenderVertexBuffer() override = default;
@@ -39,7 +39,7 @@ namespace TheEngine
 		virtual ui32 getVertexSize() const noexcept = 0;
 	};
 
-	class IRenderIndexBuffer : public IRenderResource
+	class THEENGINE_API IRenderIndexBuffer : public IRenderResource
 	{
 	public:
 		~IRenderIndexBuffer() override = default;

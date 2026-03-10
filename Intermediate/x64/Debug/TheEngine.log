@@ -1,10 +1,157 @@
 ﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(538,5): warning MSB8028: The intermediate directory (Intermediate\x64\Debug\) contains files shared from another project (DirectXGame.vcxproj).  This can lead to incorrect clean and rebuild behavior.
-  GraphicsPipelineState.cpp
-  ShaderBinary.cpp
-  SwapChain.cpp
-  VertexBuffer.cpp
-  VertexShaderSignature.cpp
-  Generating Code...
-  TheEngine.vcxproj -> D:\TheEngine\TheEngine\Bin\x64\Debug\TheEngine.exe
+  GraphicsEngine.cpp
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\Texture2D.h(919,58): warning C4251: 'TheEngine::Texture2D::m_srv': 'Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>' needs to have dll-interface to be used by clients of 'TheEngine::Texture2D'
+  (compiling source file 'TheEngine/Source/TheEngine/Graphics/GraphicsEngine.cpp')
+      C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\winrt\wrl\client.h(210,7):
+      see declaration of 'Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\Mesh.h(68,25): warning C4251: 'TheEngine::Mesh::m_vb': 'std::shared_ptr<TheEngine::IRenderVertexBuffer>' needs to have dll-interface to be used by clients of 'TheEngine::Mesh'
+  (compiling source file 'TheEngine/Source/TheEngine/Graphics/GraphicsEngine.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
+      see declaration of 'std::shared_ptr<TheEngine::IRenderVertexBuffer>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\Mesh.h(69,25): warning C4251: 'TheEngine::Mesh::m_ib': 'std::shared_ptr<TheEngine::IRenderIndexBuffer>' needs to have dll-interface to be used by clients of 'TheEngine::Mesh'
+  (compiling source file 'TheEngine/Source/TheEngine/Graphics/GraphicsEngine.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
+      see declaration of 'std::shared_ptr<TheEngine::IRenderIndexBuffer>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\Mesh.h(71,39): warning C4251: 'TheEngine::Mesh::m_texture': 'std::shared_ptr<TheEngine::Texture2D>' needs to have dll-interface to be used by clients of 'TheEngine::Mesh'
+  (compiling source file 'TheEngine/Source/TheEngine/Graphics/GraphicsEngine.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
+      see declaration of 'std::shared_ptr<TheEngine::Texture2D>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Core\TransformComponent.h(137,14): warning C4251: 'TheEngine::TransformComponent::m_position': 'TheEngine::Vec3' needs to have dll-interface to be used by clients of 'TheEngine::TransformComponent'
+  (compiling source file 'TheEngine/Source/TheEngine/Graphics/GraphicsEngine.cpp')
+      D:\TheEngine\TheEngine\TheEngine\Include\TheEngine\Math\Types.h(49,11):
+      see declaration of 'TheEngine::Vec3'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Core\TransformComponent.h(138,14): warning C4251: 'TheEngine::TransformComponent::m_rotation': 'TheEngine::Vec3' needs to have dll-interface to be used by clients of 'TheEngine::TransformComponent'
+  (compiling source file 'TheEngine/Source/TheEngine/Graphics/GraphicsEngine.cpp')
+      D:\TheEngine\TheEngine\TheEngine\Include\TheEngine\Math\Types.h(49,11):
+      see declaration of 'TheEngine::Vec3'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Core\TransformComponent.h(139,14): warning C4251: 'TheEngine::TransformComponent::m_scale': 'TheEngine::Vec3' needs to have dll-interface to be used by clients of 'TheEngine::TransformComponent'
+  (compiling source file 'TheEngine/Source/TheEngine/Graphics/GraphicsEngine.cpp')
+      D:\TheEngine\TheEngine\TheEngine\Include\TheEngine\Math\Types.h(49,11):
+      see declaration of 'TheEngine::Vec3'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Core\TransformComponent.h(141,22): warning C4251: 'TheEngine::TransformComponent::m_worldMatrix': 'TheEngine::Mat4' needs to have dll-interface to be used by clients of 'TheEngine::TransformComponent'
+  (compiling source file 'TheEngine/Source/TheEngine/Graphics/GraphicsEngine.cpp')
+      D:\TheEngine\TheEngine\TheEngine\Include\TheEngine\Math\Types.h(125,11):
+      see declaration of 'TheEngine::Mat4'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\SpriteComponent.h(80,14): warning C4251: 'TheEngine::SpriteComponent::m_screenPosition': 'TheEngine::Vec2' needs to have dll-interface to be used by clients of 'TheEngine::SpriteComponent'
+  (compiling source file 'TheEngine/Source/TheEngine/Graphics/GraphicsEngine.cpp')
+      D:\TheEngine\TheEngine\TheEngine\Include\TheEngine\Math\Types.h(7,12):
+      see declaration of 'TheEngine::Vec2'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\SpriteComponent.h(171,31): warning C4251: 'TheEngine::SpriteComponent::m_mesh': 'std::shared_ptr<TheEngine::Mesh>' needs to have dll-interface to be used by clients of 'TheEngine::SpriteComponent'
+  (compiling source file 'TheEngine/Source/TheEngine/Graphics/GraphicsEngine.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
+      see declaration of 'std::shared_ptr<TheEngine::Mesh>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\SpriteComponent.h(172,36): warning C4251: 'TheEngine::SpriteComponent::m_texture': 'std::shared_ptr<TheEngine::Texture2D>' needs to have dll-interface to be used by clients of 'TheEngine::SpriteComponent'
+  (compiling source file 'TheEngine/Source/TheEngine/Graphics/GraphicsEngine.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
+      see declaration of 'std::shared_ptr<TheEngine::Texture2D>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\SpriteComponent.h(176,14): warning C4251: 'TheEngine::SpriteComponent::m_tint': 'TheEngine::Vec4' needs to have dll-interface to be used by clients of 'TheEngine::SpriteComponent'
+  (compiling source file 'TheEngine/Source/TheEngine/Graphics/GraphicsEngine.cpp')
+      D:\TheEngine\TheEngine\TheEngine\Include\TheEngine\Math\Types.h(113,11):
+      see declaration of 'TheEngine::Vec4'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\GraphicsEngine.h(55,41): warning C4251: 'TheEngine::GraphicsEngine::m_renderBackend': 'std::unique_ptr<TheEngine::IRenderBackend,std::default_delete<TheEngine::IRenderBackend>>' needs to have dll-interface to be used by clients of 'TheEngine::GraphicsEngine'
+  (compiling source file 'TheEngine/Source/TheEngine/Graphics/GraphicsEngine.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(3347,7):
+      see declaration of 'std::unique_ptr<TheEngine::IRenderBackend,std::default_delete<TheEngine::IRenderBackend>>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\GraphicsEngine.h(56,40): warning C4251: 'TheEngine::GraphicsEngine::m_imguiBackend': 'std::unique_ptr<TheEngine::IImGuiBackend,std::default_delete<TheEngine::IImGuiBackend>>' needs to have dll-interface to be used by clients of 'TheEngine::GraphicsEngine'
+  (compiling source file 'TheEngine/Source/TheEngine/Graphics/GraphicsEngine.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(3347,7):
+      see declaration of 'std::unique_ptr<TheEngine::IImGuiBackend,std::default_delete<TheEngine::IImGuiBackend>>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\GraphicsEngine.h(57,25): warning C4251: 'TheEngine::GraphicsEngine::m_graphicsDevice': 'std::shared_ptr<TheEngine::IRenderDevice>' needs to have dll-interface to be used by clients of 'TheEngine::GraphicsEngine'
+  (compiling source file 'TheEngine/Source/TheEngine/Graphics/GraphicsEngine.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
+      see declaration of 'std::shared_ptr<TheEngine::IRenderDevice>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\GraphicsEngine.h(58,26): warning C4251: 'TheEngine::GraphicsEngine::m_deviceContext': 'std::shared_ptr<TheEngine::IRenderContext>' needs to have dll-interface to be used by clients of 'TheEngine::GraphicsEngine'
+  (compiling source file 'TheEngine/Source/TheEngine/Graphics/GraphicsEngine.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
+      see declaration of 'std::shared_ptr<TheEngine::IRenderContext>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\GraphicsEngine.h(60,47): warning C4251: 'TheEngine::GraphicsEngine::m_pipeline': 'std::shared_ptr<TheEngine::IRenderPipelineState>' needs to have dll-interface to be used by clients of 'TheEngine::GraphicsEngine'
+  (compiling source file 'TheEngine/Source/TheEngine/Graphics/GraphicsEngine.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
+      see declaration of 'std::shared_ptr<TheEngine::IRenderPipelineState>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\GraphicsEngine.h(61,47): warning C4251: 'TheEngine::GraphicsEngine::m_textPipeline': 'std::shared_ptr<TheEngine::IRenderPipelineState>' needs to have dll-interface to be used by clients of 'TheEngine::GraphicsEngine'
+  (compiling source file 'TheEngine/Source/TheEngine/Graphics/GraphicsEngine.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
+      see declaration of 'std::shared_ptr<TheEngine::IRenderPipelineState>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\GraphicsEngine.h(62,47): warning C4251: 'TheEngine::GraphicsEngine::m_pipeline3D': 'std::shared_ptr<TheEngine::IRenderPipelineState>' needs to have dll-interface to be used by clients of 'TheEngine::GraphicsEngine'
+  (compiling source file 'TheEngine/Source/TheEngine/Graphics/GraphicsEngine.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
+      see declaration of 'std::shared_ptr<TheEngine::IRenderPipelineState>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\GraphicsEngine.h(63,47): warning C4251: 'TheEngine::GraphicsEngine::m_backgroundDotsPipeline': 'std::shared_ptr<TheEngine::IRenderPipelineState>' needs to have dll-interface to be used by clients of 'TheEngine::GraphicsEngine'
+  (compiling source file 'TheEngine/Source/TheEngine/Graphics/GraphicsEngine.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
+      see declaration of 'std::shared_ptr<TheEngine::IRenderPipelineState>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\GraphicsEngine.h(64,47): warning C4251: 'TheEngine::GraphicsEngine::m_toonPipeline': 'std::shared_ptr<TheEngine::IRenderPipelineState>' needs to have dll-interface to be used by clients of 'TheEngine::GraphicsEngine'
+  (compiling source file 'TheEngine/Source/TheEngine/Graphics/GraphicsEngine.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
+      see declaration of 'std::shared_ptr<TheEngine::IRenderPipelineState>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\GraphicsEngine.h(65,47): warning C4251: 'TheEngine::GraphicsEngine::m_shadowMapPipeline': 'std::shared_ptr<TheEngine::IRenderPipelineState>' needs to have dll-interface to be used by clients of 'TheEngine::GraphicsEngine'
+  (compiling source file 'TheEngine/Source/TheEngine/Graphics/GraphicsEngine.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
+      see declaration of 'std::shared_ptr<TheEngine::IRenderPipelineState>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\GraphicsEngine.h(66,47): warning C4251: 'TheEngine::GraphicsEngine::m_shadowMapDebugPipeline': 'std::shared_ptr<TheEngine::IRenderPipelineState>' needs to have dll-interface to be used by clients of 'TheEngine::GraphicsEngine'
+  (compiling source file 'TheEngine/Source/TheEngine/Graphics/GraphicsEngine.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
+      see declaration of 'std::shared_ptr<TheEngine::IRenderPipelineState>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\GraphicsEngine.h(67,47): warning C4251: 'TheEngine::GraphicsEngine::m_linePipeline': 'std::shared_ptr<TheEngine::IRenderPipelineState>' needs to have dll-interface to be used by clients of 'TheEngine::GraphicsEngine'
+  (compiling source file 'TheEngine/Source/TheEngine/Graphics/GraphicsEngine.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
+      see declaration of 'std::shared_ptr<TheEngine::IRenderPipelineState>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\GraphicsEngine.h(68,47): warning C4251: 'TheEngine::GraphicsEngine::m_skyboxPipeline': 'std::shared_ptr<TheEngine::IRenderPipelineState>' needs to have dll-interface to be used by clients of 'TheEngine::GraphicsEngine'
+  (compiling source file 'TheEngine/Source/TheEngine/Graphics/GraphicsEngine.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
+      see declaration of 'std::shared_ptr<TheEngine::IRenderPipelineState>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\GraphicsEngine.h(69,31): warning C4251: 'TheEngine::GraphicsEngine::m_fullscreenQuad': 'std::shared_ptr<TheEngine::Mesh>' needs to have dll-interface to be used by clients of 'TheEngine::GraphicsEngine'
+  (compiling source file 'TheEngine/Source/TheEngine/Graphics/GraphicsEngine.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
+      see declaration of 'std::shared_ptr<TheEngine::Mesh>'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\Camera.h(48,14): warning C4251: 'TheEngine::Camera3D::m_position': 'TheEngine::Vec3' needs to have dll-interface to be used by clients of 'TheEngine::Camera3D'
+  (compiling source file 'TheEngine/Source/TheEngine/Graphics/GraphicsEngine.cpp')
+      D:\TheEngine\TheEngine\TheEngine\Include\TheEngine\Math\Types.h(49,11):
+      see declaration of 'TheEngine::Vec3'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\Camera.h(49,14): warning C4251: 'TheEngine::Camera3D::m_target': 'TheEngine::Vec3' needs to have dll-interface to be used by clients of 'TheEngine::Camera3D'
+  (compiling source file 'TheEngine/Source/TheEngine/Graphics/GraphicsEngine.cpp')
+      D:\TheEngine\TheEngine\TheEngine\Include\TheEngine\Math\Types.h(49,11):
+      see declaration of 'TheEngine::Vec3'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\Camera.h(50,14): warning C4251: 'TheEngine::Camera3D::m_up': 'TheEngine::Vec3' needs to have dll-interface to be used by clients of 'TheEngine::Camera3D'
+  (compiling source file 'TheEngine/Source/TheEngine/Graphics/GraphicsEngine.cpp')
+      D:\TheEngine\TheEngine\TheEngine\Include\TheEngine\Math\Types.h(49,11):
+      see declaration of 'TheEngine::Vec3'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\Camera.h(106,14): warning C4251: 'TheEngine::Camera2D::m_projectionMatrix': 'TheEngine::Mat4' needs to have dll-interface to be used by clients of 'TheEngine::Camera2D'
+  (compiling source file 'TheEngine/Source/TheEngine/Graphics/GraphicsEngine.cpp')
+      D:\TheEngine\TheEngine\TheEngine\Include\TheEngine\Math\Types.h(125,11):
+      see declaration of 'TheEngine::Mat4'
+  
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\GraphicsEngine.cpp(448,59): warning C4244: 'argument': conversion from 'TheEngine::i32' to 'float', possible loss of data
+D:\TheEngine\TheEngine\TheEngine\Source\TheEngine\Graphics\GraphicsEngine.cpp(448,32): warning C4244: 'argument': conversion from 'TheEngine::i32' to 'float', possible loss of data
+  TheEngine.vcxproj -> D:\TheEngine\TheEngine\Bin\x64\Debug\TheEngine.dll
   'pwsh.exe' is not recognized as an internal or external command,
   operable program or batch file.

@@ -5,7 +5,7 @@
 
 namespace TheEngine
 {
-    class IImGuiBackend
+    class THEENGINE_API IImGuiBackend
     {
     public:
         virtual ~IImGuiBackend() = default;
@@ -18,7 +18,7 @@ namespace TheEngine
         virtual void renderPlatformWindows() = 0;
     };
 
-    class IRenderBackend
+    class THEENGINE_API IRenderBackend
     {
     public:
         virtual ~IRenderBackend() = default;

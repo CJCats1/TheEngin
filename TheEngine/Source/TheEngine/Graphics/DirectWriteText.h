@@ -66,7 +66,7 @@ namespace Microsoft {
 
 namespace TheEngine {
 
-    class DirectWriteRenderer {
+    class THEENGINE_API DirectWriteRenderer {
     public:
         DirectWriteRenderer(IRenderDevice& device);
         ~DirectWriteRenderer();
@@ -111,7 +111,7 @@ namespace TheEngine {
         bool initializeWIC();
     };
 
-    class TextComponent {
+    class THEENGINE_API TextComponent {
     public:
         TextComponent(IRenderDevice& device, DirectWriteRenderer& textRenderer,
             const std::wstring& text = L"", float fontSize = 24.0f);
@@ -215,7 +215,7 @@ namespace TheEngine {
     };
 
     // Global text renderer instance manager
-    class TextSystem {
+    class THEENGINE_API TextSystem {
     public:
         static void initialize(IRenderDevice& device);
         static void shutdown();

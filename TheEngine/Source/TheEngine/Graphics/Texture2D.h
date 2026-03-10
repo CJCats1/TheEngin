@@ -25,7 +25,7 @@ struct ID3D11Device;
 #endif
 namespace TheEngine
 {
-    class Texture2D {
+    class THEENGINE_API Texture2D {
     public:
         enum class Backend {
             DirectX11,

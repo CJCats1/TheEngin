@@ -1,9 +1,10 @@
 #pragma once
 #include <TheEngine/Math/Geometry.h>
 #include <TheEngine/Core/TransformComponent.h>
+#include <TheEngine/Core/Export.h>
 
 namespace TheEngine {
-    class Camera3D {
+    class THEENGINE_API Camera3D {
     public:
         Camera3D() : m_fovY(1.04719755f), m_aspect(16.0f/9.0f), m_nearZ(0.1f), m_farZ(1000.0f) {
             m_position = Vec3(0.0f, 0.0f, -5.0f);
@@ -52,7 +53,7 @@ namespace TheEngine {
         float m_nearZ;
         float m_farZ;
     };
-    class Camera2D {
+    class THEENGINE_API Camera2D {
     public:
         Camera2D(float screenWidth, float screenHeight);
         ~Camera2D() = default;

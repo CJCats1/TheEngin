@@ -1,6 +1,7 @@
 #pragma once
 #include <TheEngine/Physics/AABBPhysics.h>
 #include <TheEngine/Math/Geometry.h>
+#include <TheEngine/Core/Export.h>
 #include <vector>
 #include <memory>
 
@@ -36,6 +37,7 @@ namespace TheEngine {
 
         // Physics system for managing AABB collisions
         // Based on: https://noonat.github.io/intersect/#aabb-vs-aabb
+        // Note: header-only (inline) so it is NOT exported/imported across the DLL boundary.
         class PhysicsSystem {
         public:
             // Move an AABB through a world of static colliders

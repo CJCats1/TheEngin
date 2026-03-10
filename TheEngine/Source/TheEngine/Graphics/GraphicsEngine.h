@@ -12,7 +12,7 @@
 namespace TheEngine
 {
     class IRenderPipelineState;
-    class GraphicsEngine : public Base
+    class THEENGINE_API GraphicsEngine : public Base
     {
     private:
         static float m_windowHeight;

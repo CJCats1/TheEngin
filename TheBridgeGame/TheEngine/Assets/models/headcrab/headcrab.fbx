@@ -1,0 +1,13 @@
+# This is a placeholder FBX file for testing
+# In a real implementation, this would be a proper FBX binary file
+# For now, this file serves to test the FBX loading detection logic
+# 
+# To use real FBX files:
+# 1. Export a 3D model from Blender, Maya, or 3ds Max as FBX
+# 2. Place the .fbx file in this directory
+# 3. Update the fbxPath in PartitionScene.cpp to point to your file
+# 4. Implement proper FBX parsing in Mesh::CreateFromFBX()
+#
+# For production use, consider integrating:
+# - Assimp library (open source, supports many formats including FBX)
+# - Autodesk FBX SDK (official, but requires license for commercial use)

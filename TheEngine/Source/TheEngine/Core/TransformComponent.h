@@ -1,8 +1,9 @@
 #pragma once
 #include <TheEngine/Math/Geometry.h>
+#include <TheEngine/Core/Export.h>
 
 namespace TheEngine {
-    class TransformComponent {
+    class THEENGINE_API TransformComponent {
     public:
         TransformComponent() = default;
         TransformComponent(const Vec3& position, const Vec3& rotation = Vec3(0.0f, 0.0f, 0.0f), const Vec3& scale = Vec3(1.0f, 1.0f, 1.0f))

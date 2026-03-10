@@ -9,11 +9,13 @@
 #endif
 #include <fstream>
 #include <TheEngine/Graphics/Texture2D.h>
-#include <TheEngine/Math/Backend/MathBackend.h>
+#include <TheEngine\Math\Backend\MathBackend.h>
 #include <fstream>
-#include <TheEngine/Graphics/Abstraction/RenderBackendFactory.h>
+#include <TheEngine\Graphics\Abstraction\RenderBackendFactory.h>
 #include <cstdlib>
 #include <string_view>
+#include <algorithm>
+#include <cctype>
 #if defined(THEENGINE_PLATFORM_ANDROID)
 #include <TheEngine/Core/AndroidPlatform.h>
 #endif
@@ -21,6 +23,71 @@ using namespace TheEngine;
 
 namespace
 {
+    RenderBackendType readBackendFromConfig(RenderBackendType defaultType)
+    {
+#if defined(THEENGINE_PLATFORM_ANDROID)
+        // On Android we always use OpenGL; ignore config.
+        (void)defaultType;
+        return RenderBackendType::OpenGL;
+#else
+        std::ifstream file("TheEngineConfig.ini");
+        if (!file)
+            return defaultType;
+
+        auto trim = [](std::string& s)
+        {
+            const auto isSpace = [](unsigned char ch) { return std::isspace(ch) != 0; };
+            auto itFront = std::find_if_not(s.begin(), s.end(), isSpace);
+            auto itBack = std::find_if_not(s.rbegin(), s.rend(), isSpace).base();
+            if (itFront >= itBack)
+            {
+                s.clear();
+                return;
+            }
+            s.assign(itFront, itBack);
+        };
+
+        std::string line;
+        while (std::getline(file, line))
+        {
+            if (line.empty())
+                continue;
+
+            auto firstNonSpace = line.find_first_not_of(" \t");
+            if (firstNonSpace == std::string::npos)
+                continue;
+            const char c = line[firstNonSpace];
+            if (c == '#' || c == ';')
+                continue;
+
+            const auto eqPos = line.find('=');
+            if (eqPos == std::string::npos)
+                continue;
+
+            std::string key = line.substr(0, eqPos);
+            std::string value = line.substr(eqPos + 1);
+            trim(key);
+            trim(value);
+
+            if (key.empty() || value.empty())
+                continue;
+
+            std::transform(value.begin(), value.end(), value.begin(),
+                [](unsigned char ch) { return static_cast<char>(std::tolower(ch)); });
+
+            if (key == "backend" || key == "renderer")
+            {
+                if (value == "opengl" || value == "gl")
+                    return RenderBackendType::OpenGL;
+                if (value == "dx11" || value == "directx11" || value == "direct3d11" || value == "d3d11")
+                    return RenderBackendType::DirectX11;
+            }
+        }
+
+        return defaultType;
+#endif
+    }
+
 	bool loadShaderFile(const char* path, std::string& out)
 	{
 #if defined(THEENGINE_PLATFORM_ANDROID)
@@ -48,7 +115,7 @@ float TheEngine::GraphicsEngine::m_windowWidth = 1280.0f;
 TheEngine::GraphicsEngine::GraphicsEngine(const GraphicsEngineDesc& desc) : Base(desc.base)
 {
     std::cout << "GraphicsEngine: Starting initialization..." << std::endl;
-	RenderBackendType backendType = desc.backendType;
+	RenderBackendType backendType = readBackendFromConfig(desc.backendType);
 #if defined(THEENGINE_PLATFORM_ANDROID)
     backendType = RenderBackendType::OpenGL;
 #endif
@@ -193,9 +260,11 @@ void TheEngine::GraphicsEngine::initializePipelines()
         m_textPipeline = device.createGraphicsPipelineState({ *vsSig, *ps });
     }
 
-    // ---- Background dots pipeline (BackgroundDots.hlsl) ----
+    // ---- Background dots pipeline (BackgroundDots.hlsl / OpenGLBackgroundDots.glsl) ----
     {
-        const char* shaderFilePath = shaderPath("TheEngine/Assets/Shaders/BackgroundDots.hlsl");
+        const char* shaderFilePath = isOpenGL
+            ? "TheEngine/Assets/Shaders/OpenGLBackgroundDots.glsl"
+            : "TheEngine/Assets/Shaders/BackgroundDots.hlsl";
         std::string shaderFileData{};
         if (loadShaderFile(shaderFilePath, shaderFileData)) {
             auto* src = shaderFileData.c_str();
@@ -368,7 +437,12 @@ void TheEngine::GraphicsEngine::beginFrame(IRenderSwapChain& swapChain)
     context.setViewportSize(swapChain.getSize());
 
     // Optional dotted background pass in screen space
-    if (m_backgroundDotsPipeline && m_fullscreenQuad)
+    // - DirectX11: requires fullscreen quad mesh
+    // - OpenGL: uses gl_VertexID in shader, so no quad is needed
+    const bool canRenderDots =
+        m_backgroundDotsPipeline &&
+        (m_fullscreenQuad || m_backendType == RenderBackendType::OpenGL);
+    if (canRenderDots)
     {
         renderBackgroundDots(context, m_backgroundDotsPipeline.get(), 
             swapChain.getSize().width, swapChain.getSize().height);

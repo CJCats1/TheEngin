@@ -24,12 +24,11 @@ SOFTWARE.*/
 
 #pragma once
 
-
-
+#include <TheEngine/Core/Export.h>
 
 namespace TheEngine
 {
-	class Logger final
+	class THEENGINE_API Logger final
 	{
 	public:
 		enum class LogLevel

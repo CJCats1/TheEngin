@@ -4,6 +4,7 @@
 #include <TheEngine/Graphics/Abstraction/RenderContext.h>
 #include <TheEngine/Graphics/Abstraction/RenderResources.h>
 #include <TheEngine/Graphics/Texture2D.h>
+#include <TheEngine/Core/Export.h>
 #include <memory>
 
 namespace TheEngine
@@ -24,7 +25,7 @@ namespace TheEngine
     inline const Vec4 Color::GREEN = Vec4(0, 1, 0, 1);
     inline const Vec4 Color::BLUE = Vec4(0, 0, 1, 1);
 
-    class Mesh {
+    class THEENGINE_API Mesh {
     public:
         static std::shared_ptr<Mesh> CreateQuadColored(IRenderDevice& device, float w, float h);
         static std::shared_ptr<Mesh> CreateQuadSolidColored(IRenderDevice& device, float w, float h, Vec4 color);

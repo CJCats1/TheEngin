@@ -1,12 +1,14 @@
 #pragma once
 
+#include <TheEngine/Core/Export.h>
+
 namespace TheEngine {
     class GraphicsEngine;
     class IRenderSwapChain;
     class Game;
     class EntityManager;
 
-    class Scene {
+    class THEENGINE_API Scene {
     public:
         virtual ~Scene() = default;
 

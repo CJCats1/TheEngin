@@ -29,7 +29,7 @@ SOFTWARE.*/
 
 namespace TheEngine
 {
-	class Display final: public Window
+	class THEENGINE_API Display final : public Window
 	{
 	public:
 		explicit Display(const DisplayDesc& desc);

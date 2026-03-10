@@ -10,7 +10,7 @@
 #include <string>
 
 namespace TheEngine {
-    class SpriteComponent {
+    class THEENGINE_API SpriteComponent {
     public:
         SpriteComponent(IRenderDevice& device, const std::wstring& texturePath,
             float width = 1.0f, float height = 1.0f);

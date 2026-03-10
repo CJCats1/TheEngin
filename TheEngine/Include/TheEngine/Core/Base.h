@@ -28,7 +28,7 @@ SOFTWARE.*/
 
 namespace TheEngine
 {
-	class Base
+	class THEENGINE_API Base
 	{
 	public:
 		explicit Base(const BaseDesc& desc);

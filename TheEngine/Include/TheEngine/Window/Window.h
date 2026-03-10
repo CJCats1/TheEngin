@@ -16,7 +16,7 @@ namespace TheEngine
     using NativeWindowHandle = ANativeWindow*;
 #endif
 
-    class Window : public Base
+    class THEENGINE_API Window : public Base
     {
     public:
         explicit Window(const WindowDesc& desc);

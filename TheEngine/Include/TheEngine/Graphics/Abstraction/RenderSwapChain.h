@@ -4,7 +4,7 @@
 
 namespace TheEngine
 {
-    class IRenderSwapChain
+    class THEENGINE_API IRenderSwapChain
     {
     public:
         virtual ~IRenderSwapChain() = default;
