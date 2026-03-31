@@ -89,7 +89,7 @@ namespace dx3d
         void initializeTetriminoTemplates();
         void spawnTetrimino(TetriminoReduxType type, Vec2 position);
         std::string createTetriminoNodes(const JellyTetriminoData& data, Vec2 basePosition, int tetriminoId);
-        void createTetriminoBeams(const JellyTetriminoData& data, const std::string& baseName, int tetriminoId);
+        void createTetriminoBeams(const JellyTetriminoData& data, const std::string& baseName, Vec2 basePosition, int tetriminoId);
 
         // Play field
         void createPlayField();

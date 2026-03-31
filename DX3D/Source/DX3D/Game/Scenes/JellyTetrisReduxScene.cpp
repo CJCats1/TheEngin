@@ -168,7 +168,7 @@ void JellyTetrisReduxScene::spawnTetrimino(TetriminoReduxType type, Vec2 positio
 
     const auto& data = m_tetriminoTemplates[static_cast<int>(type)];
     std::string baseName = createTetriminoNodes(data, position, m_nextTetriminoId);
-    createTetriminoBeams(data, baseName, m_nextTetriminoId);
+    createTetriminoBeams(data, baseName, position, m_nextTetriminoId);
 
     m_nextTetriminoId++;
     
@@ -226,12 +226,12 @@ std::string JellyTetrisReduxScene::createTetriminoNodes(const JellyTetriminoData
     return baseName;
 }
 
-void JellyTetrisReduxScene::createTetriminoBeams(const JellyTetriminoData& data, const std::string& baseName, int tetriminoId) {
+void JellyTetrisReduxScene::createTetriminoBeams(const JellyTetriminoData& data, const std::string& baseName, Vec2 basePosition, int tetriminoId) {
     int beamIndex = 0;
     
     // Create a map to track node positions and their corresponding entity names
     std::map<std::string, std::string> nodePositions; // position string -> nodeName
-    Vec2 basePos = Vec2(0, 300); // Same as spawn position
+    Vec2 basePos = basePosition;
     
     // First, collect all node positions and their names
     int nodeIndex = 0;
@@ -370,6 +370,9 @@ void JellyTetrisReduxScene::render(GraphicsEngine& engine, SwapChain& swapChain)
         }
     }
 
+    if (auto* toon = engine.getToonPipeline())
+        ctx.setGraphicsPipelineState(*toon);
+    else
         ctx.setGraphicsPipelineState(engine.getDefaultPipeline());
     ctx.enableDepthTest();
     ctx.enableAlphaBlending();
@@ -757,6 +760,10 @@ void JellyTetrisReduxScene::updateCollisions() {
     checkBoundaryCollisions();
     
     if (!m_enableCollisions) return;
+
+    // Keep narrowphase active so node/node and node/beam interaction stays stable.
+    checkNodeCollisions();
+    checkNodeBeamCollisions();
     
     // Update spatial grid for broadphase collision detection
     updateSpatialGrid();
@@ -1623,11 +1630,8 @@ void JellyTetrisReduxScene::updateNodeDragging() {
 void JellyTetrisReduxScene::updateSpatialGrid() {
     if (!m_entityManager) return;
     
-    // Only update grid if it's dirty or we have many entities
+    // Beams move every fixed update, so the broadphase must be rebuilt each frame.
     auto beamEntities = m_entityManager->getEntitiesWithComponent<BeamComponent>();
-    if (!m_spatialGridDirty && beamEntities.size() < 50) {
-        return; // Skip update for small numbers of entities
-    }
     
     // Clear existing grid
     m_spatialGrid.clear();
